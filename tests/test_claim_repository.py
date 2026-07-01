@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from agentic_trading.calculations import DerivedCalculation
 from agentic_trading.claim_repository import SqliteClaimRepository
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
@@ -105,3 +106,42 @@ def test_filing_statement_preserves_text_and_source_lineage(tmp_path: Path) -> N
     assert claim.numeric_value is None
     assert claim.unit == "text"
     assert claim.extraction_method == "sec_filing_narrative_v1"
+
+
+def test_calculation_preserves_formula_and_input_claim_lineage(tmp_path: Path) -> None:
+    database = tmp_path / "state.db"
+    upgrade_database(database)
+    create_run_and_source(database, "run-001", "source-001")
+    repository = SqliteClaimRepository(database)
+    input_claim = repository.register_xbrl_fact(
+        claim_id="input-001",
+        run_id="run-001",
+        source_id="source-001",
+        fact=fact(),
+    )
+    calculation = DerivedCalculation(
+        concept="test_ratio",
+        label="Test ratio",
+        formula="revenue / revenue",
+        value=Decimal("1"),
+        unit="ratio",
+        period_start=fact().period_start,
+        period_end=fact().period_end,
+        accession_number=fact().accession_number,
+        input_facts=(fact(),),
+    )
+
+    claim = repository.register_calculation(
+        run_id="run-001",
+        source_id="source-001",
+        calculation=calculation,
+        input_claim_ids=(input_claim.claim_id,),
+    )
+
+    assert claim.claim_type == "calculation"
+    assert claim.numeric_value == Decimal("1")
+    assert claim.extraction_method == "deterministic_calculation_v1"
+    assert repository.calculation_lineage(claim.claim_id) == (
+        "revenue / revenue",
+        ("input-001",),
+    )

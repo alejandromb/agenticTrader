@@ -94,6 +94,8 @@ Surface revision audits and explicit analysis limitations.
 - Added a deterministic calculation engine for revenue growth, operating and net
   margins, free-cash-flow approximation, and current ratio; every result retains
   its exact formula and filing-fact inputs.
+- Persisted calculated claims with database-enforced formula and input-claim
+  lineage and integrated them into research analysis; prompt version is now 1.6.
 
 ## Accepted decisions
 

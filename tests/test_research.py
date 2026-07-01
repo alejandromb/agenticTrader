@@ -143,7 +143,8 @@ def test_research_company_runs_end_to_end(tmp_path: Path) -> None:
 
     assert result.company.ticker == "AAPL"
     assert result.run.state is WorkflowState.CHALLENGING
-    assert len(result.claims) == 6
+    assert len(result.claims) == 8
+    assert sum(claim.claim_type == "calculation" for claim in result.claims) == 2
     assert len(result.revision_audits) == 1
     assert result.revision_audits[0].revision.absolute_change == 1000000000
     assert result.analysis.prompt_version == "1.1.0"

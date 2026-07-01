@@ -14,7 +14,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
-FINANCIAL_PROMPT_VERSION = "1.5.0"
+FINANCIAL_PROMPT_VERSION = "1.6.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -58,6 +58,12 @@ Use known_limitations to state what could not be verified from the supplied
 evidence. Include every known evidence gap without weakening or silently
 resolving it. Limitations are not negative conclusions; they define the boundary
 of what this analysis can support."""
+
+INSTRUCTIONS += """
+Prefer supplied calculation claims for growth, margins, ratios, and free cash
+flow instead of recomputing those values. A calculation claim is derived rather
+than issuer-reported; preserve that distinction and cite the calculation claim.
+Do not alter its formula, period, unit, or result."""
 
 
 class AnalysisGenerationError(RuntimeError):

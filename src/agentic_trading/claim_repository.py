@@ -11,8 +11,13 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
+from agentic_trading.calculations import DerivedCalculation
 from agentic_trading.database import create_sqlite_engine
-from agentic_trading.models import CandidateClaimModel
+from agentic_trading.models import (
+    CalculationClaimModel,
+    CalculationInputClaimModel,
+    CandidateClaimModel,
+)
 from agentic_trading.xbrl import FilingFact
 
 
@@ -118,6 +123,80 @@ class SqliteClaimRepository:
         with self._sessions.begin() as session:
             session.add(model)
         return _claim_from_model(model)
+
+    def register_calculation(
+        self,
+        *,
+        run_id: str,
+        source_id: str,
+        calculation: DerivedCalculation,
+        input_claim_ids: tuple[str, ...],
+        claim_id: str | None = None,
+    ) -> CandidateClaim:
+        """Persist a deterministic calculation and its exact input lineage."""
+        if not input_claim_ids:
+            raise ValueError("A calculation requires at least one input claim")
+        identifier = claim_id or str(uuid4())
+        model = CandidateClaimModel(
+            claim_id=identifier,
+            run_id=run_id,
+            source_id=source_id,
+            claim_type="calculation",
+            statement=(
+                f"{calculation.label} was {calculation.value} {calculation.unit} "
+                f"for the period ended {calculation.period_end}, calculated as "
+                f"{calculation.formula}. Input claims: "
+                f"{', '.join(input_claim_ids)}."
+            ),
+            taxonomy="agentic-trading",
+            concept=calculation.concept,
+            label=calculation.label,
+            unit=calculation.unit,
+            numeric_value=str(calculation.value),
+            period_start=calculation.period_start,
+            period_end=calculation.period_end,
+            accession_number=calculation.accession_number,
+            extraction_method="deterministic_calculation_v1",
+            extracted_at=datetime.now(UTC).isoformat(),
+        )
+        with self._sessions.begin() as session:
+            session.add(model)
+            session.flush()
+            session.add(
+                CalculationClaimModel(
+                    claim_id=identifier,
+                    run_id=run_id,
+                    formula=calculation.formula,
+                )
+            )
+            session.add_all(
+                CalculationInputClaimModel(
+                    calculation_claim_id=identifier,
+                    input_claim_id=input_claim_id,
+                    run_id=run_id,
+                )
+                for input_claim_id in input_claim_ids
+            )
+        return _claim_from_model(model)
+
+    def calculation_lineage(self, claim_id: str) -> tuple[str, tuple[str, ...]] | None:
+        """Return a calculated claim's formula and ordered input claim IDs."""
+        with self._sessions() as session:
+            calculation = session.scalar(
+                select(CalculationClaimModel).where(
+                    CalculationClaimModel.claim_id == claim_id
+                )
+            )
+            if calculation is None:
+                return None
+            input_ids = tuple(
+                session.scalars(
+                    select(CalculationInputClaimModel.input_claim_id)
+                    .where(CalculationInputClaimModel.calculation_claim_id == claim_id)
+                    .order_by(CalculationInputClaimModel.input_claim_id)
+                ).all()
+            )
+            return calculation.formula, input_ids
 
 
 def _default_statement(fact: FilingFact) -> str:

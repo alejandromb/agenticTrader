@@ -107,6 +107,41 @@ class CandidateClaimModel(Base):
     extracted_at: Mapped[str] = mapped_column(String, nullable=False)
 
 
+class CalculationClaimModel(Base):
+    __tablename__ = "calculation_claims"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["claim_id", "run_id"],
+            ["candidate_claims.claim_id", "candidate_claims.run_id"],
+            name="fk_calculation_claim_candidate",
+        ),
+    )
+
+    claim_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(String, primary_key=True)
+    formula: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class CalculationInputClaimModel(Base):
+    __tablename__ = "calculation_input_claims"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["calculation_claim_id", "run_id"],
+            ["calculation_claims.claim_id", "calculation_claims.run_id"],
+            name="fk_calculation_input_calculation",
+        ),
+        ForeignKeyConstraint(
+            ["input_claim_id", "run_id"],
+            ["candidate_claims.claim_id", "candidate_claims.run_id"],
+            name="fk_calculation_input_claim",
+        ),
+    )
+
+    calculation_claim_id: Mapped[str] = mapped_column(String, primary_key=True)
+    input_claim_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(String, primary_key=True)
+
+
 class AnalysisArtifactModel(Base):
     __tablename__ = "analysis_artifacts"
     __table_args__ = (

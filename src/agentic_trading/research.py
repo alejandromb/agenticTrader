@@ -12,6 +12,7 @@ from agentic_trading.analysis_repository import (
     SqliteAnalysisRepository,
 )
 from agentic_trading.artifacts import LocalArtifactStore
+from agentic_trading.calculations import calculate_financial_history
 from agentic_trading.claim_repository import CandidateClaim, SqliteClaimRepository
 from agentic_trading.filing_narrative import extract_capital_allocation_statements
 from agentic_trading.financials import (
@@ -29,7 +30,11 @@ from agentic_trading.revision_repository import (
 from agentic_trading.sec import CompanyIdentity, FilingMetadata, SecClient
 from agentic_trading.source_repository import SourceDocument, SqliteSourceRepository
 from agentic_trading.workflow import WorkflowState
-from agentic_trading.xbrl import compare_filing_facts, find_original_filing_fact
+from agentic_trading.xbrl import (
+    FilingFact,
+    compare_filing_facts,
+    find_original_filing_fact,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -176,14 +181,14 @@ class CompanyResearchService:
             period_end=filing.report_date,
         )
         repository = SqliteClaimRepository(self._database_path)
-        claims = [
-            repository.register_xbrl_fact(
-                run_id=run_id,
-                source_id=source.source_id,
-                fact=fact,
+        claims: list[CandidateClaim] = []
+        fact_claim_ids: dict[tuple[str, str | None, str, str], str] = {}
+        for fact in snapshot.values():
+            claim = repository.register_xbrl_fact(
+                run_id=run_id, source_id=source.source_id, fact=fact
             )
-            for fact in snapshot.values()
-        ]
+            claims.append(claim)
+            fact_claim_ids[_fact_key(fact)] = claim.claim_id
         history = extract_annual_financial_history(
             company_facts,
             accession_number=filing.accession_number,
@@ -203,17 +208,31 @@ class CompanyResearchService:
             (fact.concept, fact.period_start, fact.period_end)
             for fact in snapshot.values()
         }
-        claims.extend(
-            repository.register_xbrl_fact(
-                run_id=run_id,
-                source_id=source.source_id,
-                fact=fact,
+        for facts in history.values():
+            for fact in facts:
+                if (
+                    fact.concept,
+                    fact.period_start,
+                    fact.period_end,
+                ) in current_fact_keys:
+                    continue
+                claim = repository.register_xbrl_fact(
+                    run_id=run_id, source_id=source.source_id, fact=fact
+                )
+                claims.append(claim)
+                fact_claim_ids[_fact_key(fact)] = claim.claim_id
+        for calculation in calculate_financial_history(history):
+            input_claim_ids = tuple(
+                fact_claim_ids[_fact_key(fact)] for fact in calculation.input_facts
             )
-            for facts in history.values()
-            for fact in facts
-            if (fact.concept, fact.period_start, fact.period_end)
-            not in current_fact_keys
-        )
+            claims.append(
+                repository.register_calculation(
+                    run_id=run_id,
+                    source_id=source.source_id,
+                    calculation=calculation,
+                    input_claim_ids=input_claim_ids,
+                )
+            )
         filing_content = Path(source.storage_path).read_bytes()
         statements = extract_capital_allocation_statements(filing_content)
         claims.extend(
@@ -241,3 +260,12 @@ class CompanyResearchService:
 def _memo_id(company: CompanyIdentity, filing: FilingMetadata) -> str:
     suffix = uuid4().hex[:8]
     return f"memo-{company.ticker.lower()}-{filing.report_date}-{suffix}"
+
+
+def _fact_key(fact: FilingFact) -> tuple[str, str | None, str, str]:
+    return (
+        fact.concept,
+        fact.period_start,
+        fact.period_end,
+        fact.accession_number,
+    )
