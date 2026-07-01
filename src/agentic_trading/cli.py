@@ -438,6 +438,12 @@ def _print_run(
         ("Uncertainties", artifact.analysis.uncertainties),
         ("Cash allocation", artifact.analysis.cash_allocation),
         ("Trends", artifact.analysis.trends),
+        ("Business quality", artifact.analysis.business_quality),
+        ("Material risks", artifact.analysis.material_risks),
+        ("Bull case", artifact.analysis.bull_case),
+        ("Base case", artifact.analysis.base_case),
+        ("Bear case", artifact.analysis.bear_case),
+        ("Devil's advocate", artifact.analysis.devils_advocate),
     ):
         print(f"{title}:")
         for point in points:

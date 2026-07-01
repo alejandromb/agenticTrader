@@ -14,7 +14,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
-FINANCIAL_PROMPT_VERSION = "1.7.0"
+FINANCIAL_PROMPT_VERSION = "2.0.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -70,6 +70,15 @@ The revision_audit payload reports deterministic cross-accession comparison
 results. A zero count means no changed values were detected among the supported
 facts that were compared; it does not mean no comparison occurred and does not
 prove that no other revision or restatement exists."""
+
+INSTRUCTIONS += """
+For Version 2, use business_quality to explain the evidenced business model,
+segments, strategy, competitive attributes, and dependencies. Use material_risks
+for issuer-disclosed risks; a risk disclosure means the event may occur, not that
+it has occurred. Produce distinct bull_case, base_case, bear_case, and
+devils_advocate points. Each point must cite the claims that support it. Do not
+invent industry facts, competitive rankings, probabilities, valuation, or
+forward estimates that are absent from the supplied evidence."""
 
 
 class AnalysisGenerationError(RuntimeError):

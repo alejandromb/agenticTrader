@@ -112,6 +112,9 @@ Implement ADR-0011 and the Version 2 product contract.
 - Added bounded Item 1 business and Item 1A risk evidence extraction with
   explicit gaps, source-linked filing-statement claims, and captured-Walmart
   verification.
+- Added Version 2 structured business-quality, material-risk, bull/base/bear,
+  and devil's-advocate analysis sections with claim-lineage validation; prompt
+  version is now 2.0.
 
 ## Accepted decisions
 
