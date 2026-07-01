@@ -22,9 +22,14 @@ from agentic_trading.financials import (
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.openai_adapter import OpenAIFinancialAnalysisAdapter
 from agentic_trading.repository import ResearchRun, SqliteRunRepository
+from agentic_trading.revision_repository import (
+    RevisionAudit,
+    SqliteRevisionAuditRepository,
+)
 from agentic_trading.sec import CompanyIdentity, FilingMetadata, SecClient
 from agentic_trading.source_repository import SourceDocument, SqliteSourceRepository
 from agentic_trading.workflow import WorkflowState
+from agentic_trading.xbrl import compare_filing_facts, find_original_filing_fact
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +39,7 @@ class ResearchResult:
     run: ResearchRun
     source: SourceDocument
     claims: tuple[CandidateClaim, ...]
+    revision_audits: tuple[RevisionAudit, ...]
     analysis: AnalysisArtifact
 
 
@@ -87,7 +93,7 @@ class CompanyResearchService:
             )
             state = run.state
 
-            claims, evidence_gaps = self._extract_claims(
+            claims, evidence_gaps, revision_audits = self._extract_claims(
                 company, filing, run.run_id, source
             )
             run = runs.transition(
@@ -118,6 +124,7 @@ class CompanyResearchService:
                 run=run,
                 source=source,
                 claims=tuple(claims),
+                revision_audits=tuple(revision_audits),
                 analysis=analysis,
             )
         except Exception:
@@ -155,7 +162,7 @@ class CompanyResearchService:
         filing: FilingMetadata,
         run_id: str,
         source: SourceDocument,
-    ) -> tuple[list[CandidateClaim], tuple[str, ...]]:
+    ) -> tuple[list[CandidateClaim], tuple[str, ...], list[RevisionAudit]]:
         company_facts = self._sec.get_company_facts(company.cik)
         period_start = infer_annual_period_start(
             company_facts,
@@ -182,6 +189,16 @@ class CompanyResearchService:
             accession_number=filing.accession_number,
             through_period_end=filing.report_date,
         )
+        audit_repository = SqliteRevisionAuditRepository(self._database_path)
+        revision_audits: list[RevisionAudit] = []
+        for facts in history.values():
+            for later in facts:
+                original = find_original_filing_fact(company_facts, later=later)
+                if original is None:
+                    continue
+                revision = compare_filing_facts(original, later)
+                if revision is not None:
+                    revision_audits.append(audit_repository.register(run_id, revision))
         current_fact_keys = {
             (fact.concept, fact.period_start, fact.period_end)
             for fact in snapshot.values()
@@ -218,7 +235,7 @@ class CompanyResearchService:
             )
         if not claims:
             raise ValueError("No supported annual financial facts were available")
-        return claims, evidence_gaps
+        return claims, evidence_gaps, revision_audits
 
 
 def _memo_id(company: CompanyIdentity, filing: FilingMetadata) -> str:

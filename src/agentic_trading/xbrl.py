@@ -78,6 +78,39 @@ def compare_filing_facts(
     )
 
 
+def find_original_filing_fact(
+    company_facts: dict[str, Any], *, later: FilingFact
+) -> FilingFact | None:
+    """Find the earliest prior 10-K observation for the same economic period."""
+    try:
+        observations = company_facts["facts"][later.taxonomy][later.concept]["units"][
+            later.unit
+        ]
+    except (KeyError, TypeError):
+        return None
+    candidates = [
+        item
+        for item in observations
+        if item.get("form") == "10-K"
+        and item.get("accn") != later.accession_number
+        and item.get("start") == later.period_start
+        and item.get("end") == later.period_end
+        and item.get("filed", "") < later.filed
+    ]
+    if not candidates:
+        return None
+    original = min(candidates, key=lambda item: (item["filed"], item["accn"]))
+    return select_filing_fact(
+        company_facts,
+        taxonomy=later.taxonomy,
+        concept=later.concept,
+        unit=later.unit,
+        accession_number=original["accn"],
+        period_start=later.period_start,
+        period_end=later.period_end,
+    )
+
+
 def select_filing_fact(
     company_facts: dict[str, Any],
     *,

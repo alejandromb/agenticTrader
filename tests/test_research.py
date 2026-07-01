@@ -69,6 +69,33 @@ class FakeSecClient:
                 "label": concept,
                 "units": {"USD": [observation]},
             }
+        revenue_units = facts["facts"]["us-gaap"][
+            "RevenueFromContractWithCustomerExcludingAssessedTax"
+        ]["units"]["USD"]
+        revenue_units.extend(
+            [
+                {
+                    "start": "2023-10-01",
+                    "end": "2024-09-28",
+                    "val": 391000000000,
+                    "accn": self.filing.accession_number,
+                    "fy": 2025,
+                    "fp": "FY",
+                    "form": "10-K",
+                    "filed": "2025-10-31",
+                },
+                {
+                    "start": "2023-10-01",
+                    "end": "2024-09-28",
+                    "val": 390000000000,
+                    "accn": "0000320193-24-000123",
+                    "fy": 2024,
+                    "fp": "FY",
+                    "form": "10-K",
+                    "filed": "2024-11-01",
+                },
+            ]
+        )
         return facts
 
 
@@ -116,6 +143,8 @@ def test_research_company_runs_end_to_end(tmp_path: Path) -> None:
 
     assert result.company.ticker == "AAPL"
     assert result.run.state is WorkflowState.CHALLENGING
-    assert len(result.claims) == 5
+    assert len(result.claims) == 6
+    assert len(result.revision_audits) == 1
+    assert result.revision_audits[0].revision.absolute_change == 1000000000
     assert result.analysis.prompt_version == "1.1.0"
     assert Path(result.source.storage_path).exists()

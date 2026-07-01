@@ -8,6 +8,7 @@ import pytest
 from agentic_trading.xbrl import (
     XbrlFactError,
     compare_filing_facts,
+    find_original_filing_fact,
     list_filing_facts,
     select_filing_fact,
 )
@@ -148,3 +149,28 @@ def test_detects_cross_filing_revision_without_calling_it_restatement() -> None:
     assert revision is not None
     assert revision.classification == "cross_filing_revision"
     assert revision.absolute_change == Decimal("-161000000")
+
+
+def test_finds_earliest_prior_filing_for_same_economic_period() -> None:
+    facts = company_facts(
+        observation(
+            accn="later",
+            filed="2026-10-30",
+            fy=2026,
+            val=390000000000,
+        ),
+        observation(accn="original", filed="2025-10-31", val=391035000000),
+    )
+    later = select_filing_fact(
+        facts,
+        taxonomy="us-gaap",
+        concept="RevenueFromContractWithCustomerExcludingAssessedTax",
+        unit="USD",
+        accession_number="later",
+    )
+
+    original = find_original_filing_fact(facts, later=later)
+
+    assert original is not None
+    assert original.accession_number == "original"
+    assert original.value == Decimal("391035000000")

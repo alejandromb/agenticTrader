@@ -83,7 +83,10 @@ Surface revision audits and explicit analysis limitations.
   prototype separate as a future execution lab, with no v1 merge or live-money
   authority and explicit safety preconditions for any later integration.
 - Added a first-class cross-filing revision-audit artifact with durable ORM
-  persistence and visible saved-run output; automatic audit population is next.
+  persistence and visible saved-run output.
+- Added automatic revision-audit population by comparing same-period facts in
+  the selected 10-K with the earliest prior 10-K observation; changed values
+  retain both accessions and remain neutrally classified.
 
 ## Accepted decisions
 
@@ -111,7 +114,7 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Persist and surface cross-filing revision audits.
+1. Live-validate automatic cross-filing revision audits.
 2. Add deterministic growth calculations and ratio history.
 3. Add capital-allocation detail extraction from filing tables.
 4. Validate the Docker image when the local daemon can resolve image metadata.
@@ -126,6 +129,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Implement visible cross-filing revision-audit artifacts, then deterministic
-growth calculations. Keep version one limited to research; never display or
-persist the API key.
+Live-validate revision audits, then implement deterministic growth calculations.
+Keep version one limited to research; never display or persist the API key.
