@@ -14,6 +14,28 @@ ticker -> SEC filing -> stored evidence -> financial claims
 
 The output is a research artifact, not a buy or sell instruction.
 
+## Recommended interface
+
+Start the local dashboard:
+
+```bash
+.venv/bin/agentic-trading dashboard
+```
+
+Open `http://127.0.0.1:8765`. From there you can:
+
+1. enter a ticker and research question;
+2. wait for the SEC and OpenAI workflow to finish;
+3. open saved research from the left-hand ledger;
+4. read the thesis, counter-thesis, limitations, cases, risks, valuation, and
+   model telemetry; and
+5. record your human disposition when the run is ready.
+
+The terminal must remain open while using the dashboard. Press `Ctrl+C` to stop
+the server. It accepts loopback connections only and is not a remote web app.
+The CLI sections below remain useful for reproducible diagnostics and advanced
+quantitative, monitoring, and refresh-review workflows.
+
 ## First-time setup
 
 Create the Python environment and install the application:

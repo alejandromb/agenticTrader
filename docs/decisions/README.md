@@ -28,6 +28,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0012](0012-milestone-three-quantitative-lab.md) | Scope Milestone 3 as a point-in-time quantitative lab | Accepted |
 | [0013](0013-milestone-four-decision-monitoring.md) | Scope Milestone 4 as deterministic decision monitoring | Accepted |
 | [0014](0014-milestone-five-research-refresh-reviews.md) | Scope Milestone 5 as research-refresh reviews | Accepted |
+| [0015](0015-local-dashboard-surface.md) | Add a loopback-only local dashboard | Accepted |
 
 ## Convention
 

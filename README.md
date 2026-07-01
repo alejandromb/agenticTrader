@@ -50,6 +50,16 @@ Configure `OPENAI_API_KEY` and `SEC_USER_AGENT` in `.env`, then verify setup:
 .venv/bin/agentic-trading doctor
 ```
 
+Start the local dashboard:
+
+```bash
+.venv/bin/agentic-trading dashboard
+```
+
+Then open `http://127.0.0.1:8765`. This is the recommended interface for
+starting company research, reading saved memos, reviewing limitations, and
+recording the human disposition. Press `Ctrl+C` in the terminal to stop it.
+
 Run company research:
 
 ```bash
@@ -61,7 +71,8 @@ The command creates `data/agentic-trading.db` and stores source artifacts under
 `artifacts/`. Both paths are excluded from Git.
 
 See [docs/user-guide.md](docs/user-guide.md) for the workflow and
-[docs/development.md](docs/development.md) for engineering setup.
+[docs/development.md](docs/development.md) for engineering setup. Dashboard
+operation and boundaries are documented in [docs/dashboard.md](docs/dashboard.md).
 
 ## Safety boundary
 

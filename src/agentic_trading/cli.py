@@ -17,6 +17,7 @@ from agentic_trading.analysis_repository import SqliteAnalysisRepository
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.backtesting import BacktestError, SqliteBacktester
 from agentic_trading.claim_repository import SqliteClaimRepository
+from agentic_trading.dashboard import DashboardError, serve_dashboard
 from agentic_trading.disposition_repository import (
     ALLOWED_DISPOSITIONS,
     SqliteDispositionRepository,
@@ -267,6 +268,15 @@ def build_parser() -> argparse.ArgumentParser:
     record_review.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
+    dashboard = commands.add_parser(
+        "dashboard", help="serve the loopback-only local research dashboard"
+    )
+    dashboard.add_argument("--host", default="127.0.0.1")
+    dashboard.add_argument("--port", type=int, default=8765)
+    dashboard.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    dashboard.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
     import_prices.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
@@ -301,6 +311,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             else 1
         )
+
+    if args.command == "dashboard":
+        try:
+            serve_dashboard(
+                host=args.host,
+                port=args.port,
+                database_path=args.database,
+                artifact_root=args.artifact_root,
+            )
+        except DashboardError as error:
+            raise SystemExit(str(error)) from error
+        return 0
 
     if args.command == "research-company":
         user_agent = os.environ.get("SEC_USER_AGENT")

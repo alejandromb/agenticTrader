@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Milestone 5 complete
+Session status: Local dashboard v1 accepted
 
 ## Current phase
 
-Milestone 5 deterministic research-refresh reviews accepted.
+Local browser product surface after accepted Milestone 5.
 
 ## Active objective
 
-Select the next product goal after accepted Milestone 5.
+Use and evaluate the accepted local dashboard before expanding its surface.
 
 ## Completed
 
@@ -176,6 +176,15 @@ Select the next product goal after accepted Milestone 5.
 - Accepted the Milestone 5 fidelity experiment and product contract with full
   delta-category truth tables, temporal alert boundaries, restart
   reconstruction, and explicit known limitations.
+- Accepted ADR-0015 for a loopback-only dashboard that reuses the existing
+  research and human-decision services without adding authority.
+- Added a dependency-free loopback HTTP server, secret-safe configuration API,
+  saved-run list/detail reconstruction, company-research endpoint, and guarded
+  human-disposition endpoint.
+- Added a responsive same-origin dashboard for research initiation, memo and
+  limitation review, telemetry, saved-run navigation, and human disposition.
+- Browser-verified the dashboard against the real research database at desktop
+  and mobile widths and accepted its 110-test security and lifecycle audit.
 
 ## Accepted decisions
 
@@ -193,6 +202,7 @@ Select the next product goal after accepted Milestone 5.
 - ADR-0012: Scope Milestone 3 as a point-in-time quantitative lab.
 - ADR-0013: Scope Milestone 4 as deterministic decision monitoring.
 - ADR-0014: Scope Milestone 5 as research-refresh reviews.
+- ADR-0015: Add a loopback-only local dashboard.
 
 ## Open questions
 
@@ -207,8 +217,8 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Select and record the next measured product goal under ADR-0010 before adding
-   automatic refresh, new data sources, models, scheduling, or execution.
+1. Use the dashboard for real research and collect usability evidence before
+   exposing quantitative, monitoring, or refresh-review workflows in the UI.
 
 ## Future integration note
 
@@ -220,5 +230,6 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Milestone 5 is complete. Begin by choosing a measured next product goal. Keep
-DiveTrader and execution separate unless a new ADR defines safety boundaries.
+Dashboard v1 is complete. Begin with real operator use and record concrete
+friction before adding more UI. Keep remote access, automation, DiveTrader, and
+execution out of scope.
