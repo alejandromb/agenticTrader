@@ -12,6 +12,21 @@ but it should remain a separate execution sandbox and prototype for now. It
 must not be merged directly into the core research architecture or treated as
 ready for live-money execution.
 
+Its canonical designation is:
+
+> Potential future execution adapter for Agentic Trading, currently suitable
+> only for paper-trading experiments and UI/broker-integration reference.
+
+The projects should mature independently before any integration work:
+
+- Agentic Trading must first mature its research integrity, evidence lineage,
+  decision records, evaluation, and human-authority boundaries.
+- DiveTrader must independently harden execution safety, broker state handling,
+  operational controls, and paper/live separation.
+
+This preserves useful prototype work without allowing a trading application to
+weaken the safety philosophy or evidence standards of the main project.
+
 Agentic Trading remains the brain, research, and decision-support layer. Its
 responsibilities include deterministic evidence collection, source-linked
 claims, structured investment memos, watchlists, strategy hypotheses, risk
