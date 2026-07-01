@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from decimal import Decimal
 
 import pytest
 
-from agentic_trading.xbrl import XbrlFactError, list_filing_facts, select_filing_fact
+from agentic_trading.xbrl import (
+    XbrlFactError,
+    compare_filing_facts,
+    list_filing_facts,
+    select_filing_fact,
+)
 
 
 def company_facts(*observations: dict[str, object]) -> dict[str, object]:
@@ -121,3 +127,24 @@ def test_lists_comparatives_only_from_exact_filing_context() -> None:
         Decimal("416161000000"),
     ]
     assert all(period.accession_number == "0000320193-25-000079" for period in periods)
+
+
+def test_detects_cross_filing_revision_without_calling_it_restatement() -> None:
+    original = select_filing_fact(
+        company_facts(observation()),
+        taxonomy="us-gaap",
+        concept="RevenueFromContractWithCustomerExcludingAssessedTax",
+        unit="USD",
+        accession_number="0000320193-25-000079",
+    )
+    later = replace(
+        original,
+        value=Decimal("416000000000"),
+        accession_number="0000320193-26-000100",
+    )
+
+    revision = compare_filing_facts(original, later)
+
+    assert revision is not None
+    assert revision.classification == "cross_filing_revision"
+    assert revision.absolute_change == Decimal("-161000000")

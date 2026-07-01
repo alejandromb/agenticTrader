@@ -71,6 +71,8 @@ Validate cash-allocation analysis and begin multi-period financial comparisons.
   purpose, with deterministic extraction and risk-boilerplate rejection.
 - Accepted ADR-0009 and added exact-accession comparative fact enumeration as
   the foundation for multi-period analysis without silent filing-context mixing.
+- Added same-filing annual history extraction, period-aware trend analysis, and
+  neutral cross-filing revision detection; prompt version is now 1.4.
 
 ## Accepted decisions
 
@@ -97,11 +99,10 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Validate prompt version 1.3 and cash allocation on a live research run.
-2. Live-validate filing narrative extraction and cash-allocation output.
-3. Design multi-period fact identity and restatement handling.
-4. Add prior-year comparisons to the financial analysis contract.
-5. Validate the Docker image when the local daemon can resolve image metadata.
+1. Live-validate prompt version 1.4, cash allocation, and trend output.
+2. Persist and surface cross-filing revision audits.
+3. Add deterministic growth calculations and ratio history.
+4. Validate the Docker image when the local daemon can resolve image metadata.
 
 ## Resume here
 

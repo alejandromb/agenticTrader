@@ -15,6 +15,7 @@ from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.claim_repository import CandidateClaim, SqliteClaimRepository
 from agentic_trading.filing_narrative import extract_capital_allocation_statements
 from agentic_trading.financials import (
+    extract_annual_financial_history,
     extract_available_annual_financial_snapshot,
     infer_annual_period_start,
 )
@@ -176,6 +177,26 @@ class CompanyResearchService:
             )
             for fact in snapshot.values()
         ]
+        history = extract_annual_financial_history(
+            company_facts,
+            accession_number=filing.accession_number,
+            through_period_end=filing.report_date,
+        )
+        current_fact_keys = {
+            (fact.concept, fact.period_start, fact.period_end)
+            for fact in snapshot.values()
+        }
+        claims.extend(
+            repository.register_xbrl_fact(
+                run_id=run_id,
+                source_id=source.source_id,
+                fact=fact,
+            )
+            for facts in history.values()
+            for fact in facts
+            if (fact.concept, fact.period_start, fact.period_end)
+            not in current_fact_keys
+        )
         filing_content = Path(source.storage_path).read_bytes()
         statements = extract_capital_allocation_statements(filing_content)
         claims.extend(

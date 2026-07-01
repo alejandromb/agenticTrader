@@ -3,6 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from agentic_trading.financials import (
+    extract_annual_financial_history,
     extract_annual_financial_snapshot,
     extract_available_annual_financial_snapshot,
     infer_annual_period_start,
@@ -161,3 +162,60 @@ def test_available_snapshot_extracts_optional_liquidity_and_profit_metrics() -> 
     assert snapshot["investing_cash_flow"].value == Decimal("-26350000000")
     assert snapshot["financing_cash_flow"].value == Decimal("-13553000000")
     assert snapshot["net_change_in_cash"].value == Decimal("1785000000")
+
+
+def test_history_keeps_annual_comparatives_from_same_accession() -> None:
+    accession = "0000320193-25-000079"
+    observations = [
+        {
+            "start": "2024-09-29",
+            "end": "2025-09-27",
+            "val": 416161000000,
+            "accn": accession,
+            "fy": 2025,
+            "fp": "FY",
+            "form": "10-K",
+            "filed": "2025-10-31",
+        },
+        {
+            "start": "2023-10-01",
+            "end": "2024-09-28",
+            "val": 391035000000,
+            "accn": accession,
+            "fy": 2025,
+            "fp": "FY",
+            "form": "10-K",
+            "filed": "2025-10-31",
+        },
+        {
+            "start": "2025-06-29",
+            "end": "2025-09-27",
+            "val": 102000000000,
+            "accn": accession,
+            "fy": 2025,
+            "fp": "FY",
+            "form": "10-K",
+            "filed": "2025-10-31",
+        },
+    ]
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "RevenueFromContractWithCustomerExcludingAssessedTax": {
+                    "label": "Revenue",
+                    "units": {"USD": observations},
+                }
+            }
+        }
+    }
+
+    history = extract_annual_financial_history(
+        facts,
+        accession_number=accession,
+        through_period_end="2025-09-27",
+    )
+
+    assert [fact.value for fact in history["revenue"]] == [
+        Decimal("391035000000"),
+        Decimal("416161000000"),
+    ]

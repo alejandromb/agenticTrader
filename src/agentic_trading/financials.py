@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
-from agentic_trading.xbrl import FilingFact, XbrlFactError, select_filing_fact
+from agentic_trading.xbrl import (
+    FilingFact,
+    XbrlFactError,
+    list_filing_facts,
+    select_filing_fact,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -192,3 +198,45 @@ def extract_available_annual_financial_snapshot(
         except XbrlFactError:
             gaps.append(f"Missing {metric.name} ({metric.taxonomy}:{metric.concept})")
     return snapshot, tuple(gaps)
+
+
+def extract_annual_financial_history(
+    company_facts: dict[str, Any],
+    *,
+    accession_number: str,
+    through_period_end: str,
+    limit: int = 3,
+) -> dict[str, tuple[FilingFact, ...]]:
+    """Extract comparable annual periods presented in one exact filing."""
+    history: dict[str, tuple[FilingFact, ...]] = {}
+    for metric in ANNUAL_FINANCIAL_METRICS:
+        try:
+            facts = list_filing_facts(
+                company_facts,
+                taxonomy=metric.taxonomy,
+                concept=metric.concept,
+                unit=metric.unit,
+                accession_number=accession_number,
+            )
+        except XbrlFactError:
+            continue
+        annual = tuple(
+            fact
+            for fact in facts
+            if fact.period_end <= through_period_end
+            and _matches_annual_shape(fact, duration=metric.duration)
+        )
+        if annual:
+            history[metric.name] = annual[-limit:]
+    return history
+
+
+def _matches_annual_shape(fact: FilingFact, *, duration: bool) -> bool:
+    if not duration:
+        return fact.period_start is None
+    if fact.period_start is None:
+        return False
+    days = (
+        date.fromisoformat(fact.period_end) - date.fromisoformat(fact.period_start)
+    ).days
+    return 300 <= days <= 380

@@ -27,6 +27,57 @@ class FilingFact:
     fiscal_period: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class CrossFilingRevision:
+    concept: str
+    unit: str
+    period_start: str | None
+    period_end: str
+    original_accession: str
+    original_value: Decimal
+    later_accession: str
+    later_value: Decimal
+    absolute_change: Decimal
+    classification: str = "cross_filing_revision"
+
+
+def compare_filing_facts(
+    original: FilingFact, later: FilingFact
+) -> CrossFilingRevision | None:
+    """Compare the same economic fact without asserting a formal restatement."""
+    identity = (
+        original.taxonomy,
+        original.concept,
+        original.unit,
+        original.period_start,
+        original.period_end,
+    )
+    later_identity = (
+        later.taxonomy,
+        later.concept,
+        later.unit,
+        later.period_start,
+        later.period_end,
+    )
+    if identity != later_identity:
+        raise ValueError("Cross-filing comparison requires identical economic periods")
+    if original.accession_number == later.accession_number:
+        raise ValueError("Cross-filing comparison requires distinct accessions")
+    if original.value == later.value:
+        return None
+    return CrossFilingRevision(
+        concept=original.concept,
+        unit=original.unit,
+        period_start=original.period_start,
+        period_end=original.period_end,
+        original_accession=original.accession_number,
+        original_value=original.value,
+        later_accession=later.accession_number,
+        later_value=later.value,
+        absolute_change=later.value - original.value,
+    )
+
+
 def select_filing_fact(
     company_facts: dict[str, Any],
     *,

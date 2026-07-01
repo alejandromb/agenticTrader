@@ -23,6 +23,7 @@ class FinancialAnalysis(BaseModel):
     concerns: list[AnalysisPoint]
     uncertainties: list[AnalysisPoint]
     cash_allocation: list[AnalysisPoint] = Field(default_factory=list)
+    trends: list[AnalysisPoint] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def require_content(self) -> FinancialAnalysis:
@@ -31,6 +32,7 @@ class FinancialAnalysis(BaseModel):
             or self.concerns
             or self.uncertainties
             or self.cash_allocation
+            or self.trends
         ):
             raise ValueError("analysis must contain at least one analytical point")
         return self
@@ -43,6 +45,7 @@ class FinancialAnalysis(BaseModel):
                 self.concerns,
                 self.uncertainties,
                 self.cash_allocation,
+                self.trends,
             )
             for point in group
             for claim_id in point.claim_ids

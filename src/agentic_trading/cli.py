@@ -424,6 +424,7 @@ def _print_run(run: object, claims: list[object], artifact: object | None) -> No
         ("Concerns", artifact.analysis.concerns),
         ("Uncertainties", artifact.analysis.uncertainties),
         ("Cash allocation", artifact.analysis.cash_allocation),
+        ("Trends", artifact.analysis.trends),
     ):
         print(f"{title}:")
         for point in points:
