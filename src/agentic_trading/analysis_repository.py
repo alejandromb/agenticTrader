@@ -33,6 +33,9 @@ class AnalysisArtifact:
     input_claim_ids: tuple[str, ...]
     evidence_gaps: tuple[str, ...]
     created_at: str
+    input_tokens: int | None
+    output_tokens: int | None
+    request_duration_ms: int | None
 
 
 class SqliteAnalysisRepository:
@@ -64,6 +67,9 @@ class SqliteAnalysisRepository:
             evidence_gaps_json=json.dumps(generated.evidence_gaps),
             content_json=generated.analysis.model_dump_json(),
             created_at=created_at,
+            input_tokens=generated.input_tokens,
+            output_tokens=generated.output_tokens,
+            request_duration_ms=generated.request_duration_ms,
         )
         with self._sessions.begin() as session:
             session.add(model)
@@ -88,6 +94,9 @@ class SqliteAnalysisRepository:
             input_claim_ids=generated.input_claim_ids,
             evidence_gaps=generated.evidence_gaps,
             created_at=created_at,
+            input_tokens=model.input_tokens,
+            output_tokens=model.output_tokens,
+            request_duration_ms=model.request_duration_ms,
         )
 
     def latest_for_run(self, run_id: str) -> AnalysisArtifact | None:
@@ -120,4 +129,7 @@ class SqliteAnalysisRepository:
                 input_claim_ids=claim_ids,
                 evidence_gaps=tuple(json.loads(model.evidence_gaps_json)),
                 created_at=model.created_at,
+                input_tokens=model.input_tokens,
+                output_tokens=model.output_tokens,
+                request_duration_ms=model.request_duration_ms,
             )

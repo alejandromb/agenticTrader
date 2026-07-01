@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -101,6 +102,9 @@ class GeneratedFinancialAnalysis:
     prompt_version: str
     input_claim_ids: tuple[str, ...]
     evidence_gaps: tuple[str, ...]
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    request_duration_ms: int | None = None
 
 
 class OpenAIFinancialAnalysisAdapter:
@@ -122,6 +126,7 @@ class OpenAIFinancialAnalysisAdapter:
         if not claims:
             raise ValueError("At least one candidate claim is required")
         known_claim_ids = {claim.claim_id for claim in claims}
+        started_at = time.monotonic()
         try:
             response = self._client.responses.parse(
                 model=self.model,
@@ -146,6 +151,7 @@ class OpenAIFinancialAnalysisAdapter:
             raise AnalysisGenerationError(
                 f"OpenAI request failed: {type(error).__name__}"
             ) from error
+        request_duration_ms = round((time.monotonic() - started_at) * 1000)
         analysis = response.output_parsed
         if analysis is None:
             raise AnalysisGenerationError(
@@ -173,6 +179,13 @@ class OpenAIFinancialAnalysisAdapter:
             prompt_version=FINANCIAL_PROMPT_VERSION,
             input_claim_ids=tuple(sorted(known_claim_ids)),
             evidence_gaps=tuple(evidence_gaps),
+            input_tokens=getattr(
+                getattr(response, "usage", None), "input_tokens", None
+            ),
+            output_tokens=getattr(
+                getattr(response, "usage", None), "output_tokens", None
+            ),
+            request_duration_ms=request_duration_ms,
         )
 
 

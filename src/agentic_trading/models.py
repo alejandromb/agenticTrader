@@ -164,6 +164,9 @@ class AnalysisArtifactModel(Base):
     evidence_gaps_json: Mapped[str] = mapped_column(String, nullable=False)
     content_json: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)
+    input_tokens: Mapped[int | None] = mapped_column(Integer)
+    output_tokens: Mapped[int | None] = mapped_column(Integer)
+    request_duration_ms: Mapped[int | None] = mapped_column(Integer)
 
 
 class AnalysisInputClaimModel(Base):

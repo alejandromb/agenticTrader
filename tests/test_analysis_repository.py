@@ -95,6 +95,8 @@ def test_analysis_artifact_preserves_model_and_claim_lineage(tmp_path: Path) -> 
     assert artifact.input_claim_ids == (claim_id,)
     assert artifact.evidence_gaps == ("Missing liabilities",)
     assert artifact.analysis.assessment == "positive"
+    assert artifact.input_tokens is None
+    assert artifact.output_tokens is None
     assert SqliteAnalysisRepository(database).latest_for_run("run-a") == artifact
 
 

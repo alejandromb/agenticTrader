@@ -43,7 +43,11 @@ class FakeResponses:
 
     def parse(self, **arguments: Any) -> SimpleNamespace:
         self.arguments = arguments
-        return SimpleNamespace(id="response-001", output_parsed=self.analysis)
+        return SimpleNamespace(
+            id="response-001",
+            output_parsed=self.analysis,
+            usage=SimpleNamespace(input_tokens=123, output_tokens=45),
+        )
 
 
 class FailingResponses:
@@ -70,6 +74,9 @@ def test_adapter_uses_structured_responses_and_validates_claims() -> None:
     assert result.prompt_version == "2.1.0"
     assert result.input_claim_ids == ("claim-001",)
     assert result.evidence_gaps == ()
+    assert result.request_duration_ms is not None
+    assert result.input_tokens == 123
+    assert result.output_tokens == 45
     assert responses.arguments["model"] == "test-model"
     assert responses.arguments["text_format"] is FinancialAnalysis
     assert "Use cash_allocation" in responses.arguments["instructions"]

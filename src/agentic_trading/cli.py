@@ -196,6 +196,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "filing_date": result.filing.filing_date,
                     "model": result.analysis.model,
                     "memo_artifact_id": result.memo.artifact_id,
+                    "model_usage": {
+                        "input_tokens": result.analysis.input_tokens,
+                        "output_tokens": result.analysis.output_tokens,
+                        "request_duration_ms": result.analysis.request_duration_ms,
+                    },
                     "prompt_version": result.analysis.prompt_version,
                     "run_id": result.run.run_id,
                     "state": result.run.state,
@@ -495,6 +500,12 @@ def _print_run(
         return
     print(f"Analysis: {artifact.analysis.assessment}")
     print(f"Model: {artifact.model} (prompt {artifact.prompt_version})")
+    print(
+        "Model usage: "
+        f"input_tokens={artifact.input_tokens}, "
+        f"output_tokens={artifact.output_tokens}, "
+        f"request_duration_ms={artifact.request_duration_ms}"
+    )
     print(f"Summary: {artifact.analysis.summary}")
     for title, points in (
         ("Strengths", artifact.analysis.strengths),

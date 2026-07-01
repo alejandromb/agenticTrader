@@ -125,6 +125,11 @@ Implement ADR-0011 and the Version 2 product contract.
 - Added the explicit `record-disposition` command and append-only, human-owned
   disposition event persistence; recording a valid disposition completes the
   run without mutating the memo.
+- Completed the first live Version 2 Walmart workflow through a persisted memo
+  and `awaiting_human_disposition`; all qualitative and valuation sections were
+  populated with claim references.
+- Added persisted OpenAI input/output token counts and request latency so Version
+  2 quality, cost, and speed can be evaluated against the Version 1 baseline.
 
 ## Accepted decisions
 
