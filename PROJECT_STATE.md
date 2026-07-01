@@ -82,6 +82,8 @@ Surface revision audits and explicit analysis limitations.
 - Recorded the architect's DiveTrader integration note: keep the sibling Alpaca
   prototype separate as a future execution lab, with no v1 merge or live-money
   authority and explicit safety preconditions for any later integration.
+- Added a first-class cross-filing revision-audit artifact with durable ORM
+  persistence and visible saved-run output; automatic audit population is next.
 
 ## Accepted decisions
 

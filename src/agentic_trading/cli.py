@@ -22,6 +22,7 @@ from agentic_trading.openai_adapter import (
 )
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.research import CompanyResearchService
+from agentic_trading.revision_repository import SqliteRevisionAuditRepository
 from agentic_trading.sec import SecClient, SecClientError
 from agentic_trading.source_repository import SqliteSourceRepository
 from agentic_trading.validation import validate_memo_files
@@ -341,7 +342,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         run = repository.get_run(args.run_id)
         claims = SqliteClaimRepository(args.database).list_for_run(run.run_id)
         analysis = SqliteAnalysisRepository(args.database).latest_for_run(run.run_id)
-        _print_run(run, claims, analysis)
+        audits = SqliteRevisionAuditRepository(args.database).list_for_run(run.run_id)
+        _print_run(run, claims, analysis, audits)
         return 0
 
     if args.command == "create-run":
@@ -406,13 +408,24 @@ def _run_dict(run: object) -> dict[str, str]:
     }
 
 
-def _print_run(run: object, claims: list[object], artifact: object | None) -> None:
+def _print_run(
+    run: object, claims: list[object], artifact: object | None, audits: list[object]
+) -> None:
     print(f"Run: {run.run_id}")
     print(f"State: {run.state}")
     print(f"As of: {run.as_of}")
     print(f"Claims: {len(claims)}")
     for claim in claims:
         print(f"  - [{claim.claim_id}] {claim.statement}")
+    print(f"Cross-filing revision audits: {len(audits)}")
+    for audit in audits:
+        revision = audit.revision
+        print(
+            f"  - {revision.concept} {revision.period_end}: "
+            f"{revision.original_value} ({revision.original_accession}) -> "
+            f"{revision.later_value} ({revision.later_accession}); "
+            f"classification={revision.classification}"
+        )
     if artifact is None:
         print("Analysis: not available")
         return

@@ -108,4 +108,5 @@ def test_list_and_show_saved_run(
     assert main(["show-run", created["run_id"], "--database", str(database)]) == 0
     output = capsys.readouterr().out
     assert "State: draft" in output
+    assert "Cross-filing revision audits: 0" in output
     assert "Analysis: not available" in output

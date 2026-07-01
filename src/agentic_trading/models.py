@@ -149,3 +149,22 @@ class AnalysisInputClaimModel(Base):
     artifact_id: Mapped[str] = mapped_column(String, primary_key=True)
     claim_id: Mapped[str] = mapped_column(String, primary_key=True)
     run_id: Mapped[str] = mapped_column(String, primary_key=True)
+
+
+class RevisionAuditModel(Base):
+    __tablename__ = "revision_audits"
+    __table_args__ = (Index("revision_audits_run_id", "run_id", "audit_id"),)
+
+    audit_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey("research_runs.run_id"))
+    classification: Mapped[str] = mapped_column(String, nullable=False)
+    concept: Mapped[str] = mapped_column(String, nullable=False)
+    unit: Mapped[str] = mapped_column(String, nullable=False)
+    period_start: Mapped[str | None] = mapped_column(String)
+    period_end: Mapped[str] = mapped_column(String, nullable=False)
+    original_accession: Mapped[str] = mapped_column(String, nullable=False)
+    original_value: Mapped[str] = mapped_column(String, nullable=False)
+    later_accession: Mapped[str] = mapped_column(String, nullable=False)
+    later_value: Mapped[str] = mapped_column(String, nullable=False)
+    absolute_change: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
