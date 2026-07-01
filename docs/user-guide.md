@@ -138,7 +138,11 @@ cannot invoke this command or choose the human disposition.
   label requires explicit filing evidence.
 - Capital-allocation table extraction is deterministic and issuer layouts can
   still produce an explicit evidence gap.
-- No market-price comparison, portfolio, or brokerage workflow is included.
+- Market data is imported manually as immutable adjusted-price CSV snapshots;
+  there is no live feed.
+- Portfolio analytics are hypothetical and read-only. Backtests support only a
+  versioned long/cash moving-average strategy and are not forecasts.
+- No command proposes or creates orders, changes holdings, or accesses a broker.
 - Valuation is limited to assumption-driven cash-flow sensitivities; it is not
   equity fair value or a price target and lacks market-price comparison.
 - SEC concepts can differ across issuers; missing optional metrics are recorded
@@ -158,3 +162,42 @@ For lower-level diagnostic commands, run:
 ```bash
 .venv/bin/agentic-trading --help
 ```
+
+## Milestone 3 quantitative workflows
+
+Import an adjusted-price dataset. The exact bytes and SHA-256 are retained:
+
+```bash
+.venv/bin/agentic-trading import-prices prices.csv \
+  --source "Documented source and retrieval date"
+```
+
+Run an as-of screen over persisted research memos:
+
+```bash
+.venv/bin/agentic-trading screen-research \
+  --as-of 2026-07-01T00:00:00Z \
+  --min-revenue-growth 3 \
+  --min-free-cash-flow 0
+```
+
+Analyze a hypothetical `ticker,shares` holdings file against an aligned
+benchmark. The latest common observation not after `as_of` is used:
+
+```bash
+.venv/bin/agentic-trading analyze-portfolio holdings.csv \
+  --dataset DATASET_ID --benchmark SPY --as-of 2026-06-30
+```
+
+Run the versioned moving-average simulation with explicit costs:
+
+```bash
+.venv/bin/agentic-trading backtest DATASET_ID \
+  --ticker AAPL --benchmark SPY \
+  --short-window 20 --long-window 100 \
+  --initial-cash 10000 --transaction-cost-bps 10
+```
+
+Signals use only history available through their signal date and execute on the
+next common observation. Results are analytical artifacts only; they cannot be
+sent to DiveTrader, Alpaca, or another execution system.

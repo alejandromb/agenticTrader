@@ -287,3 +287,19 @@ class PortfolioAnalysisArtifactModel(Base):
     holdings_json: Mapped[str] = mapped_column(String, nullable=False)
     results_json: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class BacktestArtifactModel(Base):
+    __tablename__ = "backtest_artifacts"
+
+    backtest_id: Mapped[str] = mapped_column(String, primary_key=True)
+    dataset_id: Mapped[str] = mapped_column(
+        ForeignKey("price_datasets.dataset_id"), nullable=False
+    )
+    ticker: Mapped[str] = mapped_column(String, nullable=False)
+    benchmark: Mapped[str] = mapped_column(String, nullable=False)
+    strategy: Mapped[str] = mapped_column(String, nullable=False)
+    strategy_version: Mapped[str] = mapped_column(String, nullable=False)
+    parameters_json: Mapped[str] = mapped_column(String, nullable=False)
+    results_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)

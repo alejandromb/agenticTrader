@@ -148,6 +148,11 @@ Implement ADR-0012 and the Milestone 3 product contract.
 - Added persisted hypothetical portfolio analytics over immutable adjusted-price
   datasets, including explicit as-of/benchmark date alignment, valuation,
   concentration, volatility, tracking error, and drawdown metrics.
+- Added versioned, deterministic moving-average backtesting with next-observation
+  execution, explicit transaction costs, aligned benchmark dates, persisted
+  parameters/results, and reproducibility tests.
+- Accepted the complete Milestone 3 quantitative-lab contract with documented
+  known limitations and no broker, order, or portfolio-mutation path.
 
 ## Accepted decisions
 
@@ -177,8 +182,8 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Add versioned, cost-aware, look-ahead-resistant backtesting.
-2. Document and run the complete Milestone 3 acceptance workflow.
+1. Select the next product goal; do not expand into execution without a separate
+   accepted architecture decision and safety contract.
 
 ## Future integration note
 
@@ -190,6 +195,7 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Begin with versioned, cost-aware backtesting. Signals must execute no earlier
-than the next observation, and the workflow must remain analytical only: no
-broker, order, or portfolio-mutation integration.
+Milestone 3 is complete. Begin the next session by selecting and recording the
+next product goal. Keep DiveTrader separate and execution out of scope unless a
+new ADR defines the approval, risk, audit, idempotency, and reconciliation
+boundaries.

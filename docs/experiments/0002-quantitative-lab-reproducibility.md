@@ -1,6 +1,6 @@
 # Experiment 0002: Quantitative lab reproducibility
 
-- Status: Planned
+- Status: Accepted
 - Baseline: Version 2 has no portfolio, screening, or backtest workflow
 
 ## Hypothesis
@@ -26,3 +26,16 @@ authority.
 - Backtest signals execute on the next observation and include nonzero costs.
 - Portfolio and benchmark statistics use aligned dates.
 - No command writes holdings, creates orders, or accesses a broker.
+
+## Result
+
+- Exact repeated inputs produced identical parameter and result payloads.
+- Invalid price, holdings, window, and observation-count fixtures failed
+  explicitly.
+- Every simulated trade records a signal date strictly before its execution
+  date, and the cost-bearing fixture recorded nonzero transaction costs.
+- Portfolio and benchmark calculations use the intersection of their dates.
+- Persisted price, screen, portfolio, and backtest artifacts are reconstructable
+  after a new repository/service instance is created.
+- Static inspection and CLI acceptance tests confirm the quantitative commands
+  contain no broker client, order model, or holdings mutation path.

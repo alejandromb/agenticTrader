@@ -12,6 +12,7 @@ from agentic_trading.workflow import WorkflowState
 
 ROOT = Path(__file__).parents[1]
 PRICE_FIXTURE = ROOT / "tests/fixtures/prices-valid.csv"
+BACKTEST_PRICE_FIXTURE = ROOT / "tests/fixtures/prices-backtest.csv"
 HOLDINGS_FIXTURE = ROOT / "tests/fixtures/holdings-valid.csv"
 
 
@@ -228,3 +229,55 @@ def test_analyze_portfolio_command(
     output = json.loads(capsys.readouterr().out)
     assert output["valuation_date"] == "2025-01-06"
     assert output["results"]["total_value"] == "199.50"
+
+
+def test_backtest_command(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    database = tmp_path / "state.db"
+    artifacts = tmp_path / "artifacts"
+    assert (
+        main(
+            [
+                "import-prices",
+                str(BACKTEST_PRICE_FIXTURE),
+                "--source",
+                "Backtest fixture",
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(artifacts),
+            ]
+        )
+        == 0
+    )
+    dataset = json.loads(capsys.readouterr().out)
+
+    assert (
+        main(
+            [
+                "backtest",
+                dataset["dataset_id"],
+                "--ticker",
+                "AAPL",
+                "--benchmark",
+                "SPY",
+                "--short-window",
+                "2",
+                "--long-window",
+                "3",
+                "--transaction-cost-bps",
+                "10",
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(artifacts),
+            ]
+        )
+        == 0
+    )
+    output = json.loads(capsys.readouterr().out)
+    assert output["strategy_version"] == "1.0"
+    assert output["results"]["trades"]
+    assert all(
+        trade["execution_date"] > trade["signal_date"]
+        for trade in output["results"]["trades"]
+    )

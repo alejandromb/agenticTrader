@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 from agentic_trading.analysis_repository import SqliteAnalysisRepository
 from agentic_trading.artifacts import LocalArtifactStore
+from agentic_trading.backtesting import BacktestError, SqliteBacktester
 from agentic_trading.claim_repository import SqliteClaimRepository
 from agentic_trading.disposition_repository import (
     ALLOWED_DISPOSITIONS,
@@ -180,6 +181,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
     portfolio.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
+    backtest = commands.add_parser(
+        "backtest", help="run a deterministic moving-average simulation"
+    )
+    backtest.add_argument("dataset")
+    backtest.add_argument("--ticker", required=True)
+    backtest.add_argument("--benchmark", required=True)
+    backtest.add_argument("--short-window", type=int, required=True)
+    backtest.add_argument("--long-window", type=int, required=True)
+    backtest.add_argument("--initial-cash", type=Decimal, default=Decimal("10000"))
+    backtest.add_argument("--transaction-cost-bps", type=Decimal, default=Decimal("10"))
+    backtest.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    backtest.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
     import_prices.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
@@ -524,6 +539,36 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "dataset_id": artifact.dataset_id,
                     "results": artifact.results,
                     "valuation_date": artifact.valuation_date,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if args.command == "backtest":
+        try:
+            artifact = SqliteBacktester(args.database, args.artifact_root).run(
+                args.dataset,
+                ticker=args.ticker,
+                benchmark=args.benchmark,
+                short_window=args.short_window,
+                long_window=args.long_window,
+                initial_cash=args.initial_cash,
+                transaction_cost_bps=args.transaction_cost_bps,
+            )
+        except BacktestError as error:
+            raise SystemExit(str(error)) from error
+        print(
+            json.dumps(
+                {
+                    "backtest_id": artifact.backtest_id,
+                    "benchmark": artifact.benchmark,
+                    "dataset_id": artifact.dataset_id,
+                    "parameters": artifact.parameters,
+                    "results": artifact.results,
+                    "strategy": artifact.strategy,
+                    "strategy_version": artifact.strategy_version,
+                    "ticker": artifact.ticker,
                 },
                 sort_keys=True,
             )

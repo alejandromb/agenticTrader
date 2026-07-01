@@ -106,9 +106,11 @@ Record a decision only after reviewing the memo:
   --rationale "Wait for stronger evidence"
 ```
 
-## Milestone 3 roadmap
+## Milestone 3 quantitative lab
 
-Milestone 3 is a point-in-time quantitative lab for deterministic research
+Milestone 3 provides a point-in-time quantitative lab for deterministic research
 screens, hypothetical portfolio analytics, risk metrics, and cost-aware
 backtesting. It remains disconnected from brokers and cannot place or propose
-orders. See [docs/milestone-3.md](docs/milestone-3.md).
+orders. All inputs, parameters, strategy versions, and results are persisted for
+reconstruction. See [docs/milestone-3.md](docs/milestone-3.md) and the
+[acceptance audit](docs/evaluation/milestone-three-acceptance.md).
