@@ -260,3 +260,13 @@ class PriceObservationModel(Base):
     ticker: Mapped[str] = mapped_column(String, primary_key=True)
     date: Mapped[str] = mapped_column(String, primary_key=True)
     adjusted_close: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class ResearchScreenArtifactModel(Base):
+    __tablename__ = "research_screen_artifacts"
+
+    screen_id: Mapped[str] = mapped_column(String, primary_key=True)
+    as_of: Mapped[str] = mapped_column(String, nullable=False)
+    filters_json: Mapped[str] = mapped_column(String, nullable=False)
+    results_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)

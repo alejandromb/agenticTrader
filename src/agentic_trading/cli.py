@@ -6,7 +6,9 @@ import argparse
 import json
 import os
 from collections.abc import Sequence
+from dataclasses import asdict
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -32,6 +34,7 @@ from agentic_trading.openai_adapter import (
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.research import CompanyResearchService
 from agentic_trading.revision_repository import SqliteRevisionAuditRepository
+from agentic_trading.screener import ScreenFilters, SqliteResearchScreener
 from agentic_trading.sec import SecClient, SecClientError
 from agentic_trading.source_repository import SqliteSourceRepository
 from agentic_trading.validation import validate_memo_files
@@ -147,6 +150,19 @@ def build_parser() -> argparse.ArgumentParser:
     import_prices.add_argument(
         "--adjustment-note",
         default="Adjusted-close values supplied by dataset source.",
+    )
+
+    screen = commands.add_parser(
+        "screen-research", help="screen persisted research using as-of metrics"
+    )
+    screen.add_argument("--as-of", required=True)
+    screen.add_argument("--min-revenue-growth", type=Decimal)
+    screen.add_argument("--min-operating-margin", type=Decimal)
+    screen.add_argument("--min-net-margin", type=Decimal)
+    screen.add_argument("--min-current-ratio", type=Decimal)
+    screen.add_argument("--min-free-cash-flow", type=Decimal)
+    screen.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
     )
     import_prices.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
@@ -438,6 +454,33 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "row_count": dataset.row_count,
                     "source": dataset.source,
                     "start_date": dataset.start_date,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if args.command == "screen-research":
+        artifact = SqliteResearchScreener(args.database).screen(
+            as_of=args.as_of,
+            filters=ScreenFilters(
+                min_revenue_growth=args.min_revenue_growth,
+                min_operating_margin=args.min_operating_margin,
+                min_net_margin=args.min_net_margin,
+                min_current_ratio=args.min_current_ratio,
+                min_free_cash_flow=args.min_free_cash_flow,
+            ),
+        )
+        print(
+            json.dumps(
+                {
+                    "as_of": artifact.as_of,
+                    "filters": {
+                        key: str(value) if value is not None else None
+                        for key, value in asdict(artifact.filters).items()
+                    },
+                    "results": [asdict(item) for item in artifact.results],
+                    "screen_id": artifact.screen_id,
                 },
                 sort_keys=True,
             )

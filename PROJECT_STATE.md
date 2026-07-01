@@ -142,6 +142,9 @@ Implement ADR-0012 and the Milestone 3 product contract.
 - Added immutable, content-addressed adjusted-price CSV import with source and
   adjustment metadata, strict temporal/data validation, idempotent hash reuse,
   ORM persistence, and the `import-prices` CLI command.
+- Added persisted, deterministic `screen-research` over memo-backed research
+  runs with strict `as_of` boundaries, latest-run-per-ticker selection, explicit
+  metric filters, missing-metric exclusion, and live WMT verification.
 
 ## Accepted decisions
 
