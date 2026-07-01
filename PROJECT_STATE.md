@@ -2,15 +2,16 @@
 
 Last updated: 2026-07-01
 
-Session status: Active
+Session status: Version one accepted
 
 ## Current phase
 
-Version-one research copilot completion and acceptance.
+Version-one research copilot accepted.
 
 ## Active objective
 
-Validate the documented version-one workflow end to end.
+Maintain the accepted research workflow and evaluate future additions against
+ADR-0010.
 
 ## Completed
 
@@ -105,6 +106,8 @@ Validate the documented version-one workflow end to end.
 - Added deterministic revision-audit context to structured analysis so zero
   detected revisions cannot be misreported as no comparison; prompt version is
   now 1.7.
+- Live-validated prompt v1.7 and completed the README requirement audit: all
+  version-one gates passed with 62 tests and durable saved-run verification.
 
 ## Accepted decisions
 
@@ -126,16 +129,15 @@ Validate the documented version-one workflow end to end.
 
 ## Blockers
 
-Docker and Compose configuration validation passes. Full image execution remains
-to be verified because the local Docker daemon stalled while resolving image
-metadata, including for an already cached base image.
+None for the documented version-one local workflow. Docker image execution
+remains a non-blocking environment follow-up because the local daemon previously
+stalled while resolving image metadata.
 
 ## Next actions
 
-1. Update README and user guide to the implemented version-one capability.
-2. Live-validate prompt v1.6 with calculations and capital-allocation details.
-3. Validate automatic revision auditing on an issuer with a known revision.
-4. Complete the version-one acceptance audit.
+1. Validate automatic revision auditing on a live issuer with a known revision.
+2. Propose the next research-only capability through an ADR-0010 experiment.
+3. Revisit Docker runtime validation when the daemon is healthy.
 
 ## Future integration note
 
@@ -147,6 +149,6 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Run the version-one live acceptance check, reconcile documentation with observed
-output, and complete the acceptance audit. Keep version one limited to research;
-never display or persist the API key.
+Version one is accepted. Begin future work only from an explicit, measurable
+research objective. Keep execution out of scope and never display or persist the
+API key.
