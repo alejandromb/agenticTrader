@@ -11,6 +11,7 @@ from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.workflow import WorkflowState
 
 ROOT = Path(__file__).parents[1]
+PRICE_FIXTURE = ROOT / "tests/fixtures/prices-valid.csv"
 
 
 def test_validate_memo_command(capsys: pytest.CaptureFixture[str]) -> None:
@@ -155,3 +156,28 @@ def test_record_disposition_completes_awaiting_run(
     output = json.loads(capsys.readouterr().out)
     assert output["status"] == "watch"
     assert output["state"] == "complete"
+
+
+def test_import_prices_command(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    database = tmp_path / "state.db"
+
+    assert (
+        main(
+            [
+                "import-prices",
+                str(PRICE_FIXTURE),
+                "--source",
+                "Test fixture",
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(tmp_path / "artifacts"),
+            ]
+        )
+        == 0
+    )
+    output = json.loads(capsys.readouterr().out)
+    assert output["row_count"] == 6
+    assert output["start_date"] == "2025-01-02"

@@ -137,6 +137,11 @@ Implement ADR-0012 and the Milestone 3 product contract.
 - Completed the schema-2.0 live Version 2 acceptance run and product-contract
   audit; the measured memo retained 102 claims, 86 evidence records, all required
   perspectives, valuation sensitivities, limitations, and human authority.
+- Accepted ADR-0012 and recorded the Milestone 3 quantitative-lab contract and
+  reproducibility experiment.
+- Added immutable, content-addressed adjusted-price CSV import with source and
+  adjustment metadata, strict temporal/data validation, idempotent hash reuse,
+  ORM persistence, and the `import-prices` CLI command.
 
 ## Accepted decisions
 

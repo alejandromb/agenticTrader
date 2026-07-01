@@ -234,3 +234,29 @@ class HumanDispositionEventModel(Base):
     rationale: Mapped[str | None] = mapped_column(String)
     actor: Mapped[str] = mapped_column(String, nullable=False)
     decided_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class PriceDatasetModel(Base):
+    __tablename__ = "price_datasets"
+
+    dataset_id: Mapped[str] = mapped_column(String, primary_key=True)
+    source: Mapped[str] = mapped_column(String, nullable=False)
+    retrieved_at: Mapped[str] = mapped_column(String, nullable=False)
+    content_sha256: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    storage_path: Mapped[str] = mapped_column(String, nullable=False)
+    adjustment_note: Mapped[str] = mapped_column(String, nullable=False)
+    row_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    start_date: Mapped[str] = mapped_column(String, nullable=False)
+    end_date: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class PriceObservationModel(Base):
+    __tablename__ = "price_observations"
+
+    dataset_id: Mapped[str] = mapped_column(
+        ForeignKey("price_datasets.dataset_id"), primary_key=True
+    )
+    ticker: Mapped[str] = mapped_column(String, primary_key=True)
+    date: Mapped[str] = mapped_column(String, primary_key=True)
+    adjusted_close: Mapped[str] = mapped_column(String, nullable=False)

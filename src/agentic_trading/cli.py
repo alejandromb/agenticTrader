@@ -19,6 +19,10 @@ from agentic_trading.disposition_repository import (
     SqliteDispositionRepository,
 )
 from agentic_trading.financials import extract_annual_financial_snapshot
+from agentic_trading.market_data import (
+    PriceDatasetError,
+    SqlitePriceDatasetRepository,
+)
 from agentic_trading.memo_repository import SqliteInvestmentMemoRepository
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.openai_adapter import (
@@ -134,6 +138,20 @@ def build_parser() -> argparse.ArgumentParser:
     disposition.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
+
+    import_prices = commands.add_parser(
+        "import-prices", help="import an immutable adjusted-price CSV dataset"
+    )
+    import_prices.add_argument("csv", type=Path)
+    import_prices.add_argument("--source", required=True)
+    import_prices.add_argument(
+        "--adjustment-note",
+        default="Adjusted-close values supplied by dataset source.",
+    )
+    import_prices.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    import_prices.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
 
     return parser
 
@@ -394,6 +412,32 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "run_id": event.run_id,
                     "state": completed.state,
                     "status": event.status,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if args.command == "import-prices":
+        try:
+            dataset = SqlitePriceDatasetRepository(
+                args.database, args.artifact_root
+            ).import_csv(
+                args.csv,
+                source=args.source,
+                adjustment_note=args.adjustment_note,
+            )
+        except PriceDatasetError as error:
+            raise SystemExit(str(error)) from error
+        print(
+            json.dumps(
+                {
+                    "content_sha256": dataset.content_sha256,
+                    "dataset_id": dataset.dataset_id,
+                    "end_date": dataset.end_date,
+                    "row_count": dataset.row_count,
+                    "source": dataset.source,
+                    "start_date": dataset.start_date,
                 },
                 sort_keys=True,
             )
