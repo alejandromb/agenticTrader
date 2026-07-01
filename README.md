@@ -7,17 +7,34 @@ analysis, and preserves every artifact for review.
 It is advisory software. It does not place trades, allocate capital, or replace
 human investment judgment.
 
-## Current capability
+## Version 1 capability
 
 Version one can:
 
 - resolve a U.S. public company from its ticker;
 - capture its latest Form 10-K from SEC EDGAR;
 - store the filing as a content-addressed artifact;
-- extract a minimum annual financial snapshot;
-- persist evidence-linked claims;
-- generate strict OpenAI financial analysis; and
-- retain run, model, prompt, response, and claim lineage in SQLite.
+- extract current and comparable annual financial facts without mixing filing
+  contexts;
+- persist source-linked facts, filing statements, and deterministic calculation
+  claims;
+- calculate revenue growth, operating margin, net margin, free-cash-flow
+  approximation, and current ratio with formula and input-claim lineage;
+- explain cash allocation across capital expenditure, acquisitions, dividends,
+  repurchases, and debt activity when disclosed;
+- extract management's capex rationale and quantified allocation-table details;
+- detect and visibly retain cross-filing value revisions without automatically
+  calling them restatements;
+- generate strict OpenAI analysis covering strengths, concerns, trends, cash
+  allocation, uncertainties, and known limitations;
+- force every persisted evidence gap into the known-limitations output; and
+- retain runs, sources, transitions, claims, calculations, audits, model/prompt
+  metadata, responses, and analysis lineage in SQLite.
+
+Version one is complete when one company can be researched and later reviewed
+with its filing, facts, calculations, revision audits, limitations, and analysis
+lineage intact. It intentionally excludes valuation, portfolio construction,
+broker integration, order intent, and execution.
 
 ## Quick start
 
@@ -51,3 +68,13 @@ See [docs/user-guide.md](docs/user-guide.md) for the workflow and
 AI output is untrusted analysis. Every analytical point must reference captured
 claims, humans retain final authority, and no broker integration exists in
 version one. The governing decisions are in `docs/decisions/`.
+
+## Review a saved run
+
+```bash
+.venv/bin/agentic-trading list-runs
+.venv/bin/agentic-trading show-run YOUR_RUN_ID
+```
+
+The detailed view shows evidence claims, calculation formulas and input IDs,
+cross-filing revision audits, structured analysis, and known limitations.

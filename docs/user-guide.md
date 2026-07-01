@@ -55,11 +55,14 @@ This command:
 3. creates an auditable research run;
 4. downloads and hashes the latest Form 10-K;
 5. records source provenance;
-6. extracts and persists supported financial claims;
-7. sends only those claims and the question to OpenAI;
-8. validates every returned claim reference;
-9. persists the structured analysis; and
-10. leaves the run in `challenging` for the next workflow stage.
+6. extracts current and comparable annual facts from one filing context;
+7. detects changed values across filing accessions;
+8. creates deterministic calculations with formula and input lineage;
+9. extracts supported capital-allocation narrative and table details;
+10. sends only validated claims, calculations, gaps, and the question to OpenAI;
+11. validates every returned claim reference;
+12. persists revision audits, known limitations, and structured analysis; and
+13. leaves the run in `challenging` for the next workflow stage.
 
 The command performs external SEC requests and one paid OpenAI request.
 
@@ -81,10 +84,12 @@ The command prints JSON containing:
 - `filing_accession`: exact SEC filing;
 - `model` and `prompt_version`: reproducibility metadata;
 - `state`: current workflow checkpoint; and
-- `analysis`: assessment, summary, strengths, concerns, and uncertainties.
+- `analysis`: assessment, summary, strengths, concerns, trends, cash allocation,
+  uncertainties, and known limitations.
 
-Every point inside the analysis contains `claim_ids`. These link back to the
-financial facts used for that statement.
+Every analytical point contains `claim_ids`. These link to issuer-reported facts,
+filing statements, or deterministic calculation claims. Calculation statements
+include their formulas and input claim IDs.
 
 ## Review saved research
 
@@ -101,12 +106,18 @@ Display one run in a human-readable form:
 ```
 
 The run ID is printed by `research-company` and appears in `list-runs`.
+The detailed view also displays the cross-filing revision-audit count and both
+accession/value pairs for every detected revision.
 
 ## Current limitations
 
 - Only annual Form 10-K research is orchestrated.
-- The minimum snapshot currently includes revenue, net income, assets,
-  liabilities, and operating cash flow.
+- Analysis is limited to facts and narrative supported by the selected annual
+  filing and SEC company-facts data.
+- Cross-filing value differences are labeled neutrally; a formal restatement
+  label requires explicit filing evidence.
+- Capital-allocation table extraction is deterministic and issuer layouts can
+  still produce an explicit evidence gap.
 - No valuation, price, portfolio, or brokerage workflow is included.
 - SEC concepts can differ across issuers; missing optional metrics are recorded
   as evidence gaps, while unsupported required inputs fail explicitly.

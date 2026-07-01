@@ -6,11 +6,11 @@ Session status: Active
 
 ## Current phase
 
-Architecture and project foundation.
+Version-one research copilot completion and acceptance.
 
 ## Active objective
 
-Surface revision audits and explicit analysis limitations.
+Validate the documented version-one workflow end to end.
 
 ## Completed
 
@@ -141,5 +141,6 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Live-validate revision audits, then implement deterministic growth calculations.
-Keep version one limited to research; never display or persist the API key.
+Run the version-one live acceptance check, reconcile documentation with observed
+output, and complete the acceptance audit. Keep version one limited to research;
+never display or persist the API key.
