@@ -97,7 +97,7 @@ See [docs/version-2.md](docs/version-2.md) and
 [docs/evaluation/version-two-acceptance.md](docs/evaluation/version-two-acceptance.md).
 
 Portfolio analytics, backtesting, automation, and broker execution remain out
-of scope.
+of Version 2 scope.
 
 Record a decision only after reviewing the memo:
 
@@ -105,3 +105,10 @@ Record a decision only after reviewing the memo:
 .venv/bin/agentic-trading record-disposition YOUR_RUN_ID watch \
   --rationale "Wait for stronger evidence"
 ```
+
+## Milestone 3 roadmap
+
+Milestone 3 is a point-in-time quantitative lab for deterministic research
+screens, hypothetical portfolio analytics, risk metrics, and cost-aware
+backtesting. It remains disconnected from brokers and cannot place or propose
+orders. See [docs/milestone-3.md](docs/milestone-3.md).

@@ -2,16 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Version two accepted
+Session status: Milestone 3 active
 
 ## Current phase
 
-Version-two research decision record accepted.
+Milestone 3 point-in-time quantitative lab.
 
 ## Active objective
 
-Maintain the accepted Version 2 workflow and require ADR-0010 evidence for new
-capabilities.
+Implement ADR-0012 and the Milestone 3 product contract.
 
 ## Completed
 
@@ -152,6 +151,7 @@ capabilities.
 - ADR-0009: Preserve filing context in multi-period comparisons and revisions.
 - ADR-0010: Require measured evidence before adopting additional complexity.
 - ADR-0011: Scope version two as a complete research decision record.
+- ADR-0012: Scope Milestone 3 as a point-in-time quantitative lab.
 
 ## Open questions
 
@@ -166,9 +166,10 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Await the user's disposition on any live memo; never infer it.
-2. Propose future quantitative work through a new scoped ADR and experiment.
-3. Revisit Docker runtime validation when the daemon is healthy.
+1. Implement immutable point-in-time price dataset import.
+2. Add deterministic screening over accepted research records.
+3. Add hypothetical portfolio and benchmark risk analytics.
+4. Add versioned, cost-aware, look-ahead-resistant backtesting.
 
 ## Future integration note
 
@@ -180,5 +181,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Version two is accepted. Future work must start from a measurable research
-objective. Keep execution out of scope and never display or persist the API key.
+Begin with the price dataset contract and temporal-integrity fixtures. Keep
+execution out of scope and never display or persist the API key.
