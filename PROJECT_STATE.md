@@ -2,7 +2,7 @@
 
 Last updated: 2026-06-30
 
-Session status: Active
+Session status: Paused at a clean handoff point
 
 ## Current phase
 
@@ -81,11 +81,13 @@ The key must not be pasted into chat, committed, or persisted in the database.
 
 ## Resume here
 
-Start by adding the analysis artifact ORM model and migration. Then configure a
-local `OPENAI_API_KEY` and run the first live analysis. Never store the key in
-Git, logs, prompts, artifacts, or the database.
+First, confirm `OPENAI_API_KEY` is configured locally without displaying it.
+Then add the analysis artifact ORM model and migration, run the first live
+structured analysis against the retained Apple claims, and evaluate its claim
+references and content. Never store the key in Git, logs, prompts, artifacts,
+or the database.
 
 ## Working-tree note
 
-The repository was initialized during the foundation session. See the latest
-session log and Git status for the authoritative commit state.
+The implementation is checkpointed through commit `d6184ba`. The session-close
+documentation update may appear in the immediately following commit.

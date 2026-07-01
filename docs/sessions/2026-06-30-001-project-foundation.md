@@ -1,7 +1,7 @@
 # Session: Project foundation
 
 - Date: 2026-06-30
-- Status: Active
+- Status: Complete
 
 ## Objective
 
@@ -120,3 +120,7 @@ way to resume work after an interruption.
 
 Next, persist analysis artifacts, define the evaluation rubric, and run a live
 evaluation after `OPENAI_API_KEY` is configured locally.
+
+The user will configure the key before the next session. On resume, verify only
+that the environment variable exists; do not print or otherwise expose it. The
+last implementation checkpoint is `d6184ba`, with 37 passing tests.
