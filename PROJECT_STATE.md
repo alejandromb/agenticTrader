@@ -99,6 +99,12 @@ Validate the documented version-one workflow end to end.
 - Added deterministic capital-allocation table extraction anchored to the total
   capex row, preserving table units and period headers while rejecting unrelated
   keyword matches; verified against the captured Walmart filing.
+- Live-validated prompt v1.6 with deterministic calculations and quantified
+  Walmart capital allocation; acceptance review found revision-audit status was
+  not included in model context.
+- Added deterministic revision-audit context to structured analysis so zero
+  detected revisions cannot be misreported as no comparison; prompt version is
+  now 1.7.
 
 ## Accepted decisions
 

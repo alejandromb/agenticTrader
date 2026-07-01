@@ -14,7 +14,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
-FINANCIAL_PROMPT_VERSION = "1.6.0"
+FINANCIAL_PROMPT_VERSION = "1.7.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -65,6 +65,12 @@ flow instead of recomputing those values. A calculation claim is derived rather
 than issuer-reported; preserve that distinction and cite the calculation claim.
 Do not alter its formula, period, unit, or result."""
 
+INSTRUCTIONS += """
+The revision_audit payload reports deterministic cross-accession comparison
+results. A zero count means no changed values were detected among the supported
+facts that were compared; it does not mean no comparison occurred and does not
+prove that no other revision or restatement exists."""
+
 
 class AnalysisGenerationError(RuntimeError):
     """Raised when provider output is missing or violates domain lineage."""
@@ -93,6 +99,7 @@ class OpenAIFinancialAnalysisAdapter:
         question: str,
         claims: Sequence[CandidateClaim],
         evidence_gaps: Sequence[str] = (),
+        revision_audits: Sequence[Any] = (),
     ) -> GeneratedFinancialAnalysis:
         """Analyze validated claims and reject unknown output references."""
         if not claims:
@@ -107,6 +114,12 @@ class OpenAIFinancialAnalysisAdapter:
                         "investment_question": question,
                         "candidate_claims": [_claim_payload(claim) for claim in claims],
                         "known_evidence_gaps": list(evidence_gaps),
+                        "revision_audit": {
+                            "count": len(revision_audits),
+                            "items": [
+                                _revision_payload(item) for item in revision_audits
+                            ],
+                        },
                     },
                     sort_keys=True,
                 ),
@@ -159,4 +172,18 @@ def _claim_payload(claim: CandidateClaim) -> dict[str, str | None]:
         "period_start": claim.period_start,
         "period_end": claim.period_end,
         "accession_number": claim.accession_number,
+    }
+
+
+def _revision_payload(audit: Any) -> dict[str, str]:
+    revision = audit.revision
+    return {
+        "classification": revision.classification,
+        "concept": revision.concept,
+        "period_end": revision.period_end,
+        "original_accession": revision.original_accession,
+        "original_value": str(revision.original_value),
+        "later_accession": revision.later_accession,
+        "later_value": str(revision.later_value),
+        "absolute_change": str(revision.absolute_change),
     }

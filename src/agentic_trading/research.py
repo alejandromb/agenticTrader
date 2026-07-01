@@ -116,6 +116,7 @@ class CompanyResearchService:
                 question=question,
                 claims=claims,
                 evidence_gaps=evidence_gaps,
+                revision_audits=revision_audits,
             )
             analysis = SqliteAnalysisRepository(
                 self._database_path
