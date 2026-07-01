@@ -10,6 +10,7 @@ from typing import Any
 from urllib.request import Request, urlopen
 
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
+COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 ARCHIVES_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{document}"
 
 
@@ -55,6 +56,11 @@ class SecClient:
         """Return the SEC submissions object for a company CIK."""
         normalized_cik = normalize_cik(cik)
         return self._get_json(SUBMISSIONS_URL.format(cik=normalized_cik))
+
+    def get_company_facts(self, cik: str | int) -> dict[str, Any]:
+        """Return standardized XBRL facts disclosed by a company."""
+        normalized_cik = normalize_cik(cik)
+        return self._get_json(COMPANY_FACTS_URL.format(cik=normalized_cik))
 
     def list_recent_filings(
         self, submissions: Mapping[str, Any], *, form: str | None = None

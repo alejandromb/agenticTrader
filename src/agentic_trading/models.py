@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy import ForeignKey, Index, Integer, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -34,3 +34,28 @@ class TransitionEventModel(Base):
     to_state: Mapped[str] = mapped_column(String, nullable=False)
     occurred_at: Mapped[str] = mapped_column(String, nullable=False)
     reason: Mapped[str | None] = mapped_column(String)
+
+
+class SourceDocumentModel(Base):
+    __tablename__ = "source_documents"
+    __table_args__ = (
+        UniqueConstraint(
+            "run_id", "source_identifier", "content_sha256", name="uq_source_capture"
+        ),
+        Index("source_documents_run_id", "run_id", "source_id"),
+    )
+
+    source_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("research_runs.run_id"), nullable=False
+    )
+    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    publisher: Mapped[str] = mapped_column(String, nullable=False)
+    canonical_url: Mapped[str] = mapped_column(String, nullable=False)
+    source_identifier: Mapped[str] = mapped_column(String, nullable=False)
+    published_at: Mapped[str | None] = mapped_column(String)
+    retrieved_at: Mapped[str] = mapped_column(String, nullable=False)
+    content_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    storage_path: Mapped[str] = mapped_column(String, nullable=False)

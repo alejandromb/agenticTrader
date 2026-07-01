@@ -6,14 +6,17 @@ import argparse
 import json
 import os
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from pathlib import Path
 
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.sec import SecClient
+from agentic_trading.source_repository import SqliteSourceRepository
 from agentic_trading.validation import validate_memo_files
 from agentic_trading.workflow import WorkflowState
+from agentic_trading.xbrl import select_filing_fact
 
 DEFAULT_SCHEMA = Path("schemas/investment-memo-v1.schema.json")
 
@@ -36,6 +39,16 @@ def build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("cik")
     fetch.add_argument("--form", required=True)
     fetch.add_argument("--artifact-root", type=Path, required=True)
+    fetch.add_argument("--database", type=Path)
+    fetch.add_argument("--run-id")
+
+    fact = commands.add_parser("sec-fact", help="select an SEC XBRL filing fact")
+    fact.add_argument("cik")
+    fact.add_argument("accession_number")
+    fact.add_argument("concept")
+    fact.add_argument("--period-end", required=True)
+    fact.add_argument("--taxonomy", default="us-gaap")
+    fact.add_argument("--unit", default="USD")
 
     initialize = commands.add_parser("init-db", help="initialize local workflow state")
     initialize.add_argument("database", type=Path)
@@ -63,21 +76,68 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Valid investment memo: {args.memo}")
         return 0
 
-    if args.command in {"sec-filings", "sec-fetch-latest"}:
+    if args.command in {"sec-filings", "sec-fetch-latest", "sec-fact"}:
         user_agent = os.environ.get("SEC_USER_AGENT")
         if not user_agent:
             raise SystemExit(
                 "SEC_USER_AGENT is required and must identify the application owner"
             )
         client = SecClient(user_agent)
+        if args.command == "sec-fact":
+            fact = select_filing_fact(
+                client.get_company_facts(args.cik),
+                taxonomy=args.taxonomy,
+                concept=args.concept,
+                unit=args.unit,
+                accession_number=args.accession_number,
+                period_end=args.period_end,
+            )
+            print(
+                json.dumps(
+                    {
+                        "accession_number": fact.accession_number,
+                        "concept": fact.concept,
+                        "filed": fact.filed,
+                        "fiscal_period": fact.fiscal_period,
+                        "fiscal_year": fact.fiscal_year,
+                        "form": fact.form,
+                        "label": fact.label,
+                        "period_end": fact.period_end,
+                        "period_start": fact.period_start,
+                        "taxonomy": fact.taxonomy,
+                        "unit": fact.unit,
+                        "value": str(fact.value),
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0
         submissions = client.get_submissions(args.cik)
         filings = client.list_recent_filings(submissions, form=args.form)
         if args.command == "sec-fetch-latest":
+            if bool(args.database) != bool(args.run_id):
+                raise SystemExit("--database and --run-id must be provided together")
             if not filings:
                 raise SystemExit(f"No {args.form} filings found for CIK {args.cik}")
             filing = filings[0]
             content = client.get_filing_document(args.cik, filing)
             artifact = LocalArtifactStore(args.artifact_root).put(content)
+            source_id = None
+            if args.database:
+                source = SqliteSourceRepository(args.database).register(
+                    run_id=args.run_id,
+                    source_type="regulatory_filing",
+                    title=f"{submissions.get('name', args.cik)} {filing.form}",
+                    publisher="U.S. Securities and Exchange Commission",
+                    canonical_url=client.filing_url(args.cik, filing),
+                    source_identifier=f"SEC accession {filing.accession_number}",
+                    published_at=f"{filing.filing_date}T00:00:00Z",
+                    retrieved_at=datetime.now(UTC).isoformat(),
+                    content_sha256=artifact.sha256,
+                    size_bytes=artifact.size_bytes,
+                    storage_path=str(artifact.path),
+                )
+                source_id = source.source_id
             value = {
                 "accession_number": filing.accession_number,
                 "content_sha256": artifact.sha256,
@@ -86,6 +146,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "primary_document_url": client.filing_url(args.cik, filing),
                 "report_date": filing.report_date,
                 "size_bytes": artifact.size_bytes,
+                "source_id": source_id,
                 "stored_path": str(artifact.path),
             }
             print(json.dumps(value, sort_keys=True))

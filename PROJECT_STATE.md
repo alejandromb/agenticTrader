@@ -10,7 +10,8 @@ Architecture and project foundation.
 
 ## Active objective
 
-Complete live SEC filing capture using an identifying contact in the User-Agent.
+Implement deterministic extraction of selected SEC filing facts into typed,
+evidence-linked candidate claims.
 
 ## Completed
 
@@ -34,6 +35,10 @@ Complete live SEC filing capture using an identifying contact in the User-Agent.
 - Added a CLI for memo validation, SEC discovery, and workflow state operations.
 - Added content-addressed local artifact storage with integrity verification.
 - Verified live Apple filing discovery against SEC submissions data.
+- Verified live Apple 10-K download, content hashing, and ORM provenance
+  persistence using an identified SEC request.
+- Added deterministic, period-specific SEC XBRL fact selection and verified
+  fiscal 2025 Apple revenue against live company-facts data.
 
 ## Accepted decisions
 
@@ -47,14 +52,9 @@ Complete live SEC filing capture using an identifying contact in the User-Agent.
 
 ## Open questions
 
-- What minimum evidence artifact should the SEC collector persist first?
 - Which model provider, if any, should power the first extraction experiment?
 
 ## Blockers
-
-The SEC submissions endpoint accepts the `AgenticTrading/0.1` User-Agent, but
-the SEC Archives filing endpoint returned HTTP 403. A real contact identifier
-must be added to `SEC_USER_AGENT` before retrying live document capture.
 
 Docker and Compose configuration validation passes. Full image execution remains
 to be verified because the local Docker daemon stalled while resolving image
@@ -62,16 +62,16 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Configure `SEC_USER_AGENT` with the project name, version, and owner contact.
-2. Retry live SEC filing capture and verify its stored SHA-256.
-3. Persist evidence metadata alongside captured artifacts.
-4. Implement deterministic extraction of filing metadata and selected facts.
+1. Convert selected XBRL facts into typed candidate claims with source links.
+2. Persist candidate claims and extraction lineage.
+3. Add validation that facts cannot reference sources from another run.
+4. Expand deterministic extraction to the minimum financial statement set.
 
 ## Resume here
 
-Start by configuring the SEC identifying contact and rerunning
-`sec-fetch-latest`. Do not store the contact value in Git; provide it through
-the `SEC_USER_AGENT` environment variable.
+Start by defining and implementing the candidate-claim persistence model. A
+fact must retain taxonomy, concept, unit, period, accession, and source-document
+lineage. Keep the SEC contact in `SEC_USER_AGENT`; never persist it.
 
 ## Working-tree note
 

@@ -43,6 +43,21 @@ def test_client_identifies_itself_and_reads_submissions() -> None:
     assert captured_request.get_header("User-agent").startswith("AgenticTrading")
 
 
+def test_client_reads_company_facts() -> None:
+    captured_request = None
+
+    def opener(request: Any, *, timeout: int) -> Response:
+        nonlocal captured_request
+        captured_request = request
+        assert timeout == 30
+        return Response(json.dumps({"facts": {}}).encode())
+
+    client = SecClient("AgenticTrading/0.1 owner@domain.test", opener=opener)
+
+    assert client.get_company_facts(320193) == {"facts": {}}
+    assert captured_request.full_url.endswith("companyfacts/CIK0000320193.json")
+
+
 def test_client_retrieves_primary_filing_document() -> None:
     captured_request = None
 

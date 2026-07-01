@@ -22,5 +22,10 @@ def test_upgrade_database_creates_versioned_schema(tmp_path: Path) -> None:
             "SELECT version_num FROM alembic_version"
         ).fetchone()
 
-    assert {"alembic_version", "research_runs", "transition_events"} <= tables
-    assert version == ("20260630_0001",)
+    assert {
+        "alembic_version",
+        "research_runs",
+        "source_documents",
+        "transition_events",
+    } <= tables
+    assert version == ("20260630_0002",)

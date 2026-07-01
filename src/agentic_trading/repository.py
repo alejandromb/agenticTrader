@@ -7,9 +7,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from sqlalchemy import URL, Engine, create_engine, event, select, update
+from sqlalchemy import select, update
 from sqlalchemy.orm import sessionmaker
 
+from agentic_trading.database import create_sqlite_engine
 from agentic_trading.models import Base, ResearchRunModel, TransitionEventModel
 from agentic_trading.workflow import WorkflowState, can_transition
 
@@ -52,7 +53,7 @@ class SqliteRunRepository:
 
     def __init__(self, database_path: Path) -> None:
         self._database_path = database_path
-        self._engine = _create_sqlite_engine(database_path)
+        self._engine = create_sqlite_engine(database_path)
         self._sessions = sessionmaker(self._engine, expire_on_commit=False)
 
     def initialize(self) -> None:
@@ -160,19 +161,6 @@ class SqliteRunRepository:
                 .order_by(TransitionEventModel.event_id)
             ).all()
             return [_event_from_model(model) for model in models]
-
-
-def _create_sqlite_engine(database_path: Path) -> Engine:
-    database_path.parent.mkdir(parents=True, exist_ok=True)
-    engine = create_engine(URL.create("sqlite", database=str(database_path)))
-
-    @event.listens_for(engine, "connect")
-    def enable_foreign_keys(connection: object, _: object) -> None:
-        cursor = connection.cursor()
-        cursor.execute("PRAGMA foreign_keys = ON")
-        cursor.close()
-
-    return engine
 
 
 def _utc_now() -> str:

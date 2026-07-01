@@ -1,7 +1,7 @@
 # Session: Project foundation
 
 - Date: 2026-06-30
-- Status: Complete
+- Status: Active
 
 ## Objective
 
@@ -31,6 +31,10 @@ way to resume work after an interruption.
   persistent local data.
 - Verified live SEC filing discovery. Live document retrieval returned HTTP 403
   without a real owner contact in the User-Agent.
+- Retried with an owner-provided contact supplied only through the environment;
+  live filing capture, content hashing, and ORM provenance persistence passed.
+- Added period-specific XBRL fact selection and verified Apple fiscal 2025
+  revenue against live SEC company-facts data.
 
 ## Decisions
 
@@ -70,6 +74,12 @@ way to resume work after an interruption.
 - `tests/test_repository.py`
 - `tests/test_cli.py`
 - `tests/test_artifacts.py`
+- `src/agentic_trading/database.py`
+- `src/agentic_trading/source_repository.py`
+- `src/agentic_trading/xbrl.py`
+- `migrations/versions/20260630_0002_source_documents.py`
+- `tests/test_source_repository.py`
+- `tests/test_xbrl.py`
 - `docs/sessions/README.md`
 - `docs/sessions/2026-06-30-001-project-foundation.md`
 
@@ -80,14 +90,16 @@ way to resume work after an interruption.
 - Parsed the investment-memo JSON Schema successfully with `jq`.
 - Ran the Python test and lint suite after containerization changes: 24 tests
   pass and Compose configuration validates.
+- Expanded the suite through live-ingestion hardening: 31 tests pass.
 - Attempted a Docker image build; the local daemon stalled resolving base-image
   metadata, so container execution validation remains pending.
 
 ## Unresolved questions
 
-- What identifying contact should be used for live SEC requests?
+- Which model provider, if any, should power the first non-deterministic analysis
+  stage?
 
 ## Handoff
 
-Next, configure a real contact in `SEC_USER_AGENT`, retry live filing capture,
-and then persist evidence metadata alongside the content-addressed artifact.
+Next, persist typed candidate claims with source and extraction lineage, then
+expand deterministic extraction to a minimum financial statement set.
