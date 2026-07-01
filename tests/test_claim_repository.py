@@ -83,3 +83,25 @@ def test_claim_cannot_reference_source_from_another_run(tmp_path: Path) -> None:
             source_id="source-002",
             fact=fact(),
         )
+
+
+def test_filing_statement_preserves_text_and_source_lineage(tmp_path: Path) -> None:
+    database = tmp_path / "state.db"
+    upgrade_database(database)
+    create_run_and_source(database, "run-001", "source-001")
+
+    claim = SqliteClaimRepository(database).register_filing_statement(
+        claim_id="claim-text-001",
+        run_id="run-001",
+        source_id="source-001",
+        statement="Capital expenditures supported supply-chain automation.",
+        topic="capital_allocation_purpose",
+        period_end="2025-09-27",
+        accession_number="0000320193-25-000079",
+        sequence=1,
+    )
+
+    assert claim.claim_type == "filing_statement"
+    assert claim.numeric_value is None
+    assert claim.unit == "text"
+    assert claim.extraction_method == "sec_filing_narrative_v1"

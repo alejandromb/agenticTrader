@@ -67,6 +67,10 @@ Validate cash-allocation analysis and begin multi-period financial comparisons.
   debt activity, investing and financing cash flows, and net cash movement.
 - Added a dedicated cash-allocation analysis section and prompt v1.3 rules that
   distinguish reinvestment, acquisitions, financing, and shareholder returns.
+- Added source-linked narrative claims for management's stated capital-spending
+  purpose, with deterministic extraction and risk-boilerplate rejection.
+- Accepted ADR-0009 and added exact-accession comparative fact enumeration as
+  the foundation for multi-period analysis without silent filing-context mixing.
 
 ## Accepted decisions
 
@@ -78,11 +82,12 @@ Validate cash-allocation analysis and begin multi-period financial comparisons.
 - ADR-0006: Use a deterministic, resumable research workflow.
 - ADR-0007: Use a Python 3.12 local-first implementation stack.
 - ADR-0008: Use OpenAI Responses with structured analysis output.
+- ADR-0009: Preserve filing context in multi-period comparisons and revisions.
 
 ## Open questions
 
-- How should comparable prior periods be represented without confusing facts
-  from the current filing with facts restated in later filings?
+- Which materiality threshold should trigger narrative review of a detected
+  cross-filing revision?
 
 ## Blockers
 
@@ -93,7 +98,7 @@ metadata, including for an already cached base image.
 ## Next actions
 
 1. Validate prompt version 1.3 and cash allocation on a live research run.
-2. Extract filing narrative explaining the purpose of material capital spending.
+2. Live-validate filing narrative extraction and cash-allocation output.
 3. Design multi-period fact identity and restatement handling.
 4. Add prior-year comparisons to the financial analysis contract.
 5. Validate the Docker image when the local daemon can resolve image metadata.

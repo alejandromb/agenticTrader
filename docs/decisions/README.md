@@ -22,6 +22,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0006](0006-deterministic-research-workflow.md) | Use a deterministic, resumable research workflow | Accepted |
 | [0007](0007-python-local-first-stack.md) | Use a Python 3.12 local-first implementation stack | Accepted |
 | [0008](0008-openai-structured-analysis-adapter.md) | Use OpenAI Responses with structured analysis output | Accepted |
+| [0009](0009-multi-period-and-restatement-semantics.md) | Preserve filing context in multi-period comparisons | Accepted |
 
 ## Convention
 

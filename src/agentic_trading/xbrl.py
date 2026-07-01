@@ -87,3 +87,42 @@ def select_filing_fact(
         fiscal_year=observation.get("fy"),
         fiscal_period=observation.get("fp"),
     )
+
+
+def list_filing_facts(
+    company_facts: dict[str, Any],
+    *,
+    taxonomy: str,
+    concept: str,
+    unit: str,
+    accession_number: str,
+    form: str = "10-K",
+) -> tuple[FilingFact, ...]:
+    """List unambiguous periods exactly as presented in one filing accession."""
+    try:
+        concept_data = company_facts["facts"][taxonomy][concept]
+        observations = concept_data["units"][unit]
+    except (KeyError, TypeError) as error:
+        raise XbrlFactError(f"Missing {taxonomy}:{concept} in unit {unit}") from error
+    matching = [
+        item
+        for item in observations
+        if item.get("accn") == accession_number and item.get("form") == form
+    ]
+    periods = {(item.get("start"), item.get("end")) for item in matching}
+    facts = []
+    for start, end in periods:
+        facts.append(
+            select_filing_fact(
+                company_facts,
+                taxonomy=taxonomy,
+                concept=concept,
+                unit=unit,
+                accession_number=accession_number,
+                period_start=start,
+                period_end=end,
+            )
+        )
+    return tuple(
+        sorted(facts, key=lambda fact: (fact.period_end, fact.period_start or ""))
+    )

@@ -124,7 +124,9 @@ def _claim_payload(claim: CandidateClaim) -> dict[str, str | None]:
         "taxonomy": claim.taxonomy,
         "concept": claim.concept,
         "unit": claim.unit,
-        "numeric_value": str(claim.numeric_value),
+        "numeric_value": (
+            str(claim.numeric_value) if claim.numeric_value is not None else None
+        ),
         "period_start": claim.period_start,
         "period_end": claim.period_end,
         "accession_number": claim.accession_number,

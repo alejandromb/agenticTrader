@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 
-from agentic_trading.xbrl import XbrlFactError, select_filing_fact
+from agentic_trading.xbrl import XbrlFactError, list_filing_facts, select_filing_fact
 
 
 def company_facts(*observations: dict[str, object]) -> dict[str, object]:
@@ -94,3 +94,30 @@ def test_period_end_selects_current_year_from_comparatives() -> None:
     )
 
     assert fact.value == Decimal("416161000000")
+
+
+def test_lists_comparatives_only_from_exact_filing_context() -> None:
+    facts = company_facts(
+        observation(),
+        observation(start="2023-10-01", end="2024-09-28", val=391035000000),
+        observation(
+            accn="0000320193-24-000123",
+            start="2023-10-01",
+            end="2024-09-28",
+            val=390000000000,
+        ),
+    )
+
+    periods = list_filing_facts(
+        facts,
+        taxonomy="us-gaap",
+        concept="RevenueFromContractWithCustomerExcludingAssessedTax",
+        unit="USD",
+        accession_number="0000320193-25-000079",
+    )
+
+    assert [period.value for period in periods] == [
+        Decimal("391035000000"),
+        Decimal("416161000000"),
+    ]
+    assert all(period.accession_number == "0000320193-25-000079" for period in periods)

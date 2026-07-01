@@ -13,6 +13,7 @@ from agentic_trading.analysis_repository import (
 )
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.claim_repository import CandidateClaim, SqliteClaimRepository
+from agentic_trading.filing_narrative import extract_capital_allocation_statements
 from agentic_trading.financials import (
     extract_available_annual_financial_snapshot,
     infer_annual_period_start,
@@ -86,7 +87,7 @@ class CompanyResearchService:
             state = run.state
 
             claims, evidence_gaps = self._extract_claims(
-                company, filing, run.run_id, source.source_id
+                company, filing, run.run_id, source
             )
             run = runs.transition(
                 run.run_id,
@@ -152,7 +153,7 @@ class CompanyResearchService:
         company: CompanyIdentity,
         filing: FilingMetadata,
         run_id: str,
-        source_id: str,
+        source: SourceDocument,
     ) -> tuple[list[CandidateClaim], tuple[str, ...]]:
         company_facts = self._sec.get_company_facts(company.cik)
         period_start = infer_annual_period_start(
@@ -170,11 +171,30 @@ class CompanyResearchService:
         claims = [
             repository.register_xbrl_fact(
                 run_id=run_id,
-                source_id=source_id,
+                source_id=source.source_id,
                 fact=fact,
             )
             for fact in snapshot.values()
         ]
+        filing_content = Path(source.storage_path).read_bytes()
+        statements = extract_capital_allocation_statements(filing_content)
+        claims.extend(
+            repository.register_filing_statement(
+                run_id=run_id,
+                source_id=source.source_id,
+                statement=statement,
+                topic="capital_allocation_purpose",
+                period_end=filing.report_date,
+                accession_number=filing.accession_number,
+                sequence=sequence,
+            )
+            for sequence, statement in enumerate(statements, start=1)
+        )
+        if "capital_expenditure" in snapshot and not statements:
+            evidence_gaps += (
+                "Capital expenditure purpose was not found in deterministic "
+                "filing extraction",
+            )
         if not claims:
             raise ValueError("No supported annual financial facts were available")
         return claims, evidence_gaps

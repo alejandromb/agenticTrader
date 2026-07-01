@@ -27,7 +27,7 @@ class CandidateClaim:
     concept: str
     label: str
     unit: str
-    numeric_value: Decimal
+    numeric_value: Decimal | None
     period_start: str | None
     period_end: str
     accession_number: str
@@ -83,6 +83,42 @@ class SqliteClaimRepository:
             ).all()
             return [_claim_from_model(model) for model in models]
 
+    def register_filing_statement(
+        self,
+        *,
+        run_id: str,
+        source_id: str,
+        statement: str,
+        topic: str,
+        period_end: str,
+        accession_number: str,
+        sequence: int,
+        claim_id: str | None = None,
+    ) -> CandidateClaim:
+        """Register a deterministic statement extracted from a captured filing."""
+        if not statement.strip():
+            raise ValueError("Filing statement cannot be empty")
+        model = CandidateClaimModel(
+            claim_id=claim_id or str(uuid4()),
+            run_id=run_id,
+            source_id=source_id,
+            claim_type="filing_statement",
+            statement=statement.strip(),
+            taxonomy="sec-filing",
+            concept=f"{topic}_{sequence:03d}",
+            label=topic.replace("_", " ").title(),
+            unit="text",
+            numeric_value=None,
+            period_start=None,
+            period_end=period_end,
+            accession_number=accession_number,
+            extraction_method="sec_filing_narrative_v1",
+            extracted_at=datetime.now(UTC).isoformat(),
+        )
+        with self._sessions.begin() as session:
+            session.add(model)
+        return _claim_from_model(model)
+
 
 def _default_statement(fact: FilingFact) -> str:
     return (
@@ -102,7 +138,9 @@ def _claim_from_model(model: CandidateClaimModel) -> CandidateClaim:
         concept=model.concept,
         label=model.label,
         unit=model.unit,
-        numeric_value=Decimal(model.numeric_value),
+        numeric_value=(
+            Decimal(model.numeric_value) if model.numeric_value is not None else None
+        ),
         period_start=model.period_start,
         period_end=model.period_end,
         accession_number=model.accession_number,

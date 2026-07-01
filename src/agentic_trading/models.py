@@ -99,7 +99,7 @@ class CandidateClaimModel(Base):
     concept: Mapped[str] = mapped_column(String, nullable=False)
     label: Mapped[str] = mapped_column(String, nullable=False)
     unit: Mapped[str] = mapped_column(String, nullable=False)
-    numeric_value: Mapped[str] = mapped_column(String, nullable=False)
+    numeric_value: Mapped[str | None] = mapped_column(String)
     period_start: Mapped[str | None] = mapped_column(String)
     period_end: Mapped[str] = mapped_column(String, nullable=False)
     accession_number: Mapped[str] = mapped_column(String, nullable=False)
