@@ -67,15 +67,43 @@ def test_adapter_uses_structured_responses_and_validates_claims() -> None:
 
     assert result.analysis == analysis
     assert result.provider_response_id == "response-001"
-    assert result.prompt_version == "1.4.0"
+    assert result.prompt_version == "1.5.0"
     assert result.input_claim_ids == ("claim-001",)
     assert result.evidence_gaps == ()
     assert responses.arguments["model"] == "test-model"
     assert responses.arguments["text_format"] is FinancialAnalysis
     assert "Use cash_allocation" in responses.arguments["instructions"]
     assert "Use trends" in responses.arguments["instructions"]
+    assert "Use known_limitations" in responses.arguments["instructions"]
     payload = json.loads(responses.arguments["input"])
     assert payload["candidate_claims"][0]["claim_id"] == "claim-001"
+
+
+def test_adapter_cannot_omit_known_evidence_gaps() -> None:
+    analysis = FinancialAnalysis(
+        assessment="insufficient",
+        summary="Evidence is incomplete.",
+        strengths=[],
+        concerns=[],
+        uncertainties=[
+            AnalysisPoint(text="Debt evidence is missing.", claim_ids=["claim-001"])
+        ],
+        known_limitations=["Management guidance was not verified."],
+    )
+    adapter = OpenAIFinancialAnalysisAdapter(
+        client=SimpleNamespace(responses=FakeResponses(analysis)), model="test-model"
+    )
+
+    result = adapter.analyze(
+        question="Assess financial condition",
+        claims=[claim()],
+        evidence_gaps=["Missing total liabilities"],
+    )
+
+    assert result.analysis.known_limitations == [
+        "Management guidance was not verified.",
+        "Missing total liabilities",
+    ]
 
 
 def test_unknown_claim_reference_is_rejected() -> None:

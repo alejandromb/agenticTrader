@@ -24,6 +24,7 @@ class FinancialAnalysis(BaseModel):
     uncertainties: list[AnalysisPoint]
     cash_allocation: list[AnalysisPoint] = Field(default_factory=list)
     trends: list[AnalysisPoint] = Field(default_factory=list)
+    known_limitations: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def require_content(self) -> FinancialAnalysis:

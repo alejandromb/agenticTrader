@@ -10,7 +10,7 @@ Architecture and project foundation.
 
 ## Active objective
 
-Validate cash-allocation analysis and begin multi-period financial comparisons.
+Surface revision audits and explicit analysis limitations.
 
 ## Completed
 
@@ -77,6 +77,8 @@ Validate cash-allocation analysis and begin multi-period financial comparisons.
   all gates passed and the artifact scored 12/12.
 - Added a supported common-stock dividend XBRL alias discovered during the live
   evaluation.
+- Added a deterministic known-limitations section that always includes every
+  persisted evidence gap; prompt version is now 1.5.
 
 ## Accepted decisions
 
@@ -89,6 +91,7 @@ Validate cash-allocation analysis and begin multi-period financial comparisons.
 - ADR-0007: Use a Python 3.12 local-first implementation stack.
 - ADR-0008: Use OpenAI Responses with structured analysis output.
 - ADR-0009: Preserve filing context in multi-period comparisons and revisions.
+- ADR-0010: Require measured evidence before adopting additional complexity.
 
 ## Open questions
 
@@ -110,11 +113,6 @@ metadata, including for an already cached base image.
 
 ## Resume here
 
-Start by designing multi-period and restatement semantics, then validate prompt
-v1.2 on a fresh run. Never display or persist the API key.
-
-## Working-tree note
-
-The Apple evaluation is checkpointed through `a062e52`. The Walmart evaluation,
-one-command workflow, evidence-gap persistence, and saved-run views are pending
-the next commit.
+Implement visible cross-filing revision-audit artifacts, then deterministic
+growth calculations. Keep version one limited to research; never display or
+persist the API key.

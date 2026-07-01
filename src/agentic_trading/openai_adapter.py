@@ -14,7 +14,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
-FINANCIAL_PROMPT_VERSION = "1.4.0"
+FINANCIAL_PROMPT_VERSION = "1.5.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -52,6 +52,12 @@ being compared. Calculate absolute or percentage changes only from cited input
 claims. Do not describe a one-period value as a trend, infer a missing period,
 or mix filing accessions without explicitly identifying a cross-filing
 revision."""
+
+INSTRUCTIONS += """
+Use known_limitations to state what could not be verified from the supplied
+evidence. Include every known evidence gap without weakening or silently
+resolving it. Limitations are not negative conclusions; they define the boundary
+of what this analysis can support."""
 
 
 class AnalysisGenerationError(RuntimeError):
@@ -115,6 +121,15 @@ class OpenAIFinancialAnalysisAdapter:
             raise AnalysisGenerationError(
                 f"Analysis referenced unknown claims: {references}"
             )
+        limitations = tuple(
+            dict.fromkeys(
+                [
+                    *(item.strip() for item in analysis.known_limitations),
+                    *(item.strip() for item in evidence_gaps),
+                ]
+            )
+        )
+        analysis = analysis.model_copy(update={"known_limitations": list(limitations)})
         return GeneratedFinancialAnalysis(
             analysis=analysis,
             model=self.model,

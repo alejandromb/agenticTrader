@@ -429,3 +429,9 @@ def _print_run(run: object, claims: list[object], artifact: object | None) -> No
         print(f"{title}:")
         for point in points:
             print(f"  - {point.text}")
+    print("Known limitations:")
+    if artifact.analysis.known_limitations:
+        for limitation in artifact.analysis.known_limitations:
+            print(f"  - {limitation}")
+    else:
+        print("  - No known evidence gaps were recorded.")
