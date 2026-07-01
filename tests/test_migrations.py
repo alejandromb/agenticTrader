@@ -1,0 +1,26 @@
+from __future__ import annotations
+
+import sqlite3
+from pathlib import Path
+
+from agentic_trading.migrations import upgrade_database
+
+
+def test_upgrade_database_creates_versioned_schema(tmp_path: Path) -> None:
+    database = tmp_path / "state" / "agentic-trading.db"
+
+    upgrade_database(database)
+
+    with sqlite3.connect(database) as connection:
+        tables = {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+        version = connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone()
+
+    assert {"alembic_version", "research_runs", "transition_events"} <= tables
+    assert version == ("20260630_0001",)

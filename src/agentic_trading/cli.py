@@ -9,6 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from agentic_trading.artifacts import LocalArtifactStore
+from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.sec import SecClient
 from agentic_trading.validation import validate_memo_files
@@ -100,12 +101,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps(value, sort_keys=True))
         return 0
 
-    repository = SqliteRunRepository(args.database)
-    repository.initialize()
-
     if args.command == "init-db":
+        upgrade_database(args.database)
         print(f"Initialized workflow database: {args.database}")
         return 0
+
+    repository = SqliteRunRepository(args.database)
+    repository.initialize()
 
     if args.command == "create-run":
         run = repository.create_run(memo_id=args.memo_id, as_of=args.as_of)

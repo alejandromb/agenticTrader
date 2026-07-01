@@ -1,15 +1,16 @@
-"""SQLite persistence for research runs and append-only transition events."""
+"""SQLAlchemy persistence for research runs and transition events."""
 
 from __future__ import annotations
 
-import sqlite3
-from collections.abc import Iterator
-from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+from sqlalchemy import URL, Engine, create_engine, event, select, update
+from sqlalchemy.orm import sessionmaker
+
+from agentic_trading.models import Base, ResearchRunModel, TransitionEventModel
 from agentic_trading.workflow import WorkflowState, can_transition
 
 
@@ -47,40 +48,20 @@ class TransitionEvent:
 
 
 class SqliteRunRepository:
-    """Persist workflow runs in a local SQLite database."""
+    """Persist workflow runs through SQLAlchemy using a local SQLite database."""
 
     def __init__(self, database_path: Path) -> None:
         self._database_path = database_path
+        self._engine = _create_sqlite_engine(database_path)
+        self._sessions = sessionmaker(self._engine, expire_on_commit=False)
 
     def initialize(self) -> None:
-        """Create repository tables when they do not exist."""
+        """Create tables for local bootstrap and tests.
+
+        Deployed schema upgrades are managed by Alembic migrations.
+        """
         self._database_path.parent.mkdir(parents=True, exist_ok=True)
-        with self._connect() as connection:
-            connection.executescript(
-                """
-                CREATE TABLE IF NOT EXISTS research_runs (
-                    run_id TEXT PRIMARY KEY,
-                    memo_id TEXT NOT NULL UNIQUE,
-                    workflow_version TEXT NOT NULL,
-                    state TEXT NOT NULL,
-                    as_of TEXT NOT NULL,
-                    created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
-                );
-
-                CREATE TABLE IF NOT EXISTS transition_events (
-                    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    run_id TEXT NOT NULL REFERENCES research_runs(run_id),
-                    from_state TEXT,
-                    to_state TEXT NOT NULL,
-                    occurred_at TEXT NOT NULL,
-                    reason TEXT
-                );
-
-                CREATE INDEX IF NOT EXISTS transition_events_run_id
-                    ON transition_events(run_id, event_id);
-                """
-            )
+        Base.metadata.create_all(self._engine)
 
     def create_run(
         self,
@@ -93,43 +74,35 @@ class SqliteRunRepository:
         """Create a draft run and its initial append-only event."""
         identifier = run_id or str(uuid4())
         occurred_at = _utc_now()
-        with self._transaction() as connection:
-            connection.execute(
-                """
-                INSERT INTO research_runs (
-                    run_id, memo_id, workflow_version, state, as_of,
-                    created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    identifier,
-                    memo_id,
-                    workflow_version,
-                    WorkflowState.DRAFT,
-                    as_of,
-                    occurred_at,
-                    occurred_at,
-                ),
+        model = ResearchRunModel(
+            run_id=identifier,
+            memo_id=memo_id,
+            workflow_version=workflow_version,
+            state=WorkflowState.DRAFT,
+            as_of=as_of,
+            created_at=occurred_at,
+            updated_at=occurred_at,
+        )
+        with self._sessions.begin() as session:
+            session.add(model)
+            session.add(
+                TransitionEventModel(
+                    run_id=identifier,
+                    from_state=None,
+                    to_state=WorkflowState.DRAFT,
+                    occurred_at=occurred_at,
+                    reason="run_created",
+                )
             )
-            connection.execute(
-                """
-                INSERT INTO transition_events (
-                    run_id, from_state, to_state, occurred_at, reason
-                ) VALUES (?, NULL, ?, ?, ?)
-                """,
-                (identifier, WorkflowState.DRAFT, occurred_at, "run_created"),
-            )
-        return self.get_run(identifier)
+        return _run_from_model(model)
 
     def get_run(self, run_id: str) -> ResearchRun:
         """Return a run by ID."""
-        with self._connect() as connection:
-            row = connection.execute(
-                "SELECT * FROM research_runs WHERE run_id = ?", (run_id,)
-            ).fetchone()
-        if row is None:
-            raise RunNotFoundError(run_id)
-        return _run_from_row(row)
+        with self._sessions() as session:
+            model = session.get(ResearchRunModel, run_id)
+            if model is None:
+                raise RunNotFoundError(run_id)
+            return _run_from_model(model)
 
     def transition(
         self,
@@ -146,93 +119,84 @@ class SqliteRunRepository:
             )
 
         occurred_at = _utc_now()
-        with self._transaction() as connection:
-            cursor = connection.execute(
-                """
-                UPDATE research_runs
-                SET state = ?, updated_at = ?
-                WHERE run_id = ? AND state = ?
-                """,
-                (target_state, occurred_at, run_id, expected_state),
+        with self._sessions.begin() as session:
+            result = session.execute(
+                update(ResearchRunModel)
+                .where(
+                    ResearchRunModel.run_id == run_id,
+                    ResearchRunModel.state == expected_state,
+                )
+                .values(state=target_state, updated_at=occurred_at)
             )
-            if cursor.rowcount != 1:
-                actual = connection.execute(
-                    "SELECT state FROM research_runs WHERE run_id = ?", (run_id,)
-                ).fetchone()
+            if result.rowcount != 1:
+                actual = session.scalar(
+                    select(ResearchRunModel.state).where(
+                        ResearchRunModel.run_id == run_id
+                    )
+                )
                 if actual is None:
                     raise RunNotFoundError(run_id)
                 raise ConcurrentTransitionError(
-                    f"Expected {expected_state}, found {actual['state']}"
+                    f"Expected {expected_state}, found {actual}"
                 )
-            connection.execute(
-                """
-                INSERT INTO transition_events (
-                    run_id, from_state, to_state, occurred_at, reason
-                ) VALUES (?, ?, ?, ?, ?)
-                """,
-                (run_id, expected_state, target_state, occurred_at, reason),
+            session.add(
+                TransitionEventModel(
+                    run_id=run_id,
+                    from_state=expected_state,
+                    to_state=target_state,
+                    occurred_at=occurred_at,
+                    reason=reason,
+                )
             )
         return self.get_run(run_id)
 
     def list_events(self, run_id: str) -> list[TransitionEvent]:
         """Return transition history in append order."""
         self.get_run(run_id)
-        with self._connect() as connection:
-            rows = connection.execute(
-                """
-                SELECT * FROM transition_events
-                WHERE run_id = ? ORDER BY event_id
-                """,
-                (run_id,),
-            ).fetchall()
-        return [_event_from_row(row) for row in rows]
+        with self._sessions() as session:
+            models = session.scalars(
+                select(TransitionEventModel)
+                .where(TransitionEventModel.run_id == run_id)
+                .order_by(TransitionEventModel.event_id)
+            ).all()
+            return [_event_from_model(model) for model in models]
 
-    @contextmanager
-    def _connect(self) -> Iterator[sqlite3.Connection]:
-        connection = sqlite3.connect(self._database_path)
-        connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA foreign_keys = ON")
-        try:
-            yield connection
-        finally:
-            connection.close()
 
-    @contextmanager
-    def _transaction(self) -> Iterator[sqlite3.Connection]:
-        with self._connect() as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            try:
-                yield connection
-            except Exception:
-                connection.rollback()
-                raise
-            else:
-                connection.commit()
+def _create_sqlite_engine(database_path: Path) -> Engine:
+    database_path.parent.mkdir(parents=True, exist_ok=True)
+    engine = create_engine(URL.create("sqlite", database=str(database_path)))
+
+    @event.listens_for(engine, "connect")
+    def enable_foreign_keys(connection: object, _: object) -> None:
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA foreign_keys = ON")
+        cursor.close()
+
+    return engine
 
 
 def _utc_now() -> str:
     return datetime.now(UTC).isoformat()
 
 
-def _run_from_row(row: sqlite3.Row) -> ResearchRun:
+def _run_from_model(model: ResearchRunModel) -> ResearchRun:
     return ResearchRun(
-        run_id=row["run_id"],
-        memo_id=row["memo_id"],
-        workflow_version=row["workflow_version"],
-        state=WorkflowState(row["state"]),
-        as_of=row["as_of"],
-        created_at=row["created_at"],
-        updated_at=row["updated_at"],
+        run_id=model.run_id,
+        memo_id=model.memo_id,
+        workflow_version=model.workflow_version,
+        state=WorkflowState(model.state),
+        as_of=model.as_of,
+        created_at=model.created_at,
+        updated_at=model.updated_at,
     )
 
 
-def _event_from_row(row: sqlite3.Row) -> TransitionEvent:
-    from_state = row["from_state"]
+def _event_from_model(model: TransitionEventModel) -> TransitionEvent:
     return TransitionEvent(
-        event_id=row["event_id"],
-        run_id=row["run_id"],
-        from_state=WorkflowState(from_state) if from_state else None,
-        to_state=WorkflowState(row["to_state"]),
-        occurred_at=row["occurred_at"],
-        reason=row["reason"],
+        event_id=model.event_id,
+        run_id=model.run_id,
+        from_state=WorkflowState(model.from_state) if model.from_state else None,
+        to_state=WorkflowState(model.to_state),
+        occurred_at=model.occurred_at,
+        reason=model.reason,
     )

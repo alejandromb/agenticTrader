@@ -25,6 +25,8 @@ way to resume work after an interruption.
 - Implemented tested memo validation and SEC filing discovery.
 - Implemented durable SQLite workflow state and append-only transitions.
 - Added the local CLI and content-addressed artifact storage.
+- Replaced direct SQLite access with SQLAlchemy 2 ORM models and adopted Alembic
+  migrations for maintainability.
 - Verified live SEC filing discovery. Live document retrieval returned HTTP 403
   without a real owner contact in the User-Agent.
 

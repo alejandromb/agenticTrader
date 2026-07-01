@@ -17,6 +17,8 @@ The initial application will use:
 - Python 3.12 or newer;
 - a standard `pyproject.toml` package with source under `src/`;
 - JSON Schema as the persisted artifact contract;
+- SQLAlchemy 2 as the persistence ORM and repository implementation;
+- Alembic for versioned database migrations;
 - SQLite for local workflow state and artifact metadata;
 - the local filesystem for development evidence artifacts;
 - `pytest` for tests and `ruff` for linting and formatting; and
@@ -36,6 +38,9 @@ working and their requirements are concrete.
 - The implementation aligns with the financial-data and AI tooling ecosystem.
 - Local setup and debugging remain simple.
 - SQLite supports durable workflow checkpoints without an external service.
+- Typed ORM models keep persistence code maintainable and preserve a practical
+  path to PostgreSQL.
+- Database schema changes require reviewed Alembic migrations.
 - Deployment and multi-user concerns are intentionally postponed.
 - Code must avoid depending on SQLite-specific behavior at domain boundaries.
 - Python and dependency versions must be locked before reproducible deployment.

@@ -27,6 +27,8 @@ Complete live SEC filing capture using an identifying contact in the User-Agent.
 - Implemented memo schema and semantic validation with tests.
 - Implemented the first SEC submissions and filing-discovery client with tests.
 - Implemented durable SQLite runs and append-only workflow transitions.
+- Replaced direct SQLite access with SQLAlchemy 2 ORM models and added the
+  initial Alembic migration.
 - Added a CLI for memo validation, SEC discovery, and workflow state operations.
 - Added content-addressed local artifact storage with integrity verification.
 - Verified live Apple filing discovery against SEC submissions data.
