@@ -1,0 +1,181 @@
+{
+  "schema_version": "1.0.0",
+  "memo_id": "memo-aapl-2025-example",
+  "created_at": "2026-06-30T16:00:00Z",
+  "as_of": "2025-10-31T23:59:59Z",
+  "subject": {
+    "ticker": "AAPL",
+    "company_name": "Apple Inc.",
+    "exchange": "Nasdaq",
+    "security_id": "CIK-0000320193"
+  },
+  "question": "Does Apple merit further investigation as a long-term investment based on fiscal 2025 operating evidence?",
+  "horizon": {
+    "label": "Long term",
+    "minimum_years": 3
+  },
+  "executive_view": {
+    "thesis": "Apple's fiscal 2025 sales and services growth support further research into the durability of its ecosystem economics.",
+    "counter_thesis": "Geographic weakness, hardware concentration, supply-chain exposure, and an incomplete valuation case prevent an investment conclusion.",
+    "conclusion": "The evidence supports continued investigation, not a portfolio decision.",
+    "claim_ids": ["claim-001", "claim-002", "claim-004", "claim-006", "claim-008"]
+  },
+  "sections": {
+    "business": {
+      "summary": "Apple combines hardware categories with a growing services business, but iPhone remains its largest reported sales category.",
+      "claim_ids": ["claim-002", "claim-005"]
+    },
+    "financials": {
+      "summary": "Fiscal 2025 net sales and net income increased from fiscal 2024, while Greater China sales declined.",
+      "claim_ids": ["claim-001", "claim-003", "claim-004", "claim-006"]
+    },
+    "valuation": {
+      "summary": "This fixture does not reach a valuation conclusion because it intentionally excludes market-price and forecast evidence.",
+      "claim_ids": ["claim-008"]
+    },
+    "risks": {
+      "summary": "Material risks include hardware-category concentration, Greater China weakness, and reliance on geographically concentrated manufacturing partners.",
+      "claim_ids": ["claim-005", "claim-006", "claim-007"]
+    }
+  },
+  "claims": [
+    {
+      "claim_id": "claim-001",
+      "type": "fact",
+      "statement": "Apple reported fiscal 2025 net sales of $416.161 billion, compared with $391.035 billion in fiscal 2024.",
+      "evidence_ids": ["evidence-001"],
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim-002",
+      "type": "fact",
+      "statement": "Apple reported fiscal 2025 Services net sales of $109.158 billion, up 14% year over year.",
+      "evidence_ids": ["evidence-001"],
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim-003",
+      "type": "calculation",
+      "statement": "Apple's fiscal 2025 total net sales grew approximately 6.43% from fiscal 2024.",
+      "input_claim_ids": ["claim-001"],
+      "method": "((416.161 - 391.035) / 391.035) * 100",
+      "result": {
+        "value": 6.4255,
+        "unit": "percent"
+      },
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim-004",
+      "type": "fact",
+      "statement": "Apple reported fiscal 2025 net income of $112.010 billion, compared with $93.736 billion in fiscal 2024.",
+      "evidence_ids": ["evidence-002"],
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim-005",
+      "type": "calculation",
+      "statement": "iPhone represented approximately 50.36% of Apple's fiscal 2025 net sales.",
+      "input_claim_ids": ["claim-001", "claim-009"],
+      "method": "(209.586 / 416.161) * 100",
+      "result": {
+        "value": 50.3618,
+        "unit": "percent"
+      },
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim-006",
+      "type": "fact",
+      "statement": "Greater China net sales decreased from $66.952 billion in fiscal 2024 to $64.377 billion in fiscal 2025.",
+      "evidence_ids": ["evidence-003"],
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim-007",
+      "type": "fact",
+      "statement": "Apple reported that a significant majority of manufacturing is performed by outsourcing partners across several Asian countries.",
+      "evidence_ids": ["evidence-004"],
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim-008",
+      "type": "opinion",
+      "statement": "The available fixture evidence is insufficient for a valuation or portfolio conclusion.",
+      "rationale": "No market-price, forecast, discount-rate, or comparable-company evidence is included.",
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim-009",
+      "type": "fact",
+      "statement": "Apple reported fiscal 2025 iPhone net sales of $209.586 billion.",
+      "evidence_ids": ["evidence-001"],
+      "confidence": "high"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "evidence-001",
+      "source_type": "regulatory_filing",
+      "title": "Apple Inc. 2025 Form 10-K",
+      "publisher": "U.S. Securities and Exchange Commission",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+      "published_at": "2025-10-31T00:00:00Z",
+      "retrieved_at": "2026-06-30T16:00:00Z",
+      "locator": "Item 7, Products and Services Performance, page 23",
+      "support": "Fiscal 2025 values in USD millions: iPhone 209586; Services 109158; total net sales 416161. Fiscal 2024 total net sales: 391035.",
+      "source_identifier": "SEC accession 0000320193-25-000079"
+    },
+    {
+      "evidence_id": "evidence-002",
+      "source_type": "regulatory_filing",
+      "title": "Apple Inc. 2025 Form 10-K",
+      "publisher": "U.S. Securities and Exchange Commission",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+      "published_at": "2025-10-31T00:00:00Z",
+      "retrieved_at": "2026-06-30T16:00:00Z",
+      "locator": "Consolidated Statements of Operations, page 31",
+      "support": "Net income in USD millions: fiscal 2025 112010; fiscal 2024 93736.",
+      "source_identifier": "SEC accession 0000320193-25-000079"
+    },
+    {
+      "evidence_id": "evidence-003",
+      "source_type": "regulatory_filing",
+      "title": "Apple Inc. 2025 Form 10-K",
+      "publisher": "U.S. Securities and Exchange Commission",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+      "published_at": "2025-10-31T00:00:00Z",
+      "retrieved_at": "2026-06-30T16:00:00Z",
+      "locator": "Item 7, Segment Operating Performance, page 22",
+      "support": "Greater China net sales in USD millions: fiscal 2025 64377; fiscal 2024 66952.",
+      "source_identifier": "SEC accession 0000320193-25-000079"
+    },
+    {
+      "evidence_id": "evidence-004",
+      "source_type": "regulatory_filing",
+      "title": "Apple Inc. 2025 Form 10-K",
+      "publisher": "U.S. Securities and Exchange Commission",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+      "published_at": "2025-10-31T00:00:00Z",
+      "retrieved_at": "2026-06-30T16:00:00Z",
+      "locator": "Item 1A, Supply Chain Risks, page 11",
+      "support": "Manufacturing reliance is concentrated among outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan, and Vietnam.",
+      "source_identifier": "SEC accession 0000320193-25-000079"
+    }
+  ],
+  "uncertainties": [
+    {
+      "description": "No market-price or forward-estimate evidence is included.",
+      "impact": "The memo cannot assess valuation or expected return.",
+      "resolution": "Add price-as-of evidence and explicit forecast scenarios in a later fixture."
+    },
+    {
+      "description": "The fixture relies on a single regulatory filing.",
+      "impact": "Management-reported information has not been triangulated with independent evidence.",
+      "resolution": "Add approved independent industry and market-data sources after the source policy is accepted."
+    }
+  ],
+  "human_disposition": {
+    "status": "undecided"
+  }
+}

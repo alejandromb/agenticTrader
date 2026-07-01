@@ -18,6 +18,11 @@ way to resume work after an interruption.
 - Scoped version one as a research copilot for long-term fundamental analysis
   of U.S. publicly traded equities.
 - Defined the structured investment-memo and claim-level evidence contracts.
+- Created an Apple fiscal 2025 memo fixture and refined the schema from it.
+- Adopted a primary-source-first evidence and acquisition policy.
+- Adopted a deterministic, resumable research workflow.
+- Selected and scaffolded the Python 3.12 local-first stack.
+- Implemented tested memo validation and SEC filing discovery.
 
 ## Decisions
 
@@ -25,6 +30,9 @@ way to resume work after an interruption.
 - ADR-0002: Maintain persistent project state and session logs.
 - ADR-0003: Scope version one as a U.S. equities research copilot.
 - ADR-0004: Use structured memos with claim-level evidence.
+- ADR-0005: Adopt a primary-source-first evidence policy.
+- ADR-0006: Use a deterministic, resumable research workflow.
+- ADR-0007: Use a Python 3.12 local-first implementation stack.
 
 ## Files added or updated
 
@@ -36,6 +44,17 @@ way to resume work after an interruption.
 - `docs/decisions/0004-structured-memos-and-claim-level-evidence.md`
 - `docs/contracts/investment-memo.md`
 - `schemas/investment-memo-v1.schema.json`
+- `examples/investment-memos/aapl-2025-example.json`
+- `docs/decisions/0005-source-quality-and-acquisition-policy.md`
+- `docs/contracts/source-policy.md`
+- `docs/decisions/0006-deterministic-research-workflow.md`
+- `docs/contracts/research-workflow.md`
+- `docs/decisions/0007-python-local-first-stack.md`
+- `pyproject.toml`
+- `src/agentic_trading/validation.py`
+- `src/agentic_trading/sec.py`
+- `tests/test_validation.py`
+- `tests/test_sec.py`
 - `docs/sessions/README.md`
 - `docs/sessions/2026-06-30-001-project-foundation.md`
 
@@ -47,17 +66,9 @@ way to resume work after an interruption.
 
 ## Unresolved questions
 
-- Which company should be used for the representative memo fixture?
-- Which public sources and acquisition methods should version one accept?
-- What evidence capture and retention guarantees are required?
-- Should the first implementation use a single workflow or multiple
-  independently evaluated agents?
+- What identifying contact should be used for live SEC requests?
 
 ## Handoff
 
-Next, create a representative memo fixture and define which source types and
-acquisition methods version one will accept.
-
-The first task in the next session is to create that fixture against
-`schemas/investment-memo-v1.schema.json` and revise the contract based on what
-the example reveals.
+Next, implement durable workflow state, add a command-line interface, and run a
+live SEC discovery request after configuring an identifying contact.

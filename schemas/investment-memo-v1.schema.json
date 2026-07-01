@@ -135,6 +135,15 @@
         "evidence_ids": { "$ref": "#/$defs/idList" },
         "input_claim_ids": { "$ref": "#/$defs/idList" },
         "method": { "$ref": "#/$defs/nonEmptyString" },
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value"],
+          "properties": {
+            "value": { "type": "number" },
+            "unit": { "$ref": "#/$defs/nonEmptyString" }
+          }
+        },
         "rationale": { "$ref": "#/$defs/nonEmptyString" },
         "confidence": { "enum": ["low", "medium", "high"] }
       },
@@ -149,7 +158,7 @@
         {
           "if": { "properties": { "type": { "const": "calculation" } }, "required": ["type"] },
           "then": {
-            "required": ["input_claim_ids", "method"],
+            "required": ["input_claim_ids", "method", "result"],
             "properties": { "input_claim_ids": { "minItems": 1 } }
           }
         },
@@ -196,7 +205,8 @@
         "retrieved_at": { "$ref": "#/$defs/dateTime" },
         "locator": { "$ref": "#/$defs/nonEmptyString" },
         "support": { "$ref": "#/$defs/nonEmptyString" },
-        "content_hash": { "$ref": "#/$defs/nonEmptyString" }
+        "content_hash": { "$ref": "#/$defs/nonEmptyString" },
+        "source_identifier": { "$ref": "#/$defs/nonEmptyString" }
       }
     }
   }
