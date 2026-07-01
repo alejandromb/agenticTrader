@@ -1,6 +1,6 @@
 # Experiment 0003: Decision-monitoring signal quality
 
-- Status: Planned
+- Status: Accepted
 - Baseline: Follow-up criteria and alerts are not persisted
 
 ## Hypothesis
@@ -36,3 +36,19 @@ authority.
 If rules are noisy or cannot be reconstructed, keep the underlying research
 decision records and remove the monitoring commands and tables before adding
 automation or delivery integrations.
+
+## Result
+
+- Fixture price-above, price-below, equality, and drawdown cases matched the
+  documented truth conditions.
+- An earlier `as_of` boundary excluded later observations and changed the rule
+  result as expected.
+- Repeating the identical request after constructing a new service instance
+  returned the original evaluation and the same two alerts.
+- Rejected dispositions, malformed rule shapes, unsupported rule types,
+  out-of-range drawdowns, and duplicate acknowledgement attempts failed
+  explicitly.
+- Alert evidence remained immutable; acknowledgement status was derived from a
+  separate append-only event.
+- Static scope review found no model, scheduler, notification, broker, order,
+  or portfolio-mutation dependency in the monitoring module.

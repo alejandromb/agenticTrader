@@ -201,3 +201,31 @@ Run the versioned moving-average simulation with explicit costs:
 Signals use only history available through their signal date and execute on the
 next common observation. Results are analytical artifacts only; they cannot be
 sent to DiveTrader, Alpaca, or another execution system.
+
+## Decision monitoring
+
+After a human completes a research run with `watch` or
+`consider_for_portfolio`, define explicit criteria in a JSON rules file as
+documented in [the Milestone 4 contract](milestone-4.md). Then create and
+evaluate the monitor:
+
+```bash
+.venv/bin/agentic-trading create-monitor YOUR_RUN_ID \
+  --name "Apple follow-up" --rules monitor-rules.json
+
+.venv/bin/agentic-trading evaluate-monitor MONITOR_ID \
+  --dataset DATASET_ID --as-of 2026-06-30
+```
+
+Review open alerts and record a human acknowledgement:
+
+```bash
+.venv/bin/agentic-trading list-alerts --monitor MONITOR_ID --status open
+
+.venv/bin/agentic-trading acknowledge-alert ALERT_ID \
+  --note "Reviewed against the current research memo"
+```
+
+Evaluation does not fetch prices. Import a new immutable dataset first, then
+select it explicitly. An alert is evidence that a human-defined condition was
+met; it is not an investment recommendation and cannot trigger another action.

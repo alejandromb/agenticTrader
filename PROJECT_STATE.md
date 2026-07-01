@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Milestone 4 active
+Session status: Milestone 4 complete
 
 ## Current phase
 
-Milestone 4 deterministic decision monitoring.
+Milestone 4 deterministic decision monitoring accepted.
 
 ## Active objective
 
-Implement ADR-0013 and the Milestone 4 product contract.
+Select the next product goal after accepted Milestone 4.
 
 ## Completed
 
@@ -161,6 +161,9 @@ Implement ADR-0013 and the Milestone 4 product contract.
   unique alerts, and append-only human acknowledgements with derived status.
 - Added CLI workflows for monitor creation, evaluation, alert listing, and
   acknowledgement; the regression suite now covers the complete lifecycle.
+- Accepted the Milestone 4 signal-quality experiment and product contract with
+  restart reconstruction, explicit known limitations, and no automation or
+  execution integration.
 
 ## Accepted decisions
 
@@ -185,14 +188,14 @@ Implement ADR-0013 and the Milestone 4 product contract.
 
 ## Blockers
 
-None for the documented Version 2 local workflow. Docker image execution
+None for the documented Milestone 4 local workflow. Docker image execution
 remains a non-blocking environment follow-up because the local daemon previously
 stalled while resolving image metadata.
 
 ## Next actions
 
-1. Run the Milestone 4 signal-quality acceptance evaluation.
-2. Document known limitations and finalize Milestone 4 acceptance.
+1. Select and record the next product goal under ADR-0010 before adding another
+   data source, model, scheduler, notification channel, or execution capability.
 
 ## Future integration note
 
@@ -204,5 +207,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Begin with the Milestone 4 acceptance audit and fixture truth table. Keep
-scheduling, notifications, models, DiveTrader, and execution out of scope.
+Milestone 4 is complete. Begin by choosing a measured next product goal. Keep
+DiveTrader and execution separate unless a new ADR defines safety boundaries.

@@ -89,7 +89,8 @@ def test_evaluation_is_as_of_bounded_idempotent_and_creates_unique_alerts(
     evaluation = service.evaluate(
         monitor.monitor_id, dataset_id=dataset.dataset_id, as_of="2025-01-06"
     )
-    repeated = service.evaluate(
+    restarted = SqliteDecisionMonitoring(tmp_path / "state.db", tmp_path / "artifacts")
+    repeated = restarted.evaluate(
         monitor.monitor_id, dataset_id=dataset.dataset_id, as_of="2025-01-06"
     )
 
@@ -99,7 +100,7 @@ def test_evaluation_is_as_of_bounded_idempotent_and_creates_unique_alerts(
     assert by_rule["material-drawdown"]["triggered"] is True
     assert by_rule["strict-equality"]["triggered"] is False
     assert by_rule["price-floor"]["observation_date"] == "2025-01-06"
-    alerts = service.list_alerts(monitor_id=monitor.monitor_id)
+    alerts = restarted.list_alerts(monitor_id=monitor.monitor_id)
     assert len(alerts) == 2
     assert {alert.rule_id for alert in alerts} == {
         "price-floor",

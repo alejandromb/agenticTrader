@@ -114,3 +114,13 @@ backtesting. It remains disconnected from brokers and cannot place or propose
 orders. All inputs, parameters, strategy versions, and results are persisted for
 reconstruction. See [docs/milestone-3.md](docs/milestone-3.md) and the
 [acceptance audit](docs/evaluation/milestone-three-acceptance.md).
+
+## Milestone 4 decision monitoring
+
+Milestone 4 turns eligible human-reviewed decisions into explicit local watch
+criteria. Humans define price or drawdown thresholds; evaluations retain the
+immutable dataset hash and `as_of` boundary; repeated evaluations cannot create
+duplicate alerts; and acknowledgement is a separate human event. Monitoring is
+manual and has no live feed, scheduler, notification delivery, model call, or
+execution path. See [docs/milestone-4.md](docs/milestone-4.md) and the
+[acceptance audit](docs/evaluation/milestone-four-acceptance.md).
