@@ -2,16 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Version one accepted
+Session status: Version two active
 
 ## Current phase
 
-Version-one research copilot accepted.
+Version-two research decision record.
 
 ## Active objective
 
-Maintain the accepted research workflow and evaluate future additions against
-ADR-0010.
+Implement ADR-0011 and the Version 2 product contract.
 
 ## Completed
 
@@ -121,6 +120,7 @@ ADR-0010.
 - ADR-0008: Use OpenAI Responses with structured analysis output.
 - ADR-0009: Preserve filing context in multi-period comparisons and revisions.
 - ADR-0010: Require measured evidence before adopting additional complexity.
+- ADR-0011: Scope version two as a complete research decision record.
 
 ## Open questions
 
@@ -135,9 +135,10 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Validate automatic revision auditing on a live issuer with a known revision.
-2. Propose the next research-only capability through an ADR-0010 experiment.
-3. Revisit Docker runtime validation when the daemon is healthy.
+1. Capture structured business and risk evidence from the selected filing.
+2. Add business-quality and material-risk analysis contracts.
+3. Add deterministic valuation scenarios and sensitivity.
+4. Synthesize the canonical memo and human disposition record.
 
 ## Future integration note
 
@@ -149,6 +150,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Version one is accepted. Begin future work only from an explicit, measurable
-research objective. Keep execution out of scope and never display or persist the
-API key.
+Begin with business/risk evidence contracts and fixtures under ADR-0011. Keep
+execution out of scope and never display or persist the API key.

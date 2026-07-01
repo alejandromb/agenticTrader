@@ -24,6 +24,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0008](0008-openai-structured-analysis-adapter.md) | Use OpenAI Responses with structured analysis output | Accepted |
 | [0009](0009-multi-period-and-restatement-semantics.md) | Preserve filing context in multi-period comparisons | Accepted |
 | [0010](0010-evidence-before-complexity.md) | Require evidence before adopting additional complexity | Accepted |
+| [0011](0011-version-two-research-decision-record.md) | Scope version two as a complete research decision record | Accepted |
 
 ## Convention
 

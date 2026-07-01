@@ -78,3 +78,13 @@ version one. The governing decisions are in `docs/decisions/`.
 
 The detailed view shows evidence claims, calculation formulas and input IDs,
 cross-filing revision audits, structured analysis, and known limitations.
+
+## Version 2 roadmap
+
+Version two is the complete research decision record: source-linked business and
+risk analysis, deterministic valuation scenarios, bull/base/bear cases,
+devil's-advocate challenge, a canonical investment memo, and a separately
+recorded human disposition. See [docs/version-2.md](docs/version-2.md).
+
+Portfolio analytics, backtesting, automation, and broker execution remain out
+of scope.
