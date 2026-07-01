@@ -218,3 +218,16 @@ class InvestmentMemoArtifactModel(Base):
     schema_version: Mapped[str] = mapped_column(String, nullable=False)
     content_json: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class HumanDispositionEventModel(Base):
+    __tablename__ = "human_disposition_events"
+
+    event_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("research_runs.run_id"), nullable=False, unique=True
+    )
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    rationale: Mapped[str | None] = mapped_column(String)
+    actor: Mapped[str] = mapped_column(String, nullable=False)
+    decided_at: Mapped[str] = mapped_column(String, nullable=False)

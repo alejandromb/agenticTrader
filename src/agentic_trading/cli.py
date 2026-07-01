@@ -14,6 +14,10 @@ from dotenv import load_dotenv
 from agentic_trading.analysis_repository import SqliteAnalysisRepository
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.claim_repository import SqliteClaimRepository
+from agentic_trading.disposition_repository import (
+    ALLOWED_DISPOSITIONS,
+    SqliteDispositionRepository,
+)
 from agentic_trading.financials import extract_annual_financial_snapshot
 from agentic_trading.memo_repository import SqliteInvestmentMemoRepository
 from agentic_trading.migrations import upgrade_database
@@ -118,6 +122,16 @@ def build_parser() -> argparse.ArgumentParser:
     show_run = commands.add_parser("show-run", help="show a saved research run")
     show_run.add_argument("run_id")
     show_run.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+
+    disposition = commands.add_parser(
+        "record-disposition", help="record the human disposition for a memo"
+    )
+    disposition.add_argument("run_id")
+    disposition.add_argument("status", choices=sorted(ALLOWED_DISPOSITIONS))
+    disposition.add_argument("--rationale")
+    disposition.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
 
@@ -345,8 +359,40 @@ def main(argv: Sequence[str] | None = None) -> int:
         claims = SqliteClaimRepository(args.database).list_for_run(run.run_id)
         analysis = SqliteAnalysisRepository(args.database).latest_for_run(run.run_id)
         memo = SqliteInvestmentMemoRepository(args.database).latest_for_run(run.run_id)
+        disposition = SqliteDispositionRepository(args.database).for_run(run.run_id)
         audits = SqliteRevisionAuditRepository(args.database).list_for_run(run.run_id)
-        _print_run(run, claims, analysis, audits, memo)
+        _print_run(run, claims, analysis, audits, memo, disposition)
+        return 0
+
+    if args.command == "record-disposition":
+        run = repository.get_run(args.run_id)
+        if run.state is not WorkflowState.AWAITING_HUMAN_DISPOSITION:
+            raise SystemExit(
+                "Disposition requires a run in awaiting_human_disposition state"
+            )
+        event = SqliteDispositionRepository(args.database).record(
+            run_id=run.run_id,
+            status=args.status,
+            rationale=args.rationale,
+        )
+        completed = repository.transition(
+            run.run_id,
+            expected_state=WorkflowState.AWAITING_HUMAN_DISPOSITION,
+            target_state=WorkflowState.COMPLETE,
+            reason="human_disposition_recorded",
+        )
+        print(
+            json.dumps(
+                {
+                    "decided_at": event.decided_at,
+                    "rationale": event.rationale,
+                    "run_id": event.run_id,
+                    "state": completed.state,
+                    "status": event.status,
+                },
+                sort_keys=True,
+            )
+        )
         return 0
 
     if args.command == "create-run":
@@ -417,6 +463,7 @@ def _print_run(
     artifact: object | None,
     audits: list[object],
     memo: object | None,
+    disposition: object | None,
 ) -> None:
     print(f"Run: {run.run_id}")
     print(f"State: {run.state}")
@@ -437,7 +484,12 @@ def _print_run(
         print("Investment memo: not available")
     else:
         print(f"Investment memo: {memo.artifact_id}")
-        print(f"Human disposition: {memo.memo['human_disposition']['status']}")
+    if disposition is None:
+        print("Recorded human disposition: undecided")
+    else:
+        print(f"Recorded human disposition: {disposition.status}")
+        if disposition.rationale:
+            print(f"Disposition rationale: {disposition.rationale}")
     if artifact is None:
         print("Analysis: not available")
         return

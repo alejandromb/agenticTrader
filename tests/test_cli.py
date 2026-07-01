@@ -6,6 +6,9 @@ from pathlib import Path
 import pytest
 
 from agentic_trading.cli import main
+from agentic_trading.migrations import upgrade_database
+from agentic_trading.repository import SqliteRunRepository
+from agentic_trading.workflow import WorkflowState
 
 ROOT = Path(__file__).parents[1]
 
@@ -111,3 +114,44 @@ def test_list_and_show_saved_run(
     assert "Cross-filing revision audits: 0" in output
     assert "Investment memo: not available" in output
     assert "Analysis: not available" in output
+
+
+def test_record_disposition_completes_awaiting_run(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    database = tmp_path / "state.db"
+    upgrade_database(database)
+    repository = SqliteRunRepository(database)
+    run = repository.create_run(
+        memo_id="memo-disposition", as_of="2026-01-01T00:00:00Z"
+    )
+    for target in (
+        WorkflowState.COLLECTING_EVIDENCE,
+        WorkflowState.EVIDENCE_READY,
+        WorkflowState.ANALYZING,
+        WorkflowState.CHALLENGING,
+        WorkflowState.SYNTHESIZING,
+        WorkflowState.VALIDATING,
+        WorkflowState.AWAITING_HUMAN_DISPOSITION,
+    ):
+        run = repository.transition(
+            run.run_id, expected_state=run.state, target_state=target
+        )
+
+    assert (
+        main(
+            [
+                "record-disposition",
+                run.run_id,
+                "watch",
+                "--rationale",
+                "Wait for evidence",
+                "--database",
+                str(database),
+            ]
+        )
+        == 0
+    )
+    output = json.loads(capsys.readouterr().out)
+    assert output["status"] == "watch"
+    assert output["state"] == "complete"

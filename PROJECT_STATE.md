@@ -122,6 +122,9 @@ Implement ADR-0011 and the Version 2 product contract.
 - Added deterministic canonical investment-memo synthesis, schema and semantic
   validation, durable ORM persistence, saved-run visibility, and workflow
   progression to `awaiting_human_disposition`.
+- Added the explicit `record-disposition` command and append-only, human-owned
+  disposition event persistence; recording a valid disposition completes the
+  run without mutating the memo.
 
 ## Accepted decisions
 
