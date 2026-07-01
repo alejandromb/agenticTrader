@@ -21,6 +21,8 @@ The initial application will use:
 - Alembic for versioned database migrations;
 - SQLite for local workflow state and artifact metadata;
 - the local filesystem for development evidence artifacts;
+- Docker for a reproducible non-root runtime and Docker Compose for local
+  service configuration and persistent data volumes;
 - `pytest` for tests and `ruff` for linting and formatting; and
 - explicit service and repository boundaries so SQLite and local storage can be
   replaced without changing domain contracts.
@@ -44,6 +46,9 @@ working and their requirements are concrete.
 - Deployment and multi-user concerns are intentionally postponed.
 - Code must avoid depending on SQLite-specific behavior at domain boundaries.
 - Python and dependency versions must be locked before reproducible deployment.
+- Containerized SQLite supports only the single-process version-one topology;
+  concurrent or multi-replica deployment requires a database architecture
+  review.
 
 ## Alternatives considered
 

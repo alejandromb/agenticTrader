@@ -27,6 +27,8 @@ way to resume work after an interruption.
 - Added the local CLI and content-addressed artifact storage.
 - Replaced direct SQLite access with SQLAlchemy 2 ORM models and adopted Alembic
   migrations for maintainability.
+- Added Docker and Compose configuration for reproducible runtime, tests, and
+  persistent local data.
 - Verified live SEC filing discovery. Live document retrieval returned HTTP 403
   without a real owner contact in the User-Agent.
 
@@ -76,6 +78,10 @@ way to resume work after an interruption.
 - Reviewed the Markdown content for internal consistency.
 - Ran `git diff --check` to detect whitespace errors.
 - Parsed the investment-memo JSON Schema successfully with `jq`.
+- Ran the Python test and lint suite after containerization changes: 24 tests
+  pass and Compose configuration validates.
+- Attempted a Docker image build; the local daemon stalled resolving base-image
+  metadata, so container execution validation remains pending.
 
 ## Unresolved questions
 

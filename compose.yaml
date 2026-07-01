@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      target: runtime
+    environment:
+      SEC_USER_AGENT: ${SEC_USER_AGENT:-}
+    volumes:
+      - workflow-data:/app/data
+      - evidence-artifacts:/app/artifacts
+    command: ["--help"]
+
+  test:
+    profiles: ["test"]
+    build:
+      context: .
+      target: development
+    working_dir: /build
+    command: ["pytest"]
+
+volumes:
+  workflow-data:
+  evidence-artifacts:

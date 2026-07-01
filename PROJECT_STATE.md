@@ -29,6 +29,8 @@ Complete live SEC filing capture using an identifying contact in the User-Agent.
 - Implemented durable SQLite runs and append-only workflow transitions.
 - Replaced direct SQLite access with SQLAlchemy 2 ORM models and added the
   initial Alembic migration.
+- Added a non-root Docker runtime, development/test image, and Compose-managed
+  persistent volumes.
 - Added a CLI for memo validation, SEC discovery, and workflow state operations.
 - Added content-addressed local artifact storage with integrity verification.
 - Verified live Apple filing discovery against SEC submissions data.
@@ -53,6 +55,10 @@ Complete live SEC filing capture using an identifying contact in the User-Agent.
 The SEC submissions endpoint accepts the `AgenticTrading/0.1` User-Agent, but
 the SEC Archives filing endpoint returned HTTP 403. A real contact identifier
 must be added to `SEC_USER_AGENT` before retrying live document capture.
+
+Docker and Compose configuration validation passes. Full image execution remains
+to be verified because the local Docker daemon stalled while resolving image
+metadata, including for an already cached base image.
 
 ## Next actions
 
