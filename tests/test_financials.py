@@ -219,3 +219,40 @@ def test_history_keeps_annual_comparatives_from_same_accession() -> None:
         Decimal("391035000000"),
         Decimal("416161000000"),
     ]
+
+
+def test_available_snapshot_uses_supported_dividend_alias() -> None:
+    accession = "0000104169-26-000055"
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "PaymentsOfDividendsCommonStock": {
+                    "label": "Dividends paid",
+                    "units": {
+                        "USD": [
+                            {
+                                "start": "2025-02-01",
+                                "end": "2026-01-31",
+                                "val": 7507000000,
+                                "accn": accession,
+                                "fy": 2026,
+                                "fp": "FY",
+                                "form": "10-K",
+                                "filed": "2026-03-13",
+                            }
+                        ]
+                    },
+                }
+            }
+        }
+    }
+
+    snapshot, gaps = extract_available_annual_financial_snapshot(
+        facts,
+        accession_number=accession,
+        period_start="2025-02-01",
+        period_end="2026-01-31",
+    )
+
+    assert snapshot["dividends_paid"].value == Decimal("7507000000")
+    assert not any("dividends_paid" in gap for gap in gaps)

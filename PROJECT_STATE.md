@@ -73,6 +73,10 @@ Validate cash-allocation analysis and begin multi-period financial comparisons.
   the foundation for multi-period analysis without silent filing-context mixing.
 - Added same-filing annual history extraction, period-aware trend analysis, and
   neutral cross-filing revision detection; prompt version is now 1.4.
+- Live-validated Walmart prompt v1.4 with cash allocation and three-year trends;
+  all gates passed and the artifact scored 12/12.
+- Added a supported common-stock dividend XBRL alias discovered during the live
+  evaluation.
 
 ## Accepted decisions
 
@@ -99,9 +103,9 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Live-validate prompt version 1.4, cash allocation, and trend output.
-2. Persist and surface cross-filing revision audits.
-3. Add deterministic growth calculations and ratio history.
+1. Persist and surface cross-filing revision audits.
+2. Add deterministic growth calculations and ratio history.
+3. Add capital-allocation detail extraction from filing tables.
 4. Validate the Docker image when the local daemon can resolve image metadata.
 
 ## Resume here

@@ -22,6 +22,7 @@ class FinancialMetricSpec:
     required: bool = True
     unit: str = "USD"
     taxonomy: str = "us-gaap"
+    aliases: tuple[str, ...] = ()
 
 
 ANNUAL_FINANCIAL_METRICS = (
@@ -79,6 +80,7 @@ ANNUAL_FINANCIAL_METRICS = (
         concept="PaymentsOfDividends",
         duration=True,
         required=False,
+        aliases=("PaymentsOfDividendsCommonStock",),
     ),
     FinancialMetricSpec(
         name="share_repurchases",
@@ -185,18 +187,17 @@ def extract_available_annual_financial_snapshot(
     snapshot: dict[str, FilingFact] = {}
     gaps: list[str] = []
     for metric in ANNUAL_FINANCIAL_METRICS:
-        try:
-            snapshot[metric.name] = select_filing_fact(
-                company_facts,
-                taxonomy=metric.taxonomy,
-                concept=metric.concept,
-                unit=metric.unit,
-                accession_number=accession_number,
-                period_start=period_start if metric.duration else None,
-                period_end=period_end,
-            )
-        except XbrlFactError:
+        fact = _select_metric_fact(
+            company_facts,
+            metric=metric,
+            accession_number=accession_number,
+            period_start=period_start,
+            period_end=period_end,
+        )
+        if fact is None:
             gaps.append(f"Missing {metric.name} ({metric.taxonomy}:{metric.concept})")
+        else:
+            snapshot[metric.name] = fact
     return snapshot, tuple(gaps)
 
 
@@ -210,15 +211,12 @@ def extract_annual_financial_history(
     """Extract comparable annual periods presented in one exact filing."""
     history: dict[str, tuple[FilingFact, ...]] = {}
     for metric in ANNUAL_FINANCIAL_METRICS:
-        try:
-            facts = list_filing_facts(
-                company_facts,
-                taxonomy=metric.taxonomy,
-                concept=metric.concept,
-                unit=metric.unit,
-                accession_number=accession_number,
-            )
-        except XbrlFactError:
+        facts = _list_metric_facts(
+            company_facts,
+            metric=metric,
+            accession_number=accession_number,
+        )
+        if facts is None:
             continue
         annual = tuple(
             fact
@@ -229,6 +227,50 @@ def extract_annual_financial_history(
         if annual:
             history[metric.name] = annual[-limit:]
     return history
+
+
+def _select_metric_fact(
+    company_facts: dict[str, Any],
+    *,
+    metric: FinancialMetricSpec,
+    accession_number: str,
+    period_start: str,
+    period_end: str,
+) -> FilingFact | None:
+    for concept in (metric.concept, *metric.aliases):
+        try:
+            return select_filing_fact(
+                company_facts,
+                taxonomy=metric.taxonomy,
+                concept=concept,
+                unit=metric.unit,
+                accession_number=accession_number,
+                period_start=period_start if metric.duration else None,
+                period_end=period_end,
+            )
+        except XbrlFactError:
+            continue
+    return None
+
+
+def _list_metric_facts(
+    company_facts: dict[str, Any],
+    *,
+    metric: FinancialMetricSpec,
+    accession_number: str,
+) -> tuple[FilingFact, ...] | None:
+    for concept in (metric.concept, *metric.aliases):
+        try:
+            return list_filing_facts(
+                company_facts,
+                taxonomy=metric.taxonomy,
+                concept=concept,
+                unit=metric.unit,
+                accession_number=accession_number,
+            )
+        except XbrlFactError:
+            continue
+    return None
 
 
 def _matches_annual_shape(fact: FilingFact, *, duration: bool) -> bool:
