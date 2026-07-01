@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Milestone 4 complete
+Session status: Milestone 5 active
 
 ## Current phase
 
-Milestone 4 deterministic decision monitoring accepted.
+Milestone 5 deterministic research-refresh reviews.
 
 ## Active objective
 
-Select the next product goal after accepted Milestone 4.
+Implement ADR-0014 and the Milestone 5 product contract.
 
 ## Completed
 
@@ -164,6 +164,8 @@ Select the next product goal after accepted Milestone 4.
 - Accepted the Milestone 4 signal-quality experiment and product contract with
   restart reconstruction, explicit known limitations, and no automation or
   execution integration.
+- Accepted ADR-0014 and recorded the Milestone 5 research-refresh review
+  contract and fidelity experiment.
 
 ## Accepted decisions
 
@@ -180,6 +182,7 @@ Select the next product goal after accepted Milestone 4.
 - ADR-0011: Scope version two as a complete research decision record.
 - ADR-0012: Scope Milestone 3 as a point-in-time quantitative lab.
 - ADR-0013: Scope Milestone 4 as deterministic decision monitoring.
+- ADR-0014: Scope Milestone 5 as research-refresh reviews.
 
 ## Open questions
 
@@ -194,8 +197,9 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Select and record the next product goal under ADR-0010 before adding another
-   data source, model, scheduler, notification channel, or execution capability.
+1. Add immutable, eligibility-gated research comparison artifacts.
+2. Add deterministic claim, metric, limitation, section, and alert deltas.
+3. Add append-only human review outcomes and acceptance evaluation.
 
 ## Future integration note
 
@@ -207,5 +211,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Milestone 4 is complete. Begin by choosing a measured next product goal. Keep
-DiveTrader and execution separate unless a new ADR defines safety boundaries.
+Begin with persisted research-review identity and strict pair eligibility. Keep
+models, scheduling, notifications, DiveTrader, and execution out of scope.
