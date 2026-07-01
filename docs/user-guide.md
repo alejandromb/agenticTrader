@@ -229,3 +229,31 @@ Review open alerts and record a human acknowledgement:
 Evaluation does not fetch prices. Import a new immutable dataset first, then
 select it explicitly. An alert is evidence that a human-defined condition was
 met; it is not an investment recommendation and cannot trigger another action.
+
+## Research-refresh reviews
+
+After completing newer research for the same ticker, compare it with the prior
+completed run:
+
+```bash
+.venv/bin/agentic-trading compare-research \
+  BASELINE_RUN_ID CURRENT_RUN_ID
+```
+
+The JSON packet identifies exact-period claim changes, explicitly labeled
+period shifts in latest metrics, added/resolved limitations, changed memo
+sections, and baseline-monitor alerts evaluated between the two run boundaries.
+It does not decide whether a change is material or favorable.
+
+Retrieve the packet later and record the human review outcome:
+
+```bash
+.venv/bin/agentic-trading show-research-review REVIEW_ID
+
+.venv/bin/agentic-trading record-review-outcome REVIEW_ID investigate \
+  --rationale "The new debt evidence requires follow-up"
+```
+
+Allowed outcomes are `no_thesis_change`, `revise_thesis`, `investigate`, and
+`close_watch`. These are append-only review records. Even `close_watch` does not
+change a monitor or trigger another workflow.

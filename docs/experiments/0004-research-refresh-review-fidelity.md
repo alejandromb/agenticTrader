@@ -1,6 +1,6 @@
 # Experiment 0004: Research-refresh review fidelity
 
-- Status: Planned
+- Status: Accepted
 - Baseline: Users manually compare complete memos and alert history
 
 ## Hypothesis
@@ -33,3 +33,18 @@ changes while preserving period semantics and human authority.
 If deterministic comparison cannot preserve fiscal-period and lineage semantics,
 remove the review commands/tables while retaining the underlying immutable
 research, monitoring, and human-decision records.
+
+## Result
+
+- Fixture claims appeared exactly once as added, removed, changed, or unchanged
+  under their full economic-period identity.
+- The annual revenue comparison retained both fiscal periods, set
+  `period_shift=true`, and emitted no revision/restatement label.
+- Added, resolved, and case/punctuation-normalized unchanged limitations matched
+  the expected truth table.
+- Only changed section summaries appeared, with reproducible before/after hashes.
+- Only alerts evaluated between the two run boundaries were linked; one open and
+  one acknowledged status were reconstructed from the original records.
+- Repeated comparison after service restart returned the original review.
+- Eligibility failures and a second human outcome failed explicitly, while memo
+  JSON, source hashes, and alert evidence remained byte-for-byte unchanged.

@@ -124,3 +124,13 @@ duplicate alerts; and acknowledgement is a separate human event. Monitoring is
 manual and has no live feed, scheduler, notification delivery, model call, or
 execution path. See [docs/milestone-4.md](docs/milestone-4.md) and the
 [acceptance audit](docs/evaluation/milestone-four-acceptance.md).
+
+## Milestone 5 research-refresh reviews
+
+Milestone 5 compares two completed same-company research records without asking
+a model to judge the change. The persisted packet separates exact-period claim
+changes from cross-period metric movement, identifies limitation and section
+changes, links time-bounded baseline-monitor alerts, and awaits one explicit
+human outcome. It cannot refresh research automatically or mutate a memo,
+monitor, portfolio, or broker. See [docs/milestone-5.md](docs/milestone-5.md) and
+the [acceptance audit](docs/evaluation/milestone-five-acceptance.md).

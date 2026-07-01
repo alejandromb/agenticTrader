@@ -217,6 +217,8 @@ def setup_reviews(tmp_path):
     monitoring.evaluate(
         monitor.monitor_id, dataset_id=dataset.dataset_id, as_of="2025-01-06"
     )
+    alert = monitoring.list_alerts(monitor_id=monitor.monitor_id)[0]
+    monitoring.acknowledge(alert.alert_id, note="Reviewed before research refresh")
     monitoring.evaluate(
         monitor.monitor_id, dataset_id=dataset.dataset_id, as_of="2027-01-06"
     )
@@ -244,6 +246,7 @@ def test_review_preserves_period_semantics_and_all_delta_categories(tmp_path) ->
     metrics = {item["concept"]: item for item in review.content["metric_deltas"]}
     assert metrics["Revenue"]["period_shift"] is True
     assert metrics["Revenue"]["absolute_change"] == "20"
+    assert "revision" not in json.dumps(review.content).lower()
     assert metrics["Cash"]["period_shift"] is False
     assert metrics["Cash"]["absolute_change"] == "5"
 
@@ -256,7 +259,10 @@ def test_review_preserves_period_semantics_and_all_delta_categories(tmp_path) ->
         "sections.financials"
     ]
     assert len(review.content["linked_alerts"]) == 2
-    assert all(item["status"] == "open" for item in review.content["linked_alerts"])
+    assert {item["status"] for item in review.content["linked_alerts"]} == {
+        "acknowledged",
+        "open",
+    }
 
 
 def test_comparison_is_idempotent_and_reconstructable_after_restart(tmp_path) -> None:
@@ -268,6 +274,9 @@ def test_comparison_is_idempotent_and_reconstructable_after_restart(tmp_path) ->
 
     assert repeated == first
     assert restarted.get(first.review_id) == first
+
+    with pytest.raises(ResearchReviewError, match="must differ"):
+        restarted.compare("baseline", "baseline")
 
 
 def test_human_outcome_is_append_only(tmp_path) -> None:
@@ -332,6 +341,17 @@ def test_human_outcome_is_append_only(tmp_path) -> None:
             outcome="no_thesis_change",
             rationale="Second outcome",
         )
+
+
+def test_outcome_validation_fails_explicitly(tmp_path) -> None:
+    database, _ = setup_reviews(tmp_path)
+    reviews = SqliteResearchReviewRepository(database)
+    review = reviews.compare("baseline", "current")
+
+    with pytest.raises(ResearchReviewError, match="Invalid"):
+        reviews.record_outcome(review.review_id, outcome="buy", rationale="Unsupported")
+    with pytest.raises(ResearchReviewError, match="rationale is required"):
+        reviews.record_outcome(review.review_id, outcome="investigate", rationale="   ")
 
 
 def test_complete_cli_review_workflow(tmp_path, capsys) -> None:

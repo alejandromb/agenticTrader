@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Milestone 5 active
+Session status: Milestone 5 complete
 
 ## Current phase
 
-Milestone 5 deterministic research-refresh reviews.
+Milestone 5 deterministic research-refresh reviews accepted.
 
 ## Active objective
 
-Implement ADR-0014 and the Milestone 5 product contract.
+Select the next product goal after accepted Milestone 5.
 
 ## Completed
 
@@ -173,6 +173,9 @@ Implement ADR-0014 and the Milestone 5 product contract.
   alert evidence.
 - Added review retrieval and append-only human outcomes without mutating source
   research, alerts, dispositions, monitors, portfolios, or external systems.
+- Accepted the Milestone 5 fidelity experiment and product contract with full
+  delta-category truth tables, temporal alert boundaries, restart
+  reconstruction, and explicit known limitations.
 
 ## Accepted decisions
 
@@ -204,8 +207,8 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Run the Milestone 5 fidelity and requirement-by-requirement acceptance audit.
-2. Document limitations and finalize the accepted research-review workflow.
+1. Select and record the next measured product goal under ADR-0010 before adding
+   automatic refresh, new data sources, models, scheduling, or execution.
 
 ## Future integration note
 
@@ -217,5 +220,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Begin with the Milestone 5 fidelity audit. Keep models, scheduling,
-notifications, DiveTrader, and execution out of scope.
+Milestone 5 is complete. Begin by choosing a measured next product goal. Keep
+DiveTrader and execution separate unless a new ADR defines safety boundaries.
