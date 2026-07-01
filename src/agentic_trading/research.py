@@ -18,6 +18,7 @@ from agentic_trading.filing_narrative import (
     extract_capital_allocation_statements,
     extract_capital_allocation_table_details,
 )
+from agentic_trading.filing_sections import extract_business_and_risk_evidence
 from agentic_trading.financials import (
     extract_annual_financial_history,
     extract_available_annual_financial_snapshot,
@@ -264,6 +265,27 @@ class CompanyResearchService:
             )
             for sequence, detail in enumerate(details, start=1)
         )
+        section_evidence = extract_business_and_risk_evidence(filing_content)
+        for topic, statements in (
+            ("business_evidence", section_evidence.business),
+            ("risk_evidence", section_evidence.risks),
+        ):
+            claims.extend(
+                repository.register_filing_statement(
+                    run_id=run_id,
+                    source_id=source.source_id,
+                    statement=statement,
+                    topic=topic,
+                    period_end=filing.report_date,
+                    accession_number=filing.accession_number,
+                    sequence=sequence,
+                )
+                for sequence, statement in enumerate(statements, start=1)
+            )
+        if not section_evidence.business:
+            evidence_gaps += ("Item 1 business evidence was not extracted",)
+        if not section_evidence.risks:
+            evidence_gaps += ("Item 1A risk evidence was not extracted",)
         if "capital_expenditure" in snapshot and not statements:
             evidence_gaps += (
                 "Capital expenditure purpose was not found in deterministic "

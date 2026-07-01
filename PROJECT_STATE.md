@@ -107,6 +107,11 @@ Implement ADR-0011 and the Version 2 product contract.
   now 1.7.
 - Live-validated prompt v1.7 and completed the README requirement audit: all
   version-one gates passed with 62 tests and durable saved-run verification.
+- Accepted ADR-0011 and recorded the Version 2 product contract and experiment
+  baseline.
+- Added bounded Item 1 business and Item 1A risk evidence extraction with
+  explicit gaps, source-linked filing-statement claims, and captured-Walmart
+  verification.
 
 ## Accepted decisions
 

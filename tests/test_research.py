@@ -110,7 +110,7 @@ class FakeAnalysisAdapter:
     ) -> GeneratedFinancialAnalysis:
         assert question == "Assess Apple"
         assert "Missing cash_and_cash_equivalents" in evidence_gaps[0]
-        assert len(evidence_gaps) == 15
+        assert len(evidence_gaps) == 17
         assert len(revision_audits) == 1
         claim_ids = tuple(sorted(claim.claim_id for claim in claims))
         return GeneratedFinancialAnalysis(

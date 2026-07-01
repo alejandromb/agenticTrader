@@ -46,11 +46,11 @@ class _BlockTextParser(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag in self._BLOCKS:
-            self.parts.append("\n")
+            self.parts.append("\x1e")
 
     def handle_endtag(self, tag: str) -> None:
         if tag in self._BLOCKS:
-            self.parts.append("\n")
+            self.parts.append("\x1e")
 
     def handle_data(self, data: str) -> None:
         self.parts.append(data)
@@ -80,16 +80,24 @@ class _TableRowParser(HTMLParser):
                 self.current.append(value)
 
 
+def extract_filing_blocks(filing_html: bytes) -> tuple[str, ...]:
+    """Return normalized non-empty block text from a filing document."""
+    parser = _BlockTextParser()
+    parser.feed(filing_html.decode("utf-8", errors="replace"))
+    return tuple(
+        block
+        for raw_block in "".join(parser.parts).split("\x1e")
+        if (block := _SPACE.sub(" ", raw_block).strip())
+    )
+
+
 def extract_capital_allocation_statements(
     filing_html: bytes, *, limit: int = 5
 ) -> tuple[str, ...]:
     """Return bounded filing passages that state a purpose for capital spending."""
-    parser = _BlockTextParser()
-    parser.feed(filing_html.decode("utf-8", errors="replace"))
     candidates: list[tuple[int, int, str]] = []
     seen: set[str] = set()
-    for raw_block in "".join(parser.parts).splitlines():
-        block = _SPACE.sub(" ", raw_block).strip()
+    for block in extract_filing_blocks(filing_html):
         if not 40 <= len(block) <= 1200:
             continue
         if not (_CAPEX.search(block) and _PURPOSE.search(block)):
