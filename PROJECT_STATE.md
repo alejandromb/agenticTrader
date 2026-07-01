@@ -79,6 +79,9 @@ Surface revision audits and explicit analysis limitations.
   evaluation.
 - Added a deterministic known-limitations section that always includes every
   persisted evidence gap; prompt version is now 1.5.
+- Recorded the architect's DiveTrader integration note: keep the sibling Alpaca
+  prototype separate as a future execution lab, with no v1 merge or live-money
+  authority and explicit safety preconditions for any later integration.
 
 ## Accepted decisions
 
@@ -110,6 +113,14 @@ metadata, including for an already cached base image.
 2. Add deterministic growth calculations and ratio history.
 3. Add capital-allocation detail extraction from filing tables.
 4. Validate the Docker image when the local daemon can resolve image metadata.
+
+## Future integration note
+
+`../diveTrader` is a separate Alpaca execution prototype. See
+`docs/architecture/dive-trader-integration-note.md`. It is not part of version
+one and must not receive research-to-broker integration without a separate ADR,
+canonical API cleanup, order-intent approval boundary, risk controls, audit,
+idempotency, and reconciliation.
 
 ## Resume here
 
