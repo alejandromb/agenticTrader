@@ -10,8 +10,7 @@ Architecture and project foundation.
 
 ## Active objective
 
-Expand the deterministic financial evidence set and improve the user-facing
-presentation of saved research runs.
+Validate prompt version 1.2 and begin multi-period financial comparisons.
 
 ## Completed
 
@@ -60,6 +59,10 @@ presentation of saved research runs.
   12/12.
 - Changed missing issuer-specific XBRL concepts into explicit evidence gaps.
 - Added first-class persistence for evidence gaps in analysis artifacts.
+- Expanded the deterministic snapshot from five to twelve possible metrics;
+  Walmart supplied eleven and one explicit evidence gap.
+- Evaluated the expanded Walmart analysis at 11/12 and updated prompt v1.2 with
+  accounting-containment and limited-solvency rules.
 
 ## Accepted decisions
 
@@ -74,8 +77,8 @@ presentation of saved research runs.
 
 ## Open questions
 
-- Which additional metrics provide the highest value without creating fragile
-  cross-issuer concept assumptions?
+- How should comparable prior periods be represented without confusing facts
+  from the current filing with facts restated in later filings?
 
 ## Blockers
 
@@ -85,18 +88,15 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Add cash, current assets/liabilities, debt, operating income, and capital
-   expenditure facts to the deterministic snapshot.
-2. Add a human-readable command for listing and viewing saved runs.
-3. Compare Apple and Walmart evaluations before expanding to other analyst
-   stages.
+1. Validate prompt version 1.2 on the next live research run.
+2. Design multi-period fact identity and restatement handling.
+3. Add prior-year comparisons to the financial analysis contract.
 4. Validate the Docker image when the local daemon can resolve image metadata.
 
 ## Resume here
 
-Start by expanding financial facts with concept aliases and explicit evidence
-gaps. Preserve the cross-issuer failure behavior proven by Walmart. Never
-display or persist the API key.
+Start by designing multi-period and restatement semantics, then validate prompt
+v1.2 on a fresh run. Never display or persist the API key.
 
 ## Working-tree note
 

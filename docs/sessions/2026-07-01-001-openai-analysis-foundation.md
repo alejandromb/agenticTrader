@@ -31,6 +31,9 @@ evaluation against the retained Apple financial claims.
 - Added and live-validated `research-company`, `list-runs`, `show-run`, and
   secret-safe `doctor` commands.
 - Added the repository README and user guide.
+- Expanded the snapshot to eleven available Walmart claims plus one persisted
+  evidence gap.
+- Evaluated the expanded analysis at 11/12 and introduced prompt v1.2.
 
 ## Validation
 
@@ -39,5 +42,5 @@ evaluation against the retained Apple financial claims.
 
 ## Handoff
 
-Expand deterministic financial evidence before treating the financial-analysis
-stage as complete. The user-facing CLI workflow is now operational.
+Design multi-period comparisons and validate prompt v1.2. The user-facing CLI
+workflow and expanded single-period snapshot are operational.

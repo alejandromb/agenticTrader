@@ -81,7 +81,8 @@ class FakeAnalysisAdapter:
         evidence_gaps: tuple[str, ...],
     ) -> GeneratedFinancialAnalysis:
         assert question == "Assess Apple"
-        assert evidence_gaps == ()
+        assert "Missing cash_and_cash_equivalents" in evidence_gaps[0]
+        assert len(evidence_gaps) == 7
         claim_ids = tuple(sorted(claim.claim_id for claim in claims))
         return GeneratedFinancialAnalysis(
             analysis=FinancialAnalysis(

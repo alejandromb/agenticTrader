@@ -14,7 +14,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
-FINANCIAL_PROMPT_VERSION = "1.1.0"
+FINANCIAL_PROMPT_VERSION = "1.2.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -28,6 +28,12 @@ Preserve the exact accounting meaning of each supplied label; do not add
 qualifiers such as attribution to parent unless the claim states them. Do not
 equate total liabilities with debt or financial leverage. Label any derived
 comparison as analysis rather than a reported fact."""
+
+INSTRUCTIONS += """
+Respect accounting containment: do not present a component such as cash as an
+additional pool separate from a total such as current assets. Do not infer
+solvency or conclude that debt is immaterial from debt-to-assets alone; discuss
+that comparison only as one limited observation."""
 
 
 class AnalysisGenerationError(RuntimeError):

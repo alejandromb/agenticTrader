@@ -13,6 +13,7 @@ class FinancialMetricSpec:
     name: str
     concept: str
     duration: bool
+    required: bool = True
     unit: str = "USD"
     taxonomy: str = "us-gaap"
 
@@ -30,6 +31,48 @@ ANNUAL_FINANCIAL_METRICS = (
         name="operating_cash_flow",
         concept="NetCashProvidedByUsedInOperatingActivities",
         duration=True,
+    ),
+    FinancialMetricSpec(
+        name="cash_and_cash_equivalents",
+        concept="CashAndCashEquivalentsAtCarryingValue",
+        duration=False,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="current_assets",
+        concept="AssetsCurrent",
+        duration=False,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="current_liabilities",
+        concept="LiabilitiesCurrent",
+        duration=False,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="operating_income",
+        concept="OperatingIncomeLoss",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="capital_expenditure",
+        concept="PaymentsToAcquirePropertyPlantAndEquipment",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="current_long_term_debt",
+        concept="LongTermDebtCurrent",
+        duration=False,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="noncurrent_long_term_debt",
+        concept="LongTermDebtNoncurrent",
+        duration=False,
+        required=False,
     ),
 )
 
@@ -70,6 +113,7 @@ def extract_annual_financial_snapshot(
             period_end=period_end,
         )
         for metric in ANNUAL_FINANCIAL_METRICS
+        if metric.required
     }
 
 
