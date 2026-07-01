@@ -91,6 +91,9 @@ Surface revision audits and explicit analysis limitations.
   was zero because no compared annual values changed across accessions.
 - Normalized known limitations to prevent duplicates that differ only by case or
   trailing punctuation.
+- Added a deterministic calculation engine for revenue growth, operating and net
+  margins, free-cash-flow approximation, and current ratio; every result retains
+  its exact formula and filing-fact inputs.
 
 ## Accepted decisions
 
@@ -118,10 +121,10 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Add deterministic growth calculations and ratio history.
-2. Add capital-allocation detail extraction from filing tables.
-3. Validate automatic revision auditing on an issuer with a known revision.
-4. Validate the Docker image when the local daemon can resolve image metadata.
+1. Persist calculation claims with formula and input-claim lineage.
+2. Feed validated calculation claims into financial analysis.
+3. Add capital-allocation detail extraction from filing tables.
+4. Validate automatic revision auditing on an issuer with a known revision.
 
 ## Future integration note
 
