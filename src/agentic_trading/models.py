@@ -270,3 +270,20 @@ class ResearchScreenArtifactModel(Base):
     filters_json: Mapped[str] = mapped_column(String, nullable=False)
     results_json: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class PortfolioAnalysisArtifactModel(Base):
+    __tablename__ = "portfolio_analysis_artifacts"
+
+    analysis_id: Mapped[str] = mapped_column(String, primary_key=True)
+    dataset_id: Mapped[str] = mapped_column(
+        ForeignKey("price_datasets.dataset_id"), nullable=False
+    )
+    as_of: Mapped[str] = mapped_column(String, nullable=False)
+    valuation_date: Mapped[str] = mapped_column(String, nullable=False)
+    benchmark: Mapped[str] = mapped_column(String, nullable=False)
+    holdings_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    holdings_storage_path: Mapped[str] = mapped_column(String, nullable=False)
+    holdings_json: Mapped[str] = mapped_column(String, nullable=False)
+    results_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)

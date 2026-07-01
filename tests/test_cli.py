@@ -12,6 +12,7 @@ from agentic_trading.workflow import WorkflowState
 
 ROOT = Path(__file__).parents[1]
 PRICE_FIXTURE = ROOT / "tests/fixtures/prices-valid.csv"
+HOLDINGS_FIXTURE = ROOT / "tests/fixtures/holdings-valid.csv"
 
 
 def test_validate_memo_command(capsys: pytest.CaptureFixture[str]) -> None:
@@ -181,3 +182,49 @@ def test_import_prices_command(
     output = json.loads(capsys.readouterr().out)
     assert output["row_count"] == 6
     assert output["start_date"] == "2025-01-02"
+
+
+def test_analyze_portfolio_command(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    database = tmp_path / "state.db"
+    artifacts = tmp_path / "artifacts"
+    assert (
+        main(
+            [
+                "import-prices",
+                str(PRICE_FIXTURE),
+                "--source",
+                "Test fixture",
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(artifacts),
+            ]
+        )
+        == 0
+    )
+    dataset = json.loads(capsys.readouterr().out)
+
+    assert (
+        main(
+            [
+                "analyze-portfolio",
+                str(HOLDINGS_FIXTURE),
+                "--dataset",
+                dataset["dataset_id"],
+                "--benchmark",
+                "SPY",
+                "--as-of",
+                "2025-01-06",
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(artifacts),
+            ]
+        )
+        == 0
+    )
+    output = json.loads(capsys.readouterr().out)
+    assert output["valuation_date"] == "2025-01-06"
+    assert output["results"]["total_value"] == "199.50"

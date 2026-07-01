@@ -145,6 +145,9 @@ Implement ADR-0012 and the Milestone 3 product contract.
 - Added persisted, deterministic `screen-research` over memo-backed research
   runs with strict `as_of` boundaries, latest-run-per-ticker selection, explicit
   metric filters, missing-metric exclusion, and live WMT verification.
+- Added persisted hypothetical portfolio analytics over immutable adjusted-price
+  datasets, including explicit as-of/benchmark date alignment, valuation,
+  concentration, volatility, tracking error, and drawdown metrics.
 
 ## Accepted decisions
 
@@ -174,10 +177,8 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Implement immutable point-in-time price dataset import.
-2. Add deterministic screening over accepted research records.
-3. Add hypothetical portfolio and benchmark risk analytics.
-4. Add versioned, cost-aware, look-ahead-resistant backtesting.
+1. Add versioned, cost-aware, look-ahead-resistant backtesting.
+2. Document and run the complete Milestone 3 acceptance workflow.
 
 ## Future integration note
 
@@ -189,5 +190,6 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Begin with the price dataset contract and temporal-integrity fixtures. Keep
-execution out of scope and never display or persist the API key.
+Begin with versioned, cost-aware backtesting. Signals must execute no earlier
+than the next observation, and the workflow must remain analytical only: no
+broker, order, or portfolio-mutation integration.

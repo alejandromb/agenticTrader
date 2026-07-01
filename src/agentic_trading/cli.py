@@ -31,6 +31,10 @@ from agentic_trading.openai_adapter import (
     AnalysisGenerationError,
     OpenAIFinancialAnalysisAdapter,
 )
+from agentic_trading.portfolio_analytics import (
+    PortfolioAnalysisError,
+    SqlitePortfolioAnalyzer,
+)
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.research import CompanyResearchService
 from agentic_trading.revision_repository import SqliteRevisionAuditRepository
@@ -164,6 +168,18 @@ def build_parser() -> argparse.ArgumentParser:
     screen.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
+
+    portfolio = commands.add_parser(
+        "analyze-portfolio", help="analyze a hypothetical holdings CSV"
+    )
+    portfolio.add_argument("holdings", type=Path)
+    portfolio.add_argument("--dataset", required=True)
+    portfolio.add_argument("--benchmark", required=True)
+    portfolio.add_argument("--as-of", required=True)
+    portfolio.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    portfolio.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
     import_prices.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
@@ -481,6 +497,33 @@ def main(argv: Sequence[str] | None = None) -> int:
                     },
                     "results": [asdict(item) for item in artifact.results],
                     "screen_id": artifact.screen_id,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if args.command == "analyze-portfolio":
+        try:
+            artifact = SqlitePortfolioAnalyzer(
+                args.database, args.artifact_root
+            ).analyze(
+                args.holdings,
+                dataset_id=args.dataset,
+                benchmark=args.benchmark,
+                as_of=args.as_of,
+            )
+        except PortfolioAnalysisError as error:
+            raise SystemExit(str(error)) from error
+        print(
+            json.dumps(
+                {
+                    "analysis_id": artifact.analysis_id,
+                    "as_of": artifact.as_of,
+                    "benchmark": artifact.benchmark,
+                    "dataset_id": artifact.dataset_id,
+                    "results": artifact.results,
+                    "valuation_date": artifact.valuation_date,
                 },
                 sort_keys=True,
             )
