@@ -10,6 +10,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from agentic_trading.artifacts import LocalArtifactStore
+from agentic_trading.claim_repository import SqliteClaimRepository
+from agentic_trading.financials import extract_annual_financial_snapshot
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.sec import SecClient
@@ -50,6 +52,17 @@ def build_parser() -> argparse.ArgumentParser:
     fact.add_argument("--taxonomy", default="us-gaap")
     fact.add_argument("--unit", default="USD")
 
+    snapshot = commands.add_parser(
+        "sec-financial-snapshot", help="extract minimum annual SEC financials"
+    )
+    snapshot.add_argument("cik")
+    snapshot.add_argument("accession_number")
+    snapshot.add_argument("--period-start", required=True)
+    snapshot.add_argument("--period-end", required=True)
+    snapshot.add_argument("--database", type=Path)
+    snapshot.add_argument("--run-id")
+    snapshot.add_argument("--source-id")
+
     initialize = commands.add_parser("init-db", help="initialize local workflow state")
     initialize.add_argument("database", type=Path)
 
@@ -76,13 +89,57 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Valid investment memo: {args.memo}")
         return 0
 
-    if args.command in {"sec-filings", "sec-fetch-latest", "sec-fact"}:
+    if args.command in {
+        "sec-filings",
+        "sec-fetch-latest",
+        "sec-fact",
+        "sec-financial-snapshot",
+    }:
         user_agent = os.environ.get("SEC_USER_AGENT")
         if not user_agent:
             raise SystemExit(
                 "SEC_USER_AGENT is required and must identify the application owner"
             )
         client = SecClient(user_agent)
+        if args.command == "sec-financial-snapshot":
+            persistence_args = (args.database, args.run_id, args.source_id)
+            if any(persistence_args) and not all(persistence_args):
+                raise SystemExit(
+                    "--database, --run-id, and --source-id must be provided together"
+                )
+            snapshot = extract_annual_financial_snapshot(
+                client.get_company_facts(args.cik),
+                accession_number=args.accession_number,
+                period_start=args.period_start,
+                period_end=args.period_end,
+            )
+            claim_ids: dict[str, str] = {}
+            if args.database:
+                claims = SqliteClaimRepository(args.database)
+                for name, fact in snapshot.items():
+                    claim = claims.register_xbrl_fact(
+                        run_id=args.run_id,
+                        source_id=args.source_id,
+                        fact=fact,
+                    )
+                    claim_ids[name] = claim.claim_id
+            print(
+                json.dumps(
+                    {
+                        name: {
+                            "concept": fact.concept,
+                            "claim_id": claim_ids.get(name),
+                            "period_end": fact.period_end,
+                            "period_start": fact.period_start,
+                            "unit": fact.unit,
+                            "value": str(fact.value),
+                        }
+                        for name, fact in snapshot.items()
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0
         if args.command == "sec-fact":
             fact = select_filing_fact(
                 client.get_company_facts(args.cik),

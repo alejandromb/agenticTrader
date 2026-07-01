@@ -34,6 +34,7 @@ def select_filing_fact(
     concept: str,
     unit: str,
     accession_number: str,
+    period_start: str | None = None,
     period_end: str | None = None,
 ) -> FilingFact:
     """Select one fact observation tied to an exact SEC accession."""
@@ -47,6 +48,7 @@ def select_filing_fact(
         observation
         for observation in observations
         if observation.get("accn") == accession_number
+        and (period_start is None or observation.get("start") == period_start)
         and (period_end is None or observation.get("end") == period_end)
     ]
     if not matches:

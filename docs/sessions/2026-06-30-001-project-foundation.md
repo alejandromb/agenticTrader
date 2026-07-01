@@ -35,6 +35,8 @@ way to resume work after an interruption.
   live filing capture, content hashing, and ORM provenance persistence passed.
 - Added period-specific XBRL fact selection and verified Apple fiscal 2025
   revenue against live SEC company-facts data.
+- Added candidate-claim persistence with database-enforced source/run lineage.
+- Live-verified extraction and persistence of five core annual financial facts.
 
 ## Decisions
 
@@ -80,6 +82,11 @@ way to resume work after an interruption.
 - `migrations/versions/20260630_0002_source_documents.py`
 - `tests/test_source_repository.py`
 - `tests/test_xbrl.py`
+- `src/agentic_trading/financials.py`
+- `src/agentic_trading/claim_repository.py`
+- `migrations/versions/20260630_0003_candidate_claims.py`
+- `tests/test_financials.py`
+- `tests/test_claim_repository.py`
 - `docs/sessions/README.md`
 - `docs/sessions/2026-06-30-001-project-foundation.md`
 
@@ -91,6 +98,8 @@ way to resume work after an interruption.
 - Ran the Python test and lint suite after containerization changes: 24 tests
   pass and Compose configuration validates.
 - Expanded the suite through live-ingestion hardening: 31 tests pass.
+- Completed the candidate-claim slice: 34 tests pass, and live end-to-end claim
+  persistence succeeded.
 - Attempted a Docker image build; the local daemon stalled resolving base-image
   metadata, so container execution validation remains pending.
 
@@ -101,5 +110,5 @@ way to resume work after an interruption.
 
 ## Handoff
 
-Next, persist typed candidate claims with source and extraction lineage, then
-expand deterministic extraction to a minimum financial statement set.
+Next, choose the model provider for the first structured financial-analysis
+stage and record its adapter and credential boundaries.

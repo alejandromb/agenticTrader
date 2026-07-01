@@ -10,8 +10,8 @@ Architecture and project foundation.
 
 ## Active objective
 
-Implement deterministic extraction of selected SEC filing facts into typed,
-evidence-linked candidate claims.
+Select the model provider and model boundary for the first non-deterministic
+analysis stage.
 
 ## Completed
 
@@ -39,6 +39,10 @@ evidence-linked candidate claims.
   persistence using an identified SEC request.
 - Added deterministic, period-specific SEC XBRL fact selection and verified
   fiscal 2025 Apple revenue against live company-facts data.
+- Added evidence-linked candidate-claim persistence with database-enforced
+  source/run consistency.
+- Added and live-verified a minimum annual financial snapshot covering revenue,
+  net income, assets, liabilities, and operating cash flow.
 
 ## Accepted decisions
 
@@ -62,16 +66,17 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Convert selected XBRL facts into typed candidate claims with source links.
-2. Persist candidate claims and extraction lineage.
-3. Add validation that facts cannot reference sources from another run.
-4. Expand deterministic extraction to the minimum financial statement set.
+1. Select and record the first model provider and model interface.
+2. Define the structured output contract for the financial-analysis stage.
+3. Implement the provider adapter without exposing it to execution authority.
+4. Evaluate its output against the captured Apple evidence and candidate facts.
 
 ## Resume here
 
-Start by defining and implementing the candidate-claim persistence model. A
-fact must retain taxonomy, concept, unit, period, accession, and source-document
-lineage. Keep the SEC contact in `SEC_USER_AGENT`; never persist it.
+Start by deciding whether the first model-backed analysis uses OpenAI or another
+provider. The adapter must accept only validated evidence artifacts and return a
+versioned structured analysis artifact. Provider credentials remain runtime
+secrets and are never persisted.
 
 ## Working-tree note
 
