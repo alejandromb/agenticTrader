@@ -444,6 +444,7 @@ def _print_run(
         ("Base case", artifact.analysis.base_case),
         ("Bear case", artifact.analysis.bear_case),
         ("Devil's advocate", artifact.analysis.devils_advocate),
+        ("Valuation scenarios", artifact.analysis.valuation),
     ):
         print(f"{title}:")
         for point in points:

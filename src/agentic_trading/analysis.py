@@ -31,6 +31,7 @@ class FinancialAnalysis(BaseModel):
     base_case: list[AnalysisPoint] = Field(default_factory=list)
     bear_case: list[AnalysisPoint] = Field(default_factory=list)
     devils_advocate: list[AnalysisPoint] = Field(default_factory=list)
+    valuation: list[AnalysisPoint] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def require_content(self) -> FinancialAnalysis:
@@ -46,6 +47,7 @@ class FinancialAnalysis(BaseModel):
             or self.base_case
             or self.bear_case
             or self.devils_advocate
+            or self.valuation
         ):
             raise ValueError("analysis must contain at least one analytical point")
         return self
@@ -65,6 +67,7 @@ class FinancialAnalysis(BaseModel):
                 self.base_case,
                 self.bear_case,
                 self.devils_advocate,
+                self.valuation,
             )
             for point in group
             for claim_id in point.claim_ids

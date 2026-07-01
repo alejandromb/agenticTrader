@@ -67,7 +67,7 @@ def test_adapter_uses_structured_responses_and_validates_claims() -> None:
 
     assert result.analysis == analysis
     assert result.provider_response_id == "response-001"
-    assert result.prompt_version == "2.0.0"
+    assert result.prompt_version == "2.1.0"
     assert result.input_claim_ids == ("claim-001",)
     assert result.evidence_gaps == ()
     assert responses.arguments["model"] == "test-model"
@@ -78,6 +78,7 @@ def test_adapter_uses_structured_responses_and_validates_claims() -> None:
     assert "Prefer supplied calculation claims" in responses.arguments["instructions"]
     assert "revision_audit payload" in responses.arguments["instructions"]
     assert "For Version 2" in responses.arguments["instructions"]
+    assert "Use valuation only" in responses.arguments["instructions"]
     payload = json.loads(responses.arguments["input"])
     assert payload["candidate_claims"][0]["claim_id"] == "claim-001"
     assert payload["revision_audit"] == {"count": 0, "items": []}

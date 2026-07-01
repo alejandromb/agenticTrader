@@ -14,7 +14,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
-FINANCIAL_PROMPT_VERSION = "2.0.0"
+FINANCIAL_PROMPT_VERSION = "2.1.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -79,6 +79,14 @@ it has occurred. Produce distinct bull_case, base_case, bear_case, and
 devils_advocate points. Each point must cite the claims that support it. Do not
 invent industry facts, competitive rankings, probabilities, valuation, or
 forward estimates that are absent from the supplied evidence."""
+
+INSTRUCTIONS += """
+Use valuation only for supplied assumption_calculation claims. Preserve every
+stated growth, discount, terminal-growth, horizon, and base-cash-flow assumption.
+Describe the outputs as cash-flow present-value sensitivities, not issuer
+guidance, equity fair value, price targets, or trade recommendations. Explain
+that debt, cash, share count, and other adjustments are required before any
+per-share interpretation."""
 
 
 class AnalysisGenerationError(RuntimeError):

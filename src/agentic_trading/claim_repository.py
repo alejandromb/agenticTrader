@@ -18,6 +18,7 @@ from agentic_trading.models import (
     CalculationInputClaimModel,
     CandidateClaimModel,
 )
+from agentic_trading.valuation import ValuationScenario
 from agentic_trading.xbrl import FilingFact
 
 
@@ -197,6 +198,64 @@ class SqliteClaimRepository:
                 ).all()
             )
             return calculation.formula, input_ids
+
+    def register_valuation_scenario(
+        self,
+        *,
+        run_id: str,
+        source_id: str,
+        scenario: ValuationScenario,
+        input_claim_id: str,
+        period_end: str,
+        accession_number: str,
+    ) -> CandidateClaim:
+        """Persist an assumption-driven valuation scenario with input lineage."""
+        identifier = str(uuid4())
+        statement = (
+            f"{scenario.name.title()} cash-flow present-value scenario was "
+            f"{scenario.present_value} USD using base cash flow "
+            f"{scenario.base_cash_flow} USD, annual growth "
+            f"{scenario.annual_growth_rate}, discount rate "
+            f"{scenario.discount_rate}, terminal growth "
+            f"{scenario.terminal_growth_rate}, and {scenario.forecast_years} "
+            "forecast years. This is an assumption-driven sensitivity result, "
+            "not issuer guidance, equity fair value, or a price target."
+        )
+        model = CandidateClaimModel(
+            claim_id=identifier,
+            run_id=run_id,
+            source_id=source_id,
+            claim_type="assumption_calculation",
+            statement=statement,
+            taxonomy="agentic-trading",
+            concept=f"dcf_{scenario.name}_scenario",
+            label=f"DCF {scenario.name.title()} Scenario",
+            unit="USD",
+            numeric_value=str(scenario.present_value),
+            period_start=None,
+            period_end=period_end,
+            accession_number=accession_number,
+            extraction_method="deterministic_dcf_scenario_v1",
+            extracted_at=datetime.now(UTC).isoformat(),
+        )
+        with self._sessions.begin() as session:
+            session.add(model)
+            session.flush()
+            session.add(
+                CalculationClaimModel(
+                    claim_id=identifier,
+                    run_id=run_id,
+                    formula=scenario.formula,
+                )
+            )
+            session.add(
+                CalculationInputClaimModel(
+                    calculation_claim_id=identifier,
+                    input_claim_id=input_claim_id,
+                    run_id=run_id,
+                )
+            )
+        return _claim_from_model(model)
 
 
 def _default_statement(fact: FilingFact) -> str:

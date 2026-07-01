@@ -33,6 +33,7 @@ from agentic_trading.revision_repository import (
 )
 from agentic_trading.sec import CompanyIdentity, FilingMetadata, SecClient
 from agentic_trading.source_repository import SourceDocument, SqliteSourceRepository
+from agentic_trading.valuation import calculate_dcf_scenarios
 from agentic_trading.workflow import WorkflowState
 from agentic_trading.xbrl import (
     FilingFact,
@@ -226,18 +227,34 @@ class CompanyResearchService:
                 )
                 claims.append(claim)
                 fact_claim_ids[_fact_key(fact)] = claim.claim_id
+        free_cash_flow_claims: list[CandidateClaim] = []
         for calculation in calculate_financial_history(history):
             input_claim_ids = tuple(
                 fact_claim_ids[_fact_key(fact)] for fact in calculation.input_facts
             )
-            claims.append(
-                repository.register_calculation(
-                    run_id=run_id,
-                    source_id=source.source_id,
-                    calculation=calculation,
-                    input_claim_ids=input_claim_ids,
-                )
+            claim = repository.register_calculation(
+                run_id=run_id,
+                source_id=source.source_id,
+                calculation=calculation,
+                input_claim_ids=input_claim_ids,
             )
+            claims.append(claim)
+            if calculation.concept == "free_cash_flow_approximation":
+                free_cash_flow_claims.append(claim)
+        if free_cash_flow_claims:
+            base_claim = max(free_cash_flow_claims, key=lambda item: item.period_end)
+            if base_claim.numeric_value is not None:
+                claims.extend(
+                    repository.register_valuation_scenario(
+                        run_id=run_id,
+                        source_id=source.source_id,
+                        scenario=scenario,
+                        input_claim_id=base_claim.claim_id,
+                        period_end=base_claim.period_end,
+                        accession_number=base_claim.accession_number,
+                    )
+                    for scenario in calculate_dcf_scenarios(base_claim.numeric_value)
+                )
         filing_content = Path(source.storage_path).read_bytes()
         statements = extract_capital_allocation_statements(filing_content)
         claims.extend(
