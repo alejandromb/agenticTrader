@@ -32,8 +32,9 @@ The persisted packet contains:
   IDs, and an explicit `period_shift` flag;
 - normalized known limitations added and resolved;
 - each changed memo section’s baseline/current summary and SHA-256 hashes; and
-- alerts from monitors attached to the baseline run, including acknowledgement
-  status and evidence.
+- alerts from monitors attached to the baseline run whose evaluation boundary
+  falls after the baseline and no later than the current review boundary,
+  including acknowledgement status and evidence.
 
 Exact-period claim comparison uses claim type, concept, unit, period start, and
 period end as the identity. Different periods are additions/removals, never

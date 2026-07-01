@@ -166,6 +166,13 @@ Implement ADR-0014 and the Milestone 5 product contract.
   execution integration.
 - Accepted ADR-0014 and recorded the Milestone 5 research-refresh review
   contract and fidelity experiment.
+- Added immutable, idempotent same-company research reviews gated by complete
+  canonical memos and strictly increasing `as_of` boundaries.
+- Added exact-period claim inventories, period-labeled latest-metric deltas,
+  normalized limitation changes, memo-section hashes, and time-bounded linked
+  alert evidence.
+- Added review retrieval and append-only human outcomes without mutating source
+  research, alerts, dispositions, monitors, portfolios, or external systems.
 
 ## Accepted decisions
 
@@ -197,9 +204,8 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Add immutable, eligibility-gated research comparison artifacts.
-2. Add deterministic claim, metric, limitation, section, and alert deltas.
-3. Add append-only human review outcomes and acceptance evaluation.
+1. Run the Milestone 5 fidelity and requirement-by-requirement acceptance audit.
+2. Document limitations and finalize the accepted research-review workflow.
 
 ## Future integration note
 
@@ -211,5 +217,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Begin with persisted research-review identity and strict pair eligibility. Keep
-models, scheduling, notifications, DiveTrader, and execution out of scope.
+Begin with the Milestone 5 fidelity audit. Keep models, scheduling,
+notifications, DiveTrader, and execution out of scope.

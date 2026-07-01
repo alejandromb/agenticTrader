@@ -39,6 +39,11 @@ from agentic_trading.portfolio_analytics import (
 )
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.research import CompanyResearchService
+from agentic_trading.research_reviews import (
+    REVIEW_OUTCOMES,
+    ResearchReviewError,
+    SqliteResearchReviewRepository,
+)
 from agentic_trading.revision_repository import SqliteRevisionAuditRepository
 from agentic_trading.screener import ScreenFilters, SqliteResearchScreener
 from agentic_trading.sec import SecClient, SecClientError
@@ -237,6 +242,30 @@ def build_parser() -> argparse.ArgumentParser:
     )
     acknowledge_alert.add_argument(
         "--artifact-root", type=Path, default=Path("artifacts")
+    )
+    compare_research = commands.add_parser(
+        "compare-research", help="compare two completed same-company research runs"
+    )
+    compare_research.add_argument("baseline_run_id")
+    compare_research.add_argument("current_run_id")
+    compare_research.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    show_review = commands.add_parser(
+        "show-research-review", help="show a persisted research-refresh review"
+    )
+    show_review.add_argument("review_id")
+    show_review.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    record_review = commands.add_parser(
+        "record-review-outcome", help="append a human research-review outcome"
+    )
+    record_review.add_argument("review_id")
+    record_review.add_argument("outcome", choices=sorted(REVIEW_OUTCOMES))
+    record_review.add_argument("--rationale", required=True)
+    record_review.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
     )
     import_prices.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
@@ -689,6 +718,40 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(asdict(acknowledgement), sort_keys=True))
         return 0
 
+    if args.command == "compare-research":
+        try:
+            review = SqliteResearchReviewRepository(args.database).compare(
+                args.baseline_run_id, args.current_run_id
+            )
+        except ResearchReviewError as error:
+            raise SystemExit(str(error)) from error
+        print(json.dumps(_review_dict(review), sort_keys=True))
+        return 0
+
+    if args.command == "show-research-review":
+        repository = SqliteResearchReviewRepository(args.database)
+        try:
+            review = repository.get(args.review_id)
+        except ResearchReviewError as error:
+            raise SystemExit(str(error)) from error
+        value = _review_dict(review)
+        outcome = repository.outcome_for_review(review.review_id)
+        value["human_outcome"] = asdict(outcome) if outcome is not None else None
+        print(json.dumps(value, sort_keys=True))
+        return 0
+
+    if args.command == "record-review-outcome":
+        try:
+            outcome = SqliteResearchReviewRepository(args.database).record_outcome(
+                args.review_id,
+                outcome=args.outcome,
+                rationale=args.rationale,
+            )
+        except ResearchReviewError as error:
+            raise SystemExit(str(error)) from error
+        print(json.dumps(asdict(outcome), sort_keys=True))
+        return 0
+
     if args.command == "create-run":
         run = repository.create_run(memo_id=args.memo_id, as_of=args.as_of)
         print(json.dumps(_run_dict(run), sort_keys=True))
@@ -748,6 +811,19 @@ def _run_dict(run: object) -> dict[str, str]:
         "as_of": run.as_of,
         "created_at": run.created_at,
         "updated_at": run.updated_at,
+    }
+
+
+def _review_dict(review: object) -> dict:
+    return {
+        "baseline_memo_id": review.baseline_memo_id,
+        "baseline_run_id": review.baseline_run_id,
+        "content": review.content,
+        "created_at": review.created_at,
+        "current_memo_id": review.current_memo_id,
+        "current_run_id": review.current_run_id,
+        "review_id": review.review_id,
+        "ticker": review.ticker,
     }
 
 

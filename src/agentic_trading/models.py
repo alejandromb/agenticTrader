@@ -368,3 +368,42 @@ class AlertAcknowledgementModel(Base):
     note: Mapped[str] = mapped_column(String, nullable=False)
     actor: Mapped[str] = mapped_column(String, nullable=False)
     acknowledged_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class ResearchReviewModel(Base):
+    __tablename__ = "research_reviews"
+    __table_args__ = (
+        UniqueConstraint(
+            "baseline_run_id", "current_run_id", name="uq_research_review_pair"
+        ),
+    )
+
+    review_id: Mapped[str] = mapped_column(String, primary_key=True)
+    baseline_run_id: Mapped[str] = mapped_column(
+        ForeignKey("research_runs.run_id"), nullable=False
+    )
+    current_run_id: Mapped[str] = mapped_column(
+        ForeignKey("research_runs.run_id"), nullable=False
+    )
+    baseline_memo_id: Mapped[str] = mapped_column(
+        ForeignKey("investment_memo_artifacts.artifact_id"), nullable=False
+    )
+    current_memo_id: Mapped[str] = mapped_column(
+        ForeignKey("investment_memo_artifacts.artifact_id"), nullable=False
+    )
+    ticker: Mapped[str] = mapped_column(String, nullable=False)
+    content_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class ResearchReviewOutcomeModel(Base):
+    __tablename__ = "research_review_outcomes"
+
+    outcome_id: Mapped[str] = mapped_column(String, primary_key=True)
+    review_id: Mapped[str] = mapped_column(
+        ForeignKey("research_reviews.review_id"), nullable=False, unique=True
+    )
+    outcome: Mapped[str] = mapped_column(String, nullable=False)
+    rationale: Mapped[str] = mapped_column(String, nullable=False)
+    actor: Mapped[str] = mapped_column(String, nullable=False)
+    recorded_at: Mapped[str] = mapped_column(String, nullable=False)
