@@ -100,7 +100,7 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("question")
 
     research = commands.add_parser(
-        "research-company", help="run the complete version-one research workflow"
+        "research-company", help="run the complete version-two research workflow"
     )
     research.add_argument("ticker")
     research.add_argument("--question", required=True)

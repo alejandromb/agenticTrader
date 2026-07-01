@@ -2,12 +2,14 @@
 
 ## What the platform does
 
-The current platform researches one U.S. public company at a time from its
-latest annual SEC filing. A successful run moves through:
+The Version 2 platform researches one U.S. public company at a time from its
+latest annual SEC filing. A successful research run moves through:
 
 ```text
 ticker -> SEC filing -> stored evidence -> financial claims
-       -> structured OpenAI analysis -> challenge-ready run
+       -> calculations + business/risk evidence + valuation scenarios
+       -> structured analysis -> validated memo
+       -> awaiting human disposition
 ```
 
 The output is a research artifact, not a buy or sell instruction.
@@ -62,7 +64,9 @@ This command:
 10. sends only validated claims, calculations, gaps, and the question to OpenAI;
 11. validates every returned claim reference;
 12. persists revision audits, known limitations, and structured analysis; and
-13. leaves the run in `challenging` for the next workflow stage.
+13. synthesizes and validates a schema-2.0 investment memo;
+14. records model input/output tokens and request latency; and
+15. leaves the run in `awaiting_human_disposition`.
 
 The command performs external SEC requests and one paid OpenAI request.
 
@@ -84,6 +88,8 @@ The command prints JSON containing:
 - `filing_accession`: exact SEC filing;
 - `model` and `prompt_version`: reproducibility metadata;
 - `state`: current workflow checkpoint; and
+- `memo_artifact_id`: immutable canonical memo identity;
+- `model_usage`: input tokens, output tokens, and request latency; and
 - `analysis`: assessment, summary, strengths, concerns, trends, cash allocation,
   uncertainties, and known limitations.
 
@@ -109,6 +115,20 @@ The run ID is printed by `research-company` and appears in `list-runs`.
 The detailed view also displays the cross-filing revision-audit count and both
 accession/value pairs for every detected revision.
 
+## Record the human disposition
+
+After reviewing the saved run and memo:
+
+```bash
+.venv/bin/agentic-trading record-disposition YOUR_RUN_ID watch \
+  --rationale "Wait for another filing and stronger valuation evidence"
+```
+
+Allowed dispositions are `investigate`, `watch`, `reject`, and
+`consider_for_portfolio`. This explicit command creates an append-only human
+event and moves the run to `complete`. It does not modify the memo. The model
+cannot invoke this command or choose the human disposition.
+
 ## Current limitations
 
 - Only annual Form 10-K research is orchestrated.
@@ -118,7 +138,9 @@ accession/value pairs for every detected revision.
   label requires explicit filing evidence.
 - Capital-allocation table extraction is deterministic and issuer layouts can
   still produce an explicit evidence gap.
-- No valuation, price, portfolio, or brokerage workflow is included.
+- No market-price comparison, portfolio, or brokerage workflow is included.
+- Valuation is limited to assumption-driven cash-flow sensitivities; it is not
+  equity fair value or a price target and lacks market-price comparison.
 - SEC concepts can differ across issuers; missing optional metrics are recorded
   as evidence gaps, while unsupported required inputs fail explicitly.
 - A command-line interface is the current product surface.

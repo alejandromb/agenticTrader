@@ -2,15 +2,16 @@
 
 Last updated: 2026-07-01
 
-Session status: Version two active
+Session status: Version two accepted
 
 ## Current phase
 
-Version-two research decision record.
+Version-two research decision record accepted.
 
 ## Active objective
 
-Implement ADR-0011 and the Version 2 product contract.
+Maintain the accepted Version 2 workflow and require ADR-0010 evidence for new
+capabilities.
 
 ## Completed
 
@@ -134,6 +135,9 @@ Implement ADR-0011 and the Version 2 product contract.
   output tokens, and 47,872 ms request latency.
 - Upgraded the canonical memo contract to schema 2.0 so bull, base, bear, and
   devil's-advocate sections are independently required and preserved.
+- Completed the schema-2.0 live Version 2 acceptance run and product-contract
+  audit; the measured memo retained 102 claims, 86 evidence records, all required
+  perspectives, valuation sensitivities, limitations, and human authority.
 
 ## Accepted decisions
 
@@ -156,16 +160,15 @@ Implement ADR-0011 and the Version 2 product contract.
 
 ## Blockers
 
-None for the documented version-one local workflow. Docker image execution
+None for the documented Version 2 local workflow. Docker image execution
 remains a non-blocking environment follow-up because the local daemon previously
 stalled while resolving image metadata.
 
 ## Next actions
 
-1. Capture structured business and risk evidence from the selected filing.
-2. Add business-quality and material-risk analysis contracts.
-3. Add deterministic valuation scenarios and sensitivity.
-4. Synthesize the canonical memo and human disposition record.
+1. Await the user's disposition on any live memo; never infer it.
+2. Propose future quantitative work through a new scoped ADR and experiment.
+3. Revisit Docker runtime validation when the daemon is healthy.
 
 ## Future integration note
 
@@ -177,5 +180,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Begin with business/risk evidence contracts and fixtures under ADR-0011. Keep
-execution out of scope and never display or persist the API key.
+Version two is accepted. Future work must start from a measurable research
+objective. Keep execution out of scope and never display or persist the API key.

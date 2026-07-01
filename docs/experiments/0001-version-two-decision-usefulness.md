@@ -1,6 +1,6 @@
 # Experiment 0001: Version 2 decision usefulness
 
-- Status: Planned
+- Status: Accepted
 - Baseline: Accepted Version 1, prompt 1.7, Walmart run
   `de2b6abf-7548-4a56-a40f-c0b83007e39f`
 
@@ -38,3 +38,11 @@ Use the same issuer and a stable investment question. Score both versions on:
 - Added latency and cost are recorded, not hidden.
 
 If these thresholds fail, the new stage remains experimental or is removed.
+
+## Result
+
+Accepted on live run `2f58e3d2-0a6b-4c8b-af8f-de5c99137917`. Numerical and
+evidence fidelity were retained; business/risk coverage, valuation transparency,
+competing cases, and saved decision usefulness were added. The measured request
+used 20,539 input tokens, 8,473 output tokens, and 62,241 ms. Version 1 usage was
+not instrumented, so no numeric relative-cost claim is made.

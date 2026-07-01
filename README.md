@@ -79,12 +79,29 @@ version one. The governing decisions are in `docs/decisions/`.
 The detailed view shows evidence claims, calculation formulas and input IDs,
 cross-filing revision audits, structured analysis, and known limitations.
 
-## Version 2 roadmap
+## Version 2 capability
 
-Version two is the complete research decision record: source-linked business and
-risk analysis, deterministic valuation scenarios, bull/base/bear cases,
-devil's-advocate challenge, a canonical investment memo, and a separately
-recorded human disposition. See [docs/version-2.md](docs/version-2.md).
+Version two extends the accepted financial pipeline into a complete research
+decision record. It adds:
+
+- bounded, source-linked Item 1 business and Item 1A risk evidence;
+- business-quality and material-risk analysis;
+- explicit bull, base, bear, and devil's-advocate cases;
+- deterministic bear/base/bull DCF sensitivities with formula, assumption, and
+  input-claim lineage;
+- a validated, immutable schema-2.0 investment memo;
+- persisted model token usage and latency; and
+- a separate, append-only human disposition command.
+
+See [docs/version-2.md](docs/version-2.md) and
+[docs/evaluation/version-two-acceptance.md](docs/evaluation/version-two-acceptance.md).
 
 Portfolio analytics, backtesting, automation, and broker execution remain out
 of scope.
+
+Record a decision only after reviewing the memo:
+
+```bash
+.venv/bin/agentic-trading record-disposition YOUR_RUN_ID watch \
+  --rationale "Wait for stronger evidence"
+```
