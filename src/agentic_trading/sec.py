@@ -101,22 +101,36 @@ class SecClient:
             document=filing.primary_document,
         )
 
+    def get_filing_document(self, cik: str | int, filing: FilingMetadata) -> bytes:
+        """Retrieve a primary filing document from the SEC Archives."""
+        return self._get_bytes(
+            self.filing_url(cik, filing), accept="text/html,application/xhtml+xml"
+        )
+
     def _get_json(self, url: str) -> dict[str, Any]:
+        payload = self._get_bytes(url, accept="application/json")
+        try:
+            value = json.loads(payload)
+        except (UnicodeDecodeError, ValueError) as error:
+            raise SecClientError(f"SEC returned invalid JSON from {url}") from error
+        if not isinstance(value, dict):
+            raise SecClientError("Expected the SEC endpoint to return a JSON object")
+        return value
+
+    def _get_bytes(self, url: str, *, accept: str) -> bytes:
         self._pace_request()
         request = Request(
             url,
             headers={
-                "Accept": "application/json",
+                "Accept": accept,
                 "User-Agent": self._user_agent,
             },
         )
         try:
             with self._opener(request, timeout=30) as response:
-                payload = json.load(response)
-        except (OSError, ValueError) as error:
+                payload = response.read()
+        except OSError as error:
             raise SecClientError(f"Unable to retrieve SEC data from {url}") from error
-        if not isinstance(payload, dict):
-            raise SecClientError("Expected the SEC endpoint to return a JSON object")
         return payload
 
     def _pace_request(self) -> None:

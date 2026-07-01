@@ -43,6 +43,28 @@ def test_client_identifies_itself_and_reads_submissions() -> None:
     assert captured_request.get_header("User-agent").startswith("AgenticTrading")
 
 
+def test_client_retrieves_primary_filing_document() -> None:
+    captured_request = None
+
+    def opener(request: Any, *, timeout: int) -> Response:
+        nonlocal captured_request
+        captured_request = request
+        assert timeout == 30
+        return Response(b"<html>filing</html>")
+
+    client = SecClient("AgenticTrading/0.1 owner@domain.test", opener=opener)
+    filing = FilingMetadata(
+        accession_number="0000320193-25-000079",
+        form="10-K",
+        filing_date="2025-10-31",
+        report_date="2025-09-27",
+        primary_document="aapl-20250927.htm",
+    )
+
+    assert client.get_filing_document(320193, filing) == b"<html>filing</html>"
+    assert captured_request.get_header("Accept").startswith("text/html")
+
+
 def test_recent_filings_are_normalized_and_filtered() -> None:
     client = SecClient("AgenticTrading/0.1 owner@domain.test")
     submissions = {

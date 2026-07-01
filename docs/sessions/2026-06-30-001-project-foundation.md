@@ -23,6 +23,10 @@ way to resume work after an interruption.
 - Adopted a deterministic, resumable research workflow.
 - Selected and scaffolded the Python 3.12 local-first stack.
 - Implemented tested memo validation and SEC filing discovery.
+- Implemented durable SQLite workflow state and append-only transitions.
+- Added the local CLI and content-addressed artifact storage.
+- Verified live SEC filing discovery. Live document retrieval returned HTTP 403
+  without a real owner contact in the User-Agent.
 
 ## Decisions
 
@@ -55,6 +59,13 @@ way to resume work after an interruption.
 - `src/agentic_trading/sec.py`
 - `tests/test_validation.py`
 - `tests/test_sec.py`
+- `src/agentic_trading/workflow.py`
+- `src/agentic_trading/repository.py`
+- `src/agentic_trading/cli.py`
+- `src/agentic_trading/artifacts.py`
+- `tests/test_repository.py`
+- `tests/test_cli.py`
+- `tests/test_artifacts.py`
 - `docs/sessions/README.md`
 - `docs/sessions/2026-06-30-001-project-foundation.md`
 
@@ -70,5 +81,5 @@ way to resume work after an interruption.
 
 ## Handoff
 
-Next, implement durable workflow state, add a command-line interface, and run a
-live SEC discovery request after configuring an identifying contact.
+Next, configure a real contact in `SEC_USER_AGENT`, retry live filing capture,
+and then persist evidence metadata alongside the content-addressed artifact.

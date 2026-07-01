@@ -10,7 +10,7 @@ Architecture and project foundation.
 
 ## Active objective
 
-Implement durable SQLite workflow state and append-only transition history.
+Complete live SEC filing capture using an identifying contact in the User-Agent.
 
 ## Completed
 
@@ -26,6 +26,10 @@ Implement durable SQLite workflow state and append-only transition history.
 - Selected Python 3.12 and a local-first stack in ADR-0007.
 - Implemented memo schema and semantic validation with tests.
 - Implemented the first SEC submissions and filing-discovery client with tests.
+- Implemented durable SQLite runs and append-only workflow transitions.
+- Added a CLI for memo validation, SEC discovery, and workflow state operations.
+- Added content-addressed local artifact storage with integrity verification.
+- Verified live Apple filing discovery against SEC submissions data.
 
 ## Accepted decisions
 
@@ -44,20 +48,22 @@ Implement durable SQLite workflow state and append-only transition history.
 
 ## Blockers
 
-None.
+The SEC submissions endpoint accepts the `AgenticTrading/0.1` User-Agent, but
+the SEC Archives filing endpoint returned HTTP 403. A real contact identifier
+must be added to `SEC_USER_AGENT` before retrying live document capture.
 
 ## Next actions
 
-1. Implement durable workflow state and transition history in SQLite.
-2. Add a command-line entry point for memo validation and SEC discovery.
-3. Implement evidence artifact metadata and content hashing.
-4. Run an identified live SEC discovery request.
+1. Configure `SEC_USER_AGENT` with the project name, version, and owner contact.
+2. Retry live SEC filing capture and verify its stored SHA-256.
+3. Persist evidence metadata alongside captured artifacts.
+4. Implement deterministic extraction of filing metadata and selected facts.
 
 ## Resume here
 
-Start by deciding how research steps are orchestrated. Prefer the smallest model
-that preserves deterministic state transitions, evidence provenance, and
-independent challenge of the thesis.
+Start by configuring the SEC identifying contact and rerunning
+`sec-fetch-latest`. Do not store the contact value in Git; provide it through
+the `SEC_USER_AGENT` environment variable.
 
 ## Working-tree note
 
