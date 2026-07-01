@@ -155,6 +155,12 @@ Implement ADR-0013 and the Milestone 4 product contract.
   known limitations and no broker, order, or portfolio-mutation path.
 - Accepted ADR-0013 and recorded the Milestone 4 deterministic decision-
   monitoring contract and signal-quality experiment.
+- Added immutable, content-addressed monitor rules gated by completed human
+  `watch` or `consider_for_portfolio` dispositions.
+- Added idempotent as-of rule evaluation over immutable price datasets, durable
+  unique alerts, and append-only human acknowledgements with derived status.
+- Added CLI workflows for monitor creation, evaluation, alert listing, and
+  acknowledgement; the regression suite now covers the complete lifecycle.
 
 ## Accepted decisions
 
@@ -185,9 +191,8 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Add immutable, eligibility-gated monitor definitions and rule validation.
-2. Add idempotent point-in-time evaluation and durable alerts.
-3. Add append-only human acknowledgement and acceptance evaluation.
+1. Run the Milestone 4 signal-quality acceptance evaluation.
+2. Document known limitations and finalize Milestone 4 acceptance.
 
 ## Future integration note
 
@@ -199,5 +204,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Begin with eligibility-gated monitor creation and strict JSON rule validation.
-Keep scheduling, notifications, models, DiveTrader, and execution out of scope.
+Begin with the Milestone 4 acceptance audit and fixture truth table. Keep
+scheduling, notifications, models, DiveTrader, and execution out of scope.

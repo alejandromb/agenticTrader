@@ -28,6 +28,7 @@ from agentic_trading.market_data import (
 )
 from agentic_trading.memo_repository import SqliteInvestmentMemoRepository
 from agentic_trading.migrations import upgrade_database
+from agentic_trading.monitoring import MonitoringError, SqliteDecisionMonitoring
 from agentic_trading.openai_adapter import (
     AnalysisGenerationError,
     OpenAIFinancialAnalysisAdapter,
@@ -195,6 +196,48 @@ def build_parser() -> argparse.ArgumentParser:
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
     backtest.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
+    create_monitor = commands.add_parser(
+        "create-monitor", help="create human-defined follow-up criteria"
+    )
+    create_monitor.add_argument("run_id")
+    create_monitor.add_argument("--name", required=True)
+    create_monitor.add_argument("--rules", type=Path, required=True)
+    create_monitor.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    create_monitor.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
+    evaluate_monitor = commands.add_parser(
+        "evaluate-monitor", help="evaluate a monitor against immutable prices"
+    )
+    evaluate_monitor.add_argument("monitor_id")
+    evaluate_monitor.add_argument("--dataset", required=True)
+    evaluate_monitor.add_argument("--as-of", required=True)
+    evaluate_monitor.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    evaluate_monitor.add_argument(
+        "--artifact-root", type=Path, default=Path("artifacts")
+    )
+    list_alerts = commands.add_parser(
+        "list-alerts", help="list durable decision-monitoring alerts"
+    )
+    list_alerts.add_argument("--monitor")
+    list_alerts.add_argument("--status", choices=("open", "acknowledged"))
+    list_alerts.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    list_alerts.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
+    acknowledge_alert = commands.add_parser(
+        "acknowledge-alert", help="append a human alert acknowledgement"
+    )
+    acknowledge_alert.add_argument("alert_id")
+    acknowledge_alert.add_argument("--note", required=True)
+    acknowledge_alert.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    acknowledge_alert.add_argument(
+        "--artifact-root", type=Path, default=Path("artifacts")
+    )
     import_prices.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
@@ -573,6 +616,77 @@ def main(argv: Sequence[str] | None = None) -> int:
                 sort_keys=True,
             )
         )
+        return 0
+
+    if args.command == "create-monitor":
+        try:
+            monitor = SqliteDecisionMonitoring(
+                args.database, args.artifact_root
+            ).create_monitor(run_id=args.run_id, name=args.name, rules_path=args.rules)
+        except MonitoringError as error:
+            raise SystemExit(str(error)) from error
+        print(
+            json.dumps(
+                {
+                    "monitor_id": monitor.monitor_id,
+                    "name": monitor.name,
+                    "rules": [
+                        {
+                            "rule_id": rule.rule_id,
+                            "threshold": str(rule.threshold),
+                            "ticker": rule.ticker,
+                            "type": rule.type,
+                        }
+                        for rule in monitor.rules
+                    ],
+                    "rules_sha256": monitor.rules_sha256,
+                    "run_id": monitor.run_id,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if args.command == "evaluate-monitor":
+        try:
+            evaluation = SqliteDecisionMonitoring(
+                args.database, args.artifact_root
+            ).evaluate(args.monitor_id, dataset_id=args.dataset, as_of=args.as_of)
+        except MonitoringError as error:
+            raise SystemExit(str(error)) from error
+        print(
+            json.dumps(
+                {
+                    "as_of": evaluation.as_of,
+                    "dataset_id": evaluation.dataset_id,
+                    "dataset_sha256": evaluation.dataset_sha256,
+                    "evaluation_id": evaluation.evaluation_id,
+                    "monitor_id": evaluation.monitor_id,
+                    "results": evaluation.results,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if args.command == "list-alerts":
+        try:
+            alerts = SqliteDecisionMonitoring(
+                args.database, args.artifact_root
+            ).list_alerts(monitor_id=args.monitor, status=args.status)
+        except MonitoringError as error:
+            raise SystemExit(str(error)) from error
+        print(json.dumps([asdict(alert) for alert in alerts], sort_keys=True))
+        return 0
+
+    if args.command == "acknowledge-alert":
+        try:
+            acknowledgement = SqliteDecisionMonitoring(
+                args.database, args.artifact_root
+            ).acknowledge(args.alert_id, note=args.note)
+        except MonitoringError as error:
+            raise SystemExit(str(error)) from error
+        print(json.dumps(asdict(acknowledgement), sort_keys=True))
         return 0
 
     if args.command == "create-run":

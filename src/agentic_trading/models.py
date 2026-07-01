@@ -303,3 +303,68 @@ class BacktestArtifactModel(Base):
     parameters_json: Mapped[str] = mapped_column(String, nullable=False)
     results_json: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class DecisionMonitorModel(Base):
+    __tablename__ = "decision_monitors"
+
+    monitor_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("research_runs.run_id"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    rules_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    rules_storage_path: Mapped[str] = mapped_column(String, nullable=False)
+    rules_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class MonitorEvaluationModel(Base):
+    __tablename__ = "monitor_evaluations"
+    __table_args__ = (
+        UniqueConstraint(
+            "monitor_id", "dataset_id", "as_of", name="uq_monitor_evaluation"
+        ),
+    )
+
+    evaluation_id: Mapped[str] = mapped_column(String, primary_key=True)
+    monitor_id: Mapped[str] = mapped_column(
+        ForeignKey("decision_monitors.monitor_id"), nullable=False
+    )
+    dataset_id: Mapped[str] = mapped_column(
+        ForeignKey("price_datasets.dataset_id"), nullable=False
+    )
+    dataset_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    as_of: Mapped[str] = mapped_column(String, nullable=False)
+    results_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class MonitorAlertModel(Base):
+    __tablename__ = "monitor_alerts"
+    __table_args__ = (
+        UniqueConstraint("evaluation_id", "rule_id", name="uq_evaluation_rule_alert"),
+    )
+
+    alert_id: Mapped[str] = mapped_column(String, primary_key=True)
+    evaluation_id: Mapped[str] = mapped_column(
+        ForeignKey("monitor_evaluations.evaluation_id"), nullable=False
+    )
+    monitor_id: Mapped[str] = mapped_column(
+        ForeignKey("decision_monitors.monitor_id"), nullable=False
+    )
+    rule_id: Mapped[str] = mapped_column(String, nullable=False)
+    evidence_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class AlertAcknowledgementModel(Base):
+    __tablename__ = "alert_acknowledgements"
+
+    acknowledgement_id: Mapped[str] = mapped_column(String, primary_key=True)
+    alert_id: Mapped[str] = mapped_column(
+        ForeignKey("monitor_alerts.alert_id"), nullable=False, unique=True
+    )
+    note: Mapped[str] = mapped_column(String, nullable=False)
+    actor: Mapped[str] = mapped_column(String, nullable=False)
+    acknowledged_at: Mapped[str] = mapped_column(String, nullable=False)

@@ -1,0 +1,20 @@
+[
+  {
+    "rule_id": "price-floor",
+    "type": "price_below",
+    "ticker": "AAPL",
+    "threshold": "100"
+  },
+  {
+    "rule_id": "material-drawdown",
+    "type": "drawdown_at_least",
+    "ticker": "AAPL",
+    "threshold": "0.01"
+  },
+  {
+    "rule_id": "strict-equality",
+    "type": "price_above",
+    "ticker": "SPY",
+    "threshold": "501"
+  }
+]

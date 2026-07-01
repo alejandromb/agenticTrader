@@ -34,8 +34,9 @@ Supported rule types:
 | `price_above` | latest adjusted close is strictly above threshold |
 | `drawdown_at_least` | decline from the dataset peak through `as_of` is greater than or equal to threshold |
 
-Drawdown thresholds are decimal fractions from zero through one. Exact equality
-does not trigger strict price rules. All observations are bounded by `as_of`.
+Drawdown thresholds are decimal fractions greater than zero through one. Exact
+equality does not trigger strict price rules. All observations are bounded by
+`as_of`.
 
 ## Eligibility and authority
 

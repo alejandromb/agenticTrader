@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from agentic_trading.cli import main
+from agentic_trading.disposition_repository import SqliteDispositionRepository
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.workflow import WorkflowState
@@ -14,6 +15,36 @@ ROOT = Path(__file__).parents[1]
 PRICE_FIXTURE = ROOT / "tests/fixtures/prices-valid.csv"
 BACKTEST_PRICE_FIXTURE = ROOT / "tests/fixtures/prices-backtest.csv"
 HOLDINGS_FIXTURE = ROOT / "tests/fixtures/holdings-valid.csv"
+MONITOR_RULES_FIXTURE = ROOT / "tests/fixtures/monitor-rules.json"
+
+
+def create_completed_watch_run(database: Path) -> str:
+    upgrade_database(database)
+    repository = SqliteRunRepository(database)
+    run = repository.create_run(
+        memo_id="memo-cli-monitor", as_of="2025-01-01T00:00:00Z"
+    )
+    for target in (
+        WorkflowState.COLLECTING_EVIDENCE,
+        WorkflowState.EVIDENCE_READY,
+        WorkflowState.ANALYZING,
+        WorkflowState.CHALLENGING,
+        WorkflowState.SYNTHESIZING,
+        WorkflowState.VALIDATING,
+        WorkflowState.AWAITING_HUMAN_DISPOSITION,
+    ):
+        run = repository.transition(
+            run.run_id, expected_state=run.state, target_state=target
+        )
+    SqliteDispositionRepository(database).record(
+        run_id=run.run_id, status="watch", rationale="CLI fixture"
+    )
+    repository.transition(
+        run.run_id,
+        expected_state=run.state,
+        target_state=WorkflowState.COMPLETE,
+    )
+    return run.run_id
 
 
 def test_validate_memo_command(capsys: pytest.CaptureFixture[str]) -> None:
@@ -281,3 +312,100 @@ def test_backtest_command(tmp_path: Path, capsys: pytest.CaptureFixture[str]) ->
         trade["execution_date"] > trade["signal_date"]
         for trade in output["results"]["trades"]
     )
+
+
+def test_monitor_evaluate_list_and_acknowledge_commands(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    database = tmp_path / "state.db"
+    artifacts = tmp_path / "artifacts"
+    run_id = create_completed_watch_run(database)
+    assert (
+        main(
+            [
+                "import-prices",
+                str(PRICE_FIXTURE),
+                "--source",
+                "Monitoring fixture",
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(artifacts),
+            ]
+        )
+        == 0
+    )
+    dataset = json.loads(capsys.readouterr().out)
+
+    assert (
+        main(
+            [
+                "create-monitor",
+                run_id,
+                "--name",
+                "CLI monitor",
+                "--rules",
+                str(MONITOR_RULES_FIXTURE),
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(artifacts),
+            ]
+        )
+        == 0
+    )
+    monitor = json.loads(capsys.readouterr().out)
+
+    evaluation_args = [
+        "evaluate-monitor",
+        monitor["monitor_id"],
+        "--dataset",
+        dataset["dataset_id"],
+        "--as-of",
+        "2025-01-06",
+        "--database",
+        str(database),
+        "--artifact-root",
+        str(artifacts),
+    ]
+    assert main(evaluation_args) == 0
+    evaluation = json.loads(capsys.readouterr().out)
+    assert main(evaluation_args) == 0
+    assert json.loads(capsys.readouterr().out) == evaluation
+
+    assert (
+        main(
+            [
+                "list-alerts",
+                "--monitor",
+                monitor["monitor_id"],
+                "--status",
+                "open",
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(artifacts),
+            ]
+        )
+        == 0
+    )
+    alerts = json.loads(capsys.readouterr().out)
+    assert len(alerts) == 2
+
+    assert (
+        main(
+            [
+                "acknowledge-alert",
+                alerts[0]["alert_id"],
+                "--note",
+                "Reviewed",
+                "--database",
+                str(database),
+                "--artifact-root",
+                str(artifacts),
+            ]
+        )
+        == 0
+    )
+    acknowledgement = json.loads(capsys.readouterr().out)
+    assert acknowledgement["alert_id"] == alerts[0]["alert_id"]
