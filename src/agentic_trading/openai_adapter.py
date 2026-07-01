@@ -14,7 +14,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
-FINANCIAL_PROMPT_VERSION = "1.2.0"
+FINANCIAL_PROMPT_VERSION = "1.3.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -34,6 +34,16 @@ Respect accounting containment: do not present a component such as cash as an
 additional pool separate from a total such as current assets. Do not infer
 solvency or conclude that debt is immaterial from debt-to-assets alone; discuss
 that comparison only as one limited observation."""
+
+INSTRUCTIONS += """
+Use cash_allocation to explain how operating cash was deployed. When operating
+cash flow and capital expenditure are available, calculate their difference as
+an explicitly derived free-cash-flow approximation and cite both claims. Keep
+capital expenditure, acquisitions, dividends, share repurchases, debt issuance,
+and debt repayment distinct. A negative investing or financing cash-flow value
+means net cash used in that category; it does not by itself mean cash was
+destroyed. Do not speculate about the purpose of spending when the supplied
+claims do not establish it; identify that missing context as an uncertainty."""
 
 
 class AnalysisGenerationError(RuntimeError):

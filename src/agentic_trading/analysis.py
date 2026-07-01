@@ -22,17 +22,28 @@ class FinancialAnalysis(BaseModel):
     strengths: list[AnalysisPoint]
     concerns: list[AnalysisPoint]
     uncertainties: list[AnalysisPoint]
+    cash_allocation: list[AnalysisPoint] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def require_content(self) -> FinancialAnalysis:
-        if not (self.strengths or self.concerns or self.uncertainties):
+        if not (
+            self.strengths
+            or self.concerns
+            or self.uncertainties
+            or self.cash_allocation
+        ):
             raise ValueError("analysis must contain at least one analytical point")
         return self
 
     def referenced_claim_ids(self) -> set[str]:
         return {
             claim_id
-            for group in (self.strengths, self.concerns, self.uncertainties)
+            for group in (
+                self.strengths,
+                self.concerns,
+                self.uncertainties,
+                self.cash_allocation,
+            )
             for point in group
             for claim_id in point.claim_ids
         }

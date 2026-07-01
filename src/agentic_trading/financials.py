@@ -63,6 +63,57 @@ ANNUAL_FINANCIAL_METRICS = (
         required=False,
     ),
     FinancialMetricSpec(
+        name="business_acquisitions",
+        concept="PaymentsToAcquireBusinessesNetOfCashAcquired",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="dividends_paid",
+        concept="PaymentsOfDividends",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="share_repurchases",
+        concept="PaymentsForRepurchaseOfCommonStock",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="long_term_debt_issued",
+        concept="ProceedsFromIssuanceOfLongTermDebt",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="long_term_debt_repaid",
+        concept="RepaymentsOfLongTermDebt",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="investing_cash_flow",
+        concept="NetCashProvidedByUsedInInvestingActivities",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="financing_cash_flow",
+        concept="NetCashProvidedByUsedInFinancingActivities",
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
+        name="net_change_in_cash",
+        concept=(
+            "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"
+            "PeriodIncreaseDecreaseIncludingExchangeRateEffect"
+        ),
+        duration=True,
+        required=False,
+    ),
+    FinancialMetricSpec(
         name="current_long_term_debt",
         concept="LongTermDebtCurrent",
         duration=False,

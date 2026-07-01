@@ -10,7 +10,7 @@ Architecture and project foundation.
 
 ## Active objective
 
-Validate prompt version 1.2 and begin multi-period financial comparisons.
+Validate cash-allocation analysis and begin multi-period financial comparisons.
 
 ## Completed
 
@@ -63,6 +63,10 @@ Validate prompt version 1.2 and begin multi-period financial comparisons.
   Walmart supplied eleven and one explicit evidence gap.
 - Evaluated the expanded Walmart analysis at 11/12 and updated prompt v1.2 with
   accounting-containment and limited-solvency rules.
+- Expanded the annual snapshot with acquisitions, shareholder distributions,
+  debt activity, investing and financing cash flows, and net cash movement.
+- Added a dedicated cash-allocation analysis section and prompt v1.3 rules that
+  distinguish reinvestment, acquisitions, financing, and shareholder returns.
 
 ## Accepted decisions
 
@@ -88,10 +92,11 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Validate prompt version 1.2 on the next live research run.
-2. Design multi-period fact identity and restatement handling.
-3. Add prior-year comparisons to the financial analysis contract.
-4. Validate the Docker image when the local daemon can resolve image metadata.
+1. Validate prompt version 1.3 and cash allocation on a live research run.
+2. Extract filing narrative explaining the purpose of material capital spending.
+3. Design multi-period fact identity and restatement handling.
+4. Add prior-year comparisons to the financial analysis contract.
+5. Validate the Docker image when the local daemon can resolve image metadata.
 
 ## Resume here
 

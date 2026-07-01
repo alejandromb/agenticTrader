@@ -423,6 +423,7 @@ def _print_run(run: object, claims: list[object], artifact: object | None) -> No
         ("Strengths", artifact.analysis.strengths),
         ("Concerns", artifact.analysis.concerns),
         ("Uncertainties", artifact.analysis.uncertainties),
+        ("Cash allocation", artifact.analysis.cash_allocation),
     ):
         print(f"{title}:")
         for point in points:

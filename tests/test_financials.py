@@ -113,6 +113,17 @@ def test_available_snapshot_extracts_optional_liquidity_and_profit_metrics() -> 
         "PaymentsToAcquirePropertyPlantAndEquipment": (12715000000, True),
         "LongTermDebtCurrent": (12350000000, False),
         "LongTermDebtNoncurrent": (78328000000, False),
+        "PaymentsToAcquireBusinessesNetOfCashAcquired": (53000000, True),
+        "PaymentsOfDividends": (7507000000, True),
+        "PaymentsForRepurchaseOfCommonStock": (8088000000, True),
+        "ProceedsFromIssuanceOfLongTermDebt": (3983000000, True),
+        "RepaymentsOfLongTermDebt": (2625000000, True),
+        "NetCashProvidedByUsedInInvestingActivities": (-26350000000, True),
+        "NetCashProvidedByUsedInFinancingActivities": (-13553000000, True),
+        (
+            "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"
+            "PeriodIncreaseDecreaseIncludingExchangeRateEffect"
+        ): (1785000000, True),
     }
     facts: dict[str, object] = {"facts": {"us-gaap": {}}}
     for concept, (value, duration) in concepts.items():
@@ -142,3 +153,11 @@ def test_available_snapshot_extracts_optional_liquidity_and_profit_metrics() -> 
     assert snapshot["cash_and_cash_equivalents"].value == Decimal("35934000000")
     assert snapshot["operating_income"].value == Decimal("133050000000")
     assert snapshot["capital_expenditure"].value == Decimal("12715000000")
+    assert snapshot["business_acquisitions"].value == Decimal("53000000")
+    assert snapshot["dividends_paid"].value == Decimal("7507000000")
+    assert snapshot["share_repurchases"].value == Decimal("8088000000")
+    assert snapshot["long_term_debt_issued"].value == Decimal("3983000000")
+    assert snapshot["long_term_debt_repaid"].value == Decimal("2625000000")
+    assert snapshot["investing_cash_flow"].value == Decimal("-26350000000")
+    assert snapshot["financing_cash_flow"].value == Decimal("-13553000000")
+    assert snapshot["net_change_in_cash"].value == Decimal("1785000000")
