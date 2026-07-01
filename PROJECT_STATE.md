@@ -96,6 +96,9 @@ Surface revision audits and explicit analysis limitations.
   its exact formula and filing-fact inputs.
 - Persisted calculated claims with database-enforced formula and input-claim
   lineage and integrated them into research analysis; prompt version is now 1.6.
+- Added deterministic capital-allocation table extraction anchored to the total
+  capex row, preserving table units and period headers while rejecting unrelated
+  keyword matches; verified against the captured Walmart filing.
 
 ## Accepted decisions
 
@@ -123,10 +126,10 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Persist calculation claims with formula and input-claim lineage.
-2. Feed validated calculation claims into financial analysis.
-3. Add capital-allocation detail extraction from filing tables.
-4. Validate automatic revision auditing on an issuer with a known revision.
+1. Update README and user guide to the implemented version-one capability.
+2. Live-validate prompt v1.6 with calculations and capital-allocation details.
+3. Validate automatic revision auditing on an issuer with a known revision.
+4. Complete the version-one acceptance audit.
 
 ## Future integration note
 

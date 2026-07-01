@@ -14,7 +14,10 @@ from agentic_trading.analysis_repository import (
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.calculations import calculate_financial_history
 from agentic_trading.claim_repository import CandidateClaim, SqliteClaimRepository
-from agentic_trading.filing_narrative import extract_capital_allocation_statements
+from agentic_trading.filing_narrative import (
+    extract_capital_allocation_statements,
+    extract_capital_allocation_table_details,
+)
 from agentic_trading.financials import (
     extract_annual_financial_history,
     extract_available_annual_financial_snapshot,
@@ -246,6 +249,19 @@ class CompanyResearchService:
                 sequence=sequence,
             )
             for sequence, statement in enumerate(statements, start=1)
+        )
+        details = extract_capital_allocation_table_details(filing_content)
+        claims.extend(
+            repository.register_filing_statement(
+                run_id=run_id,
+                source_id=source.source_id,
+                statement=detail,
+                topic="capital_allocation_detail",
+                period_end=filing.report_date,
+                accession_number=filing.accession_number,
+                sequence=sequence,
+            )
+            for sequence, detail in enumerate(details, start=1)
         )
         if "capital_expenditure" in snapshot and not statements:
             evidence_gaps += (
