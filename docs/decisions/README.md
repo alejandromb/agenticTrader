@@ -21,6 +21,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0005](0005-source-quality-and-acquisition-policy.md) | Adopt a primary-source-first evidence policy | Accepted |
 | [0006](0006-deterministic-research-workflow.md) | Use a deterministic, resumable research workflow | Accepted |
 | [0007](0007-python-local-first-stack.md) | Use a Python 3.12 local-first implementation stack | Accepted |
+| [0008](0008-openai-structured-analysis-adapter.md) | Use OpenAI Responses with structured analysis output | Accepted |
 
 ## Convention
 

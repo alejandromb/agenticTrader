@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+import json
+from decimal import Decimal
+from types import SimpleNamespace
+from typing import Any
+
+import pytest
+
+from agentic_trading.analysis import AnalysisPoint, FinancialAnalysis
+from agentic_trading.claim_repository import CandidateClaim
+from agentic_trading.openai_adapter import (
+    AnalysisGenerationError,
+    OpenAIFinancialAnalysisAdapter,
+)
+
+
+def claim() -> CandidateClaim:
+    return CandidateClaim(
+        claim_id="claim-001",
+        run_id="run-001",
+        source_id="source-001",
+        claim_type="fact",
+        statement="Revenue was 416161000000 USD.",
+        taxonomy="us-gaap",
+        concept="RevenueFromContractWithCustomerExcludingAssessedTax",
+        label="Revenue",
+        unit="USD",
+        numeric_value=Decimal("416161000000"),
+        period_start="2024-09-29",
+        period_end="2025-09-27",
+        accession_number="0000320193-25-000079",
+        extraction_method="sec_companyfacts_v1",
+        extracted_at="2026-06-30T16:00:00Z",
+    )
+
+
+class FakeResponses:
+    def __init__(self, analysis: FinancialAnalysis | None) -> None:
+        self.analysis = analysis
+        self.arguments: dict[str, Any] = {}
+
+    def parse(self, **arguments: Any) -> SimpleNamespace:
+        self.arguments = arguments
+        return SimpleNamespace(output_parsed=self.analysis)
+
+
+def test_adapter_uses_structured_responses_and_validates_claims() -> None:
+    analysis = FinancialAnalysis(
+        assessment="positive",
+        summary="Revenue scale is a financial strength.",
+        strengths=[AnalysisPoint(text="Large revenue base.", claim_ids=["claim-001"])],
+        concerns=[],
+        uncertainties=[],
+    )
+    responses = FakeResponses(analysis)
+    client = SimpleNamespace(responses=responses)
+    adapter = OpenAIFinancialAnalysisAdapter(client=client, model="test-model")
+
+    result = adapter.analyze(question="Assess financial condition", claims=[claim()])
+
+    assert result == analysis
+    assert responses.arguments["model"] == "test-model"
+    assert responses.arguments["text_format"] is FinancialAnalysis
+    payload = json.loads(responses.arguments["input"])
+    assert payload["candidate_claims"][0]["claim_id"] == "claim-001"
+
+
+def test_unknown_claim_reference_is_rejected() -> None:
+    analysis = FinancialAnalysis(
+        assessment="insufficient",
+        summary="More evidence is required.",
+        strengths=[],
+        concerns=[],
+        uncertainties=[
+            AnalysisPoint(text="Missing evidence.", claim_ids=["unknown-claim"])
+        ],
+    )
+    adapter = OpenAIFinancialAnalysisAdapter(
+        client=SimpleNamespace(responses=FakeResponses(analysis))
+    )
+
+    with pytest.raises(AnalysisGenerationError, match="unknown-claim"):
+        adapter.analyze(question="Assess financial condition", claims=[claim()])
+
+
+def test_empty_claim_input_is_rejected() -> None:
+    adapter = OpenAIFinancialAnalysisAdapter(
+        client=SimpleNamespace(responses=FakeResponses(None))
+    )
+
+    with pytest.raises(ValueError, match="At least one"):
+        adapter.analyze(question="Assess financial condition", claims=[])

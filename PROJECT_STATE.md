@@ -10,8 +10,8 @@ Architecture and project foundation.
 
 ## Active objective
 
-Select the model provider and model boundary for the first non-deterministic
-analysis stage.
+Persist structured OpenAI financial-analysis artifacts and run the first live
+evaluation after local API-key configuration.
 
 ## Completed
 
@@ -43,6 +43,9 @@ analysis stage.
   source/run consistency.
 - Added and live-verified a minimum annual financial snapshot covering revenue,
   net income, assets, liabilities, and operating cash flow.
+- Selected OpenAI Responses with strict Structured Outputs in ADR-0008.
+- Implemented a pinned, configurable OpenAI financial-analysis adapter with
+  domain-level claim-lineage validation.
 
 ## Accepted decisions
 
@@ -53,10 +56,12 @@ analysis stage.
 - ADR-0005: Adopt a primary-source-first evidence policy.
 - ADR-0006: Use a deterministic, resumable research workflow.
 - ADR-0007: Use a Python 3.12 local-first implementation stack.
+- ADR-0008: Use OpenAI Responses with structured analysis output.
 
 ## Open questions
 
-- Which model provider, if any, should power the first extraction experiment?
+- What evaluation rubric should determine whether a model-generated financial
+  analysis is acceptable?
 
 ## Blockers
 
@@ -64,19 +69,21 @@ Docker and Compose configuration validation passes. Full image execution remains
 to be verified because the local Docker daemon stalled while resolving image
 metadata, including for an already cached base image.
 
+A live OpenAI evaluation requires `OPENAI_API_KEY` to be configured locally.
+The key must not be pasted into chat, committed, or persisted in the database.
+
 ## Next actions
 
-1. Select and record the first model provider and model interface.
-2. Define the structured output contract for the financial-analysis stage.
-3. Implement the provider adapter without exposing it to execution authority.
-4. Evaluate its output against the captured Apple evidence and candidate facts.
+1. Persist structured financial-analysis artifacts and model metadata.
+2. Define an initial analysis evaluation rubric.
+3. Configure `OPENAI_API_KEY` locally.
+4. Evaluate the pinned model against the captured Apple evidence and claims.
 
 ## Resume here
 
-Start by deciding whether the first model-backed analysis uses OpenAI or another
-provider. The adapter must accept only validated evidence artifacts and return a
-versioned structured analysis artifact. Provider credentials remain runtime
-secrets and are never persisted.
+Start by adding the analysis artifact ORM model and migration. Then configure a
+local `OPENAI_API_KEY` and run the first live analysis. Never store the key in
+Git, logs, prompts, artifacts, or the database.
 
 ## Working-tree note
 

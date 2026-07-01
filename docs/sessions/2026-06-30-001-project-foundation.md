@@ -37,6 +37,9 @@ way to resume work after an interruption.
   revenue against live SEC company-facts data.
 - Added candidate-claim persistence with database-enforced source/run lineage.
 - Live-verified extraction and persistence of five core annual financial facts.
+- Selected OpenAI Responses with strict Structured Outputs and a pinned GPT-5.4
+  snapshot for the first bounded financial-analysis stage.
+- Implemented and unit-tested the OpenAI adapter and claim-reference guard.
 
 ## Decisions
 
@@ -47,6 +50,7 @@ way to resume work after an interruption.
 - ADR-0005: Adopt a primary-source-first evidence policy.
 - ADR-0006: Use a deterministic, resumable research workflow.
 - ADR-0007: Use a Python 3.12 local-first implementation stack.
+- ADR-0008: Use OpenAI Responses with structured analysis output.
 
 ## Files added or updated
 
@@ -87,6 +91,10 @@ way to resume work after an interruption.
 - `migrations/versions/20260630_0003_candidate_claims.py`
 - `tests/test_financials.py`
 - `tests/test_claim_repository.py`
+- `docs/decisions/0008-openai-structured-analysis-adapter.md`
+- `src/agentic_trading/analysis.py`
+- `src/agentic_trading/openai_adapter.py`
+- `tests/test_openai_adapter.py`
 - `docs/sessions/README.md`
 - `docs/sessions/2026-06-30-001-project-foundation.md`
 
@@ -100,15 +108,15 @@ way to resume work after an interruption.
 - Expanded the suite through live-ingestion hardening: 31 tests pass.
 - Completed the candidate-claim slice: 34 tests pass, and live end-to-end claim
   persistence succeeded.
+- Added the OpenAI structured-analysis boundary: 37 tests pass.
 - Attempted a Docker image build; the local daemon stalled resolving base-image
   metadata, so container execution validation remains pending.
 
 ## Unresolved questions
 
-- Which model provider, if any, should power the first non-deterministic analysis
-  stage?
+- What rubric should be used for the first financial-analysis evaluation?
 
 ## Handoff
 
-Next, choose the model provider for the first structured financial-analysis
-stage and record its adapter and credential boundaries.
+Next, persist analysis artifacts, define the evaluation rubric, and run a live
+evaluation after `OPENAI_API_KEY` is configured locally.

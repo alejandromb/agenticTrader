@@ -44,6 +44,11 @@ Copy `.env.example` to `.env` and replace its placeholder with a real contact
 before performing live SEC requests. Compose passes `SEC_USER_AGENT` at runtime;
 it is not stored in the image. `.env` is excluded from Git.
 
+For live model evaluation, set `OPENAI_API_KEY` in the same local `.env`. The
+default model is the pinned `gpt-5.4-2026-03-05` snapshot and can be overridden
+with `OPENAI_MODEL` for explicit experiments. Neither value is persisted in the
+database; each generated artifact will record the model actually used.
+
 ## Persistence boundary
 
 The Compose volumes retain the SQLite database and captured artifacts across
