@@ -73,6 +73,7 @@ def generated(
         ),
         model="test-model",
         provider_response_id=response_id,
+        prompt_version="1.0.0",
         input_claim_ids=(claim_id,),
     )
 

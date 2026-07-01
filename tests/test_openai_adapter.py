@@ -67,6 +67,7 @@ def test_adapter_uses_structured_responses_and_validates_claims() -> None:
 
     assert result.analysis == analysis
     assert result.provider_response_id == "response-001"
+    assert result.prompt_version == "1.1.0"
     assert result.input_claim_ids == ("claim-001",)
     assert responses.arguments["model"] == "test-model"
     assert responses.arguments["text_format"] is FinancialAnalysis

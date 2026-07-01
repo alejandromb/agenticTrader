@@ -10,8 +10,8 @@ Architecture and project foundation.
 
 ## Active objective
 
-Complete the first live OpenAI financial-analysis evaluation after API quota is
-available.
+Expand the deterministic financial evidence set and evaluate prompt version 1.1
+on a second fixture.
 
 ## Completed
 
@@ -50,6 +50,10 @@ available.
   claim lineage.
 - Added the Financial Analysis Evaluation Rubric v1.
 - Verified the replacement API key is correctly configured and Git-ignored.
+- Persisted and evaluated the first live Apple financial analysis: all gates
+  passed and the artifact scored 11/12.
+- Updated the financial-analysis prompt to version 1.1 from observed
+  evidence-fidelity issues.
 
 ## Accepted decisions
 
@@ -64,8 +68,7 @@ available.
 
 ## Open questions
 
-- Does the first live artifact meet the v1 rubric, and which observed failures
-  require prompt or contract changes?
+- Which second company best tests the workflow against economics unlike Apple's?
 
 ## Blockers
 
@@ -73,24 +76,21 @@ Docker and Compose configuration validation passes. Full image execution remains
 to be verified because the local Docker daemon stalled while resolving image
 metadata, including for an already cached base image.
 
-The first live request reached OpenAI but returned `insufficient_quota`. Billing
-or API credits must be enabled before the evaluation can complete. No analysis
-artifact was created from the failed request.
-
 ## Next actions
 
-1. Enable OpenAI API billing or credits for the configured project key.
-2. Retry the pinned-model Apple analysis.
-3. Score the result with Financial Analysis Evaluation Rubric v1.
-4. Record the evaluation and revise the prompt only from observed failures.
+1. Add cash, current assets/liabilities, debt, operating income, and capital
+   expenditure facts to the deterministic snapshot.
+2. Create a second company fixture with materially different economics.
+3. Run prompt version 1.1 on the second fixture.
+4. Compare both evaluations before expanding to other analyst stages.
 
 ## Resume here
 
-First, confirm API quota is available, then retry `analyze-financials` against
-the retained Apple run. Evaluate the saved artifact with
-`docs/evaluation/financial-analysis-v1.md`. Never display or persist the key.
+Start by expanding the deterministic snapshot. Then evaluate prompt version 1.1
+on a second company rather than overfitting the prompt to Apple. Never display
+or persist the API key.
 
 ## Working-tree note
 
-The foundation session is checkpointed through `651b7d4`. The current analysis
-artifact work is pending its session checkpoint commit.
+Analysis persistence is checkpointed through `8e2a51b`. The successful live
+evaluation and prompt v1.1 update are pending the next commit.

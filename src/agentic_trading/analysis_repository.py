@@ -15,7 +15,6 @@ from agentic_trading.models import AnalysisArtifactModel, AnalysisInputClaimMode
 from agentic_trading.openai_adapter import GeneratedFinancialAnalysis
 
 ANALYSIS_SCHEMA_VERSION = "1.0.0"
-FINANCIAL_PROMPT_VERSION = "1.0.0"
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,7 +57,7 @@ class SqliteAnalysisRepository:
             provider="openai",
             model=generated.model,
             provider_response_id=generated.provider_response_id,
-            prompt_version=FINANCIAL_PROMPT_VERSION,
+            prompt_version=generated.prompt_version,
             content_json=generated.analysis.model_dump_json(),
             created_at=created_at,
         )

@@ -14,6 +14,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
+FINANCIAL_PROMPT_VERSION = "1.1.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -21,6 +22,12 @@ concerns, and uncertainties. Every analytical point must cite one or more input
 claim IDs. Do not invent evidence, issue trade instructions, allocate capital,
 or claim that returns are guaranteed. Return only the requested structured
 analysis."""
+
+INSTRUCTIONS += """
+Preserve the exact accounting meaning of each supplied label; do not add
+qualifiers such as attribution to parent unless the claim states them. Do not
+equate total liabilities with debt or financial leverage. Label any derived
+comparison as analysis rather than a reported fact."""
 
 
 class AnalysisGenerationError(RuntimeError):
@@ -32,6 +39,7 @@ class GeneratedFinancialAnalysis:
     analysis: FinancialAnalysis
     model: str
     provider_response_id: str
+    prompt_version: str
     input_claim_ids: tuple[str, ...]
 
 
@@ -84,6 +92,7 @@ class OpenAIFinancialAnalysisAdapter:
             analysis=analysis,
             model=self.model,
             provider_response_id=response.id,
+            prompt_version=FINANCIAL_PROMPT_VERSION,
             input_claim_ids=tuple(sorted(known_claim_ids)),
         )
 

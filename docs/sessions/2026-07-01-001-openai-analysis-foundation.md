@@ -18,6 +18,10 @@ evaluation against the retained Apple financial claims.
 - Defined Financial Analysis Evaluation Rubric v1.
 - Attempted the first live request; OpenAI returned `insufficient_quota` before
   generation, and no artifact was persisted.
+- After billing was updated, the retry succeeded and persisted the first
+  structured Apple financial analysis.
+- The artifact passed all gates and scored 11/12 under the v1 rubric.
+- Prompt version 1.1 addresses the two observed evidence-fidelity issues.
 
 ## Validation
 
@@ -26,5 +30,5 @@ evaluation against the retained Apple financial claims.
 
 ## Handoff
 
-Enable billing or credits for the OpenAI project, rerun the Apple financial
-analysis, and score the persisted artifact using the v1 rubric.
+Use prompt version 1.1 for the next analysis fixture. Expand deterministic
+financial evidence before treating the financial-analysis stage as complete.
