@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-trading.local/schemas/investment-memo-v1.schema.json",
+  "title": "Agentic Trading Investment Memo v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "memo_id",
+    "created_at",
+    "as_of",
+    "subject",
+    "question",
+    "horizon",
+    "executive_view",
+    "sections",
+    "claims",
+    "evidence",
+    "uncertainties",
+    "human_disposition"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "memo_id": { "$ref": "#/$defs/nonEmptyString" },
+    "created_at": { "$ref": "#/$defs/dateTime" },
+    "as_of": { "$ref": "#/$defs/dateTime" },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ticker", "company_name", "exchange"],
+      "properties": {
+        "ticker": { "type": "string", "pattern": "^[A-Z][A-Z0-9.-]{0,9}$" },
+        "company_name": { "$ref": "#/$defs/nonEmptyString" },
+        "exchange": { "$ref": "#/$defs/nonEmptyString" },
+        "security_id": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "question": { "$ref": "#/$defs/nonEmptyString" },
+    "horizon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "minimum_years"],
+      "properties": {
+        "label": { "$ref": "#/$defs/nonEmptyString" },
+        "minimum_years": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "executive_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["thesis", "counter_thesis", "conclusion", "claim_ids"],
+      "properties": {
+        "thesis": { "$ref": "#/$defs/nonEmptyString" },
+        "counter_thesis": { "$ref": "#/$defs/nonEmptyString" },
+        "conclusion": { "$ref": "#/$defs/nonEmptyString" },
+        "claim_ids": { "$ref": "#/$defs/idList" }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["business", "financials", "valuation", "risks"],
+      "properties": {
+        "business": { "$ref": "#/$defs/analysisSection" },
+        "financials": { "$ref": "#/$defs/analysisSection" },
+        "valuation": { "$ref": "#/$defs/analysisSection" },
+        "risks": { "$ref": "#/$defs/analysisSection" }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/claim" }
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidence" }
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "impact"],
+        "properties": {
+          "description": { "$ref": "#/$defs/nonEmptyString" },
+          "impact": { "$ref": "#/$defs/nonEmptyString" },
+          "resolution": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "human_disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "enum": [
+            "undecided",
+            "investigate",
+            "watch",
+            "reject",
+            "consider_for_portfolio"
+          ]
+        },
+        "decided_at": { "$ref": "#/$defs/dateTime" },
+        "rationale": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "dateTime": { "type": "string", "format": "date-time" },
+    "idList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyString" },
+      "uniqueItems": true
+    },
+    "analysisSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "claim_ids"],
+      "properties": {
+        "summary": { "$ref": "#/$defs/nonEmptyString" },
+        "claim_ids": { "$ref": "#/$defs/idList" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "type", "statement"],
+      "properties": {
+        "claim_id": { "$ref": "#/$defs/nonEmptyString" },
+        "type": { "enum": ["fact", "calculation", "assumption", "opinion"] },
+        "statement": { "$ref": "#/$defs/nonEmptyString" },
+        "evidence_ids": { "$ref": "#/$defs/idList" },
+        "input_claim_ids": { "$ref": "#/$defs/idList" },
+        "method": { "$ref": "#/$defs/nonEmptyString" },
+        "rationale": { "$ref": "#/$defs/nonEmptyString" },
+        "confidence": { "enum": ["low", "medium", "high"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "fact" } }, "required": ["type"] },
+          "then": {
+            "required": ["evidence_ids"],
+            "properties": { "evidence_ids": { "minItems": 1 } }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "calculation" } }, "required": ["type"] },
+          "then": {
+            "required": ["input_claim_ids", "method"],
+            "properties": { "input_claim_ids": { "minItems": 1 } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "enum": ["assumption", "opinion"] } },
+            "required": ["type"]
+          },
+          "then": { "required": ["rationale"] }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "source_type",
+        "title",
+        "publisher",
+        "url",
+        "retrieved_at",
+        "locator",
+        "support"
+      ],
+      "properties": {
+        "evidence_id": { "$ref": "#/$defs/nonEmptyString" },
+        "source_type": {
+          "enum": [
+            "regulatory_filing",
+            "company_material",
+            "earnings_call",
+            "market_data",
+            "government_data",
+            "news",
+            "industry_research",
+            "other"
+          ]
+        },
+        "title": { "$ref": "#/$defs/nonEmptyString" },
+        "publisher": { "$ref": "#/$defs/nonEmptyString" },
+        "url": { "type": "string", "format": "uri" },
+        "published_at": { "$ref": "#/$defs/dateTime" },
+        "retrieved_at": { "$ref": "#/$defs/dateTime" },
+        "locator": { "$ref": "#/$defs/nonEmptyString" },
+        "support": { "$ref": "#/$defs/nonEmptyString" },
+        "content_hash": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    }
+  }
+}
