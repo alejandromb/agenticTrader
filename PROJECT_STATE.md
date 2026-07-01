@@ -87,6 +87,10 @@ Surface revision audits and explicit analysis limitations.
 - Added automatic revision-audit population by comparing same-period facts in
   the selected 10-K with the earliest prior 10-K observation; changed values
   retain both accessions and remain neutrally classified.
+- Live-validated automatic revision auditing on Walmart: the visible audit count
+  was zero because no compared annual values changed across accessions.
+- Normalized known limitations to prevent duplicates that differ only by case or
+  trailing punctuation.
 
 ## Accepted decisions
 
@@ -114,9 +118,9 @@ metadata, including for an already cached base image.
 
 ## Next actions
 
-1. Live-validate automatic cross-filing revision audits.
-2. Add deterministic growth calculations and ratio history.
-3. Add capital-allocation detail extraction from filing tables.
+1. Add deterministic growth calculations and ratio history.
+2. Add capital-allocation detail extraction from filing tables.
+3. Validate automatic revision auditing on an issuer with a known revision.
 4. Validate the Docker image when the local daemon can resolve image metadata.
 
 ## Future integration note

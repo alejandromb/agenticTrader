@@ -88,7 +88,10 @@ def test_adapter_cannot_omit_known_evidence_gaps() -> None:
         uncertainties=[
             AnalysisPoint(text="Debt evidence is missing.", claim_ids=["claim-001"])
         ],
-        known_limitations=["Management guidance was not verified."],
+        known_limitations=[
+            "Management guidance was not verified.",
+            "Missing total liabilities.",
+        ],
     )
     adapter = OpenAIFinancialAnalysisAdapter(
         client=SimpleNamespace(responses=FakeResponses(analysis)), model="test-model"
@@ -102,7 +105,7 @@ def test_adapter_cannot_omit_known_evidence_gaps() -> None:
 
     assert result.analysis.known_limitations == [
         "Management guidance was not verified.",
-        "Missing total liabilities",
+        "Missing total liabilities.",
     ]
 
 

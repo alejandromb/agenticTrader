@@ -121,14 +121,14 @@ class OpenAIFinancialAnalysisAdapter:
             raise AnalysisGenerationError(
                 f"Analysis referenced unknown claims: {references}"
             )
-        limitations = tuple(
-            dict.fromkeys(
-                [
-                    *(item.strip() for item in analysis.known_limitations),
-                    *(item.strip() for item in evidence_gaps),
-                ]
-            )
-        )
+        limitations: list[str] = []
+        limitation_keys: set[str] = set()
+        for item in (*analysis.known_limitations, *evidence_gaps):
+            limitation = item.strip()
+            key = limitation.rstrip(". ").casefold()
+            if key and key not in limitation_keys:
+                limitation_keys.add(key)
+                limitations.append(limitation)
         analysis = analysis.model_copy(update={"known_limitations": list(limitations)})
         return GeneratedFinancialAnalysis(
             analysis=analysis,
