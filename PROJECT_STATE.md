@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Milestone 3 active
+Session status: Milestone 4 active
 
 ## Current phase
 
-Milestone 3 point-in-time quantitative lab.
+Milestone 4 deterministic decision monitoring.
 
 ## Active objective
 
-Implement ADR-0012 and the Milestone 3 product contract.
+Implement ADR-0013 and the Milestone 4 product contract.
 
 ## Completed
 
@@ -153,6 +153,8 @@ Implement ADR-0012 and the Milestone 3 product contract.
   parameters/results, and reproducibility tests.
 - Accepted the complete Milestone 3 quantitative-lab contract with documented
   known limitations and no broker, order, or portfolio-mutation path.
+- Accepted ADR-0013 and recorded the Milestone 4 deterministic decision-
+  monitoring contract and signal-quality experiment.
 
 ## Accepted decisions
 
@@ -168,6 +170,7 @@ Implement ADR-0012 and the Milestone 3 product contract.
 - ADR-0010: Require measured evidence before adopting additional complexity.
 - ADR-0011: Scope version two as a complete research decision record.
 - ADR-0012: Scope Milestone 3 as a point-in-time quantitative lab.
+- ADR-0013: Scope Milestone 4 as deterministic decision monitoring.
 
 ## Open questions
 
@@ -182,8 +185,9 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Select the next product goal; do not expand into execution without a separate
-   accepted architecture decision and safety contract.
+1. Add immutable, eligibility-gated monitor definitions and rule validation.
+2. Add idempotent point-in-time evaluation and durable alerts.
+3. Add append-only human acknowledgement and acceptance evaluation.
 
 ## Future integration note
 
@@ -195,7 +199,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Milestone 3 is complete. Begin the next session by selecting and recording the
-next product goal. Keep DiveTrader separate and execution out of scope unless a
-new ADR defines the approval, risk, audit, idempotency, and reconciliation
-boundaries.
+Begin with eligibility-gated monitor creation and strict JSON rule validation.
+Keep scheduling, notifications, models, DiveTrader, and execution out of scope.

@@ -26,6 +26,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0010](0010-evidence-before-complexity.md) | Require evidence before adopting additional complexity | Accepted |
 | [0011](0011-version-two-research-decision-record.md) | Scope version two as a complete research decision record | Accepted |
 | [0012](0012-milestone-three-quantitative-lab.md) | Scope Milestone 3 as a point-in-time quantitative lab | Accepted |
+| [0013](0013-milestone-four-decision-monitoring.md) | Scope Milestone 4 as deterministic decision monitoring | Accepted |
 
 ## Convention
 
