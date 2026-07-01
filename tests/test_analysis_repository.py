@@ -75,6 +75,7 @@ def generated(
         provider_response_id=response_id,
         prompt_version="1.0.0",
         input_claim_ids=(claim_id,),
+        evidence_gaps=("Missing liabilities",),
     )
 
 
@@ -92,7 +93,9 @@ def test_analysis_artifact_preserves_model_and_claim_lineage(tmp_path: Path) -> 
     assert artifact.model == "test-model"
     assert artifact.provider == "openai"
     assert artifact.input_claim_ids == (claim_id,)
+    assert artifact.evidence_gaps == ("Missing liabilities",)
     assert artifact.analysis.assessment == "positive"
+    assert SqliteAnalysisRepository(database).latest_for_run("run-a") == artifact
 
 
 def test_analysis_cannot_link_claim_from_another_run(tmp_path: Path) -> None:

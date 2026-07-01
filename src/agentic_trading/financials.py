@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from agentic_trading.xbrl import FilingFact, select_filing_fact
+from agentic_trading.xbrl import FilingFact, XbrlFactError, select_filing_fact
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +34,23 @@ ANNUAL_FINANCIAL_METRICS = (
 )
 
 
+def infer_annual_period_start(
+    company_facts: dict[str, Any], *, accession_number: str, period_end: str
+) -> str:
+    """Infer the annual duration start from the filing's revenue observation."""
+    revenue = select_filing_fact(
+        company_facts,
+        taxonomy="us-gaap",
+        concept="RevenueFromContractWithCustomerExcludingAssessedTax",
+        unit="USD",
+        accession_number=accession_number,
+        period_end=period_end,
+    )
+    if revenue.period_start is None:
+        raise ValueError("Annual revenue observation has no period start")
+    return revenue.period_start
+
+
 def extract_annual_financial_snapshot(
     company_facts: dict[str, Any],
     *,
@@ -54,3 +71,29 @@ def extract_annual_financial_snapshot(
         )
         for metric in ANNUAL_FINANCIAL_METRICS
     }
+
+
+def extract_available_annual_financial_snapshot(
+    company_facts: dict[str, Any],
+    *,
+    accession_number: str,
+    period_start: str,
+    period_end: str,
+) -> tuple[dict[str, FilingFact], tuple[str, ...]]:
+    """Extract available metrics and report issuer-specific concept gaps."""
+    snapshot: dict[str, FilingFact] = {}
+    gaps: list[str] = []
+    for metric in ANNUAL_FINANCIAL_METRICS:
+        try:
+            snapshot[metric.name] = select_filing_fact(
+                company_facts,
+                taxonomy=metric.taxonomy,
+                concept=metric.concept,
+                unit=metric.unit,
+                accession_number=accession_number,
+                period_start=period_start if metric.duration else None,
+                period_end=period_end,
+            )
+        except XbrlFactError:
+            gaps.append(f"Missing {metric.name} ({metric.taxonomy}:{metric.concept})")
+    return snapshot, tuple(gaps)

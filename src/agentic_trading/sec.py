@@ -11,6 +11,7 @@ from urllib.request import Request, urlopen
 
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
 COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+COMPANY_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 ARCHIVES_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{document}"
 
 
@@ -27,6 +28,13 @@ class FilingMetadata:
     filing_date: str
     report_date: str
     primary_document: str
+
+
+@dataclass(frozen=True, slots=True)
+class CompanyIdentity:
+    cik: str
+    ticker: str
+    name: str
 
 
 class SecClient:
@@ -61,6 +69,19 @@ class SecClient:
         """Return standardized XBRL facts disclosed by a company."""
         normalized_cik = normalize_cik(cik)
         return self._get_json(COMPANY_FACTS_URL.format(cik=normalized_cik))
+
+    def resolve_ticker(self, ticker: str) -> CompanyIdentity:
+        """Resolve a U.S. public-company ticker using the SEC mapping."""
+        normalized_ticker = ticker.strip().upper()
+        mapping = self._get_json(COMPANY_TICKERS_URL)
+        for entry in mapping.values():
+            if str(entry.get("ticker", "")).upper() == normalized_ticker:
+                return CompanyIdentity(
+                    cik=normalize_cik(entry["cik_str"]),
+                    ticker=normalized_ticker,
+                    name=entry["title"],
+                )
+        raise SecClientError(f"Ticker not found in SEC mapping: {normalized_ticker}")
 
     def list_recent_filings(
         self, submissions: Mapping[str, Any], *, form: str | None = None

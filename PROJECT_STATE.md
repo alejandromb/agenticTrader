@@ -10,8 +10,8 @@ Architecture and project foundation.
 
 ## Active objective
 
-Expand the deterministic financial evidence set and evaluate prompt version 1.1
-on a second fixture.
+Expand the deterministic financial evidence set and improve the user-facing
+presentation of saved research runs.
 
 ## Completed
 
@@ -54,6 +54,12 @@ on a second fixture.
   passed and the artifact scored 11/12.
 - Updated the financial-analysis prompt to version 1.1 from observed
   evidence-fidelity issues.
+- Added a user-facing `research-company` orchestrator, secret-safe `doctor`
+  command, README, and user guide.
+- Live-validated `research-company WMT`; prompt v1.1 passed all gates and scored
+  12/12.
+- Changed missing issuer-specific XBRL concepts into explicit evidence gaps.
+- Added first-class persistence for evidence gaps in analysis artifacts.
 
 ## Accepted decisions
 
@@ -68,7 +74,8 @@ on a second fixture.
 
 ## Open questions
 
-- Which second company best tests the workflow against economics unlike Apple's?
+- Which additional metrics provide the highest value without creating fragile
+  cross-issuer concept assumptions?
 
 ## Blockers
 
@@ -80,17 +87,19 @@ metadata, including for an already cached base image.
 
 1. Add cash, current assets/liabilities, debt, operating income, and capital
    expenditure facts to the deterministic snapshot.
-2. Create a second company fixture with materially different economics.
-3. Run prompt version 1.1 on the second fixture.
-4. Compare both evaluations before expanding to other analyst stages.
+2. Add a human-readable command for listing and viewing saved runs.
+3. Compare Apple and Walmart evaluations before expanding to other analyst
+   stages.
+4. Validate the Docker image when the local daemon can resolve image metadata.
 
 ## Resume here
 
-Start by expanding the deterministic snapshot. Then evaluate prompt version 1.1
-on a second company rather than overfitting the prompt to Apple. Never display
-or persist the API key.
+Start by expanding financial facts with concept aliases and explicit evidence
+gaps. Preserve the cross-issuer failure behavior proven by Walmart. Never
+display or persist the API key.
 
 ## Working-tree note
 
-Analysis persistence is checkpointed through `8e2a51b`. The successful live
-evaluation and prompt v1.1 update are pending the next commit.
+The Apple evaluation is checkpointed through `a062e52`. The Walmart evaluation,
+one-command workflow, evidence-gap persistence, and saved-run views are pending
+the next commit.

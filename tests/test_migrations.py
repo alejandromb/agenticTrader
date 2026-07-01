@@ -31,4 +31,4 @@ def test_upgrade_database_creates_versioned_schema(tmp_path: Path) -> None:
         "source_documents",
         "transition_events",
     } <= tables
-    assert version == ("20260701_0004",)
+    assert version == ("20260701_0005",)

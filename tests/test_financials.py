@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from agentic_trading.financials import extract_annual_financial_snapshot
+from agentic_trading.financials import (
+    extract_annual_financial_snapshot,
+    extract_available_annual_financial_snapshot,
+    infer_annual_period_start,
+)
 
 
 def test_extract_minimum_annual_financial_snapshot() -> None:
@@ -44,3 +48,48 @@ def test_extract_minimum_annual_financial_snapshot() -> None:
     assert snapshot["net_income"].value == Decimal("112010000000")
     assert snapshot["assets"].period_start is None
     assert snapshot["operating_cash_flow"].value == Decimal("111482000000")
+    assert (
+        infer_annual_period_start(
+            facts,
+            accession_number=accession,
+            period_end="2025-09-27",
+        )
+        == "2024-09-29"
+    )
+
+
+def test_available_snapshot_reports_missing_issuer_concept() -> None:
+    accession = "0000320193-25-000079"
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "RevenueFromContractWithCustomerExcludingAssessedTax": {
+                    "label": "Revenue",
+                    "units": {
+                        "USD": [
+                            {
+                                "start": "2024-09-29",
+                                "end": "2025-09-27",
+                                "val": 416161000000,
+                                "accn": accession,
+                                "fy": 2025,
+                                "fp": "FY",
+                                "form": "10-K",
+                                "filed": "2025-10-31",
+                            }
+                        ]
+                    },
+                }
+            }
+        }
+    }
+
+    snapshot, gaps = extract_available_annual_financial_snapshot(
+        facts,
+        accession_number=accession,
+        period_start="2024-09-29",
+        period_end="2025-09-27",
+    )
+
+    assert set(snapshot) == {"revenue"}
+    assert "Missing liabilities (us-gaap:Liabilities)" in gaps

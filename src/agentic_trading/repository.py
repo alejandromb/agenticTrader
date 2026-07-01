@@ -105,6 +105,14 @@ class SqliteRunRepository:
                 raise RunNotFoundError(run_id)
             return _run_from_model(model)
 
+    def list_runs(self) -> list[ResearchRun]:
+        """Return research runs from newest to oldest."""
+        with self._sessions() as session:
+            models = session.scalars(
+                select(ResearchRunModel).order_by(ResearchRunModel.created_at.desc())
+            ).all()
+            return [_run_from_model(model) for model in models]
+
     def transition(
         self,
         run_id: str,

@@ -34,6 +34,7 @@ coverage/
 
 # Local data and databases
 data/
+artifacts/
 *.db
 *.sqlite
 *.sqlite3

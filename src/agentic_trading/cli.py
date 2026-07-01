@@ -21,11 +21,12 @@ from agentic_trading.openai_adapter import (
     OpenAIFinancialAnalysisAdapter,
 )
 from agentic_trading.repository import SqliteRunRepository
-from agentic_trading.sec import SecClient
+from agentic_trading.research import CompanyResearchService
+from agentic_trading.sec import SecClient, SecClientError
 from agentic_trading.source_repository import SqliteSourceRepository
 from agentic_trading.validation import validate_memo_files
 from agentic_trading.workflow import WorkflowState
-from agentic_trading.xbrl import select_filing_fact
+from agentic_trading.xbrl import XbrlFactError, select_filing_fact
 
 DEFAULT_SCHEMA = Path("schemas/investment-memo-v1.schema.json")
 
@@ -92,6 +93,32 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("run_id")
     analyze.add_argument("question")
 
+    research = commands.add_parser(
+        "research-company", help="run the complete version-one research workflow"
+    )
+    research.add_argument("ticker")
+    research.add_argument("--question", required=True)
+    research.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    research.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
+
+    doctor = commands.add_parser("doctor", help="check local runtime configuration")
+    doctor.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+
+    list_runs = commands.add_parser("list-runs", help="list saved research runs")
+    list_runs.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+
+    show_run = commands.add_parser("show-run", help="show a saved research run")
+    show_run.add_argument("run_id")
+    show_run.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+
     return parser
 
 
@@ -102,6 +129,64 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "validate-memo":
         validate_memo_files(args.memo, args.schema)
         print(f"Valid investment memo: {args.memo}")
+        return 0
+
+    if args.command == "doctor":
+        checks = {
+            "database_exists": args.database.exists(),
+            "openai_api_key_configured": bool(os.environ.get("OPENAI_API_KEY")),
+            "sec_user_agent_configured": bool(os.environ.get("SEC_USER_AGENT")),
+        }
+        print(json.dumps(checks, sort_keys=True))
+        return (
+            0
+            if all(
+                (
+                    checks["openai_api_key_configured"],
+                    checks["sec_user_agent_configured"],
+                )
+            )
+            else 1
+        )
+
+    if args.command == "research-company":
+        user_agent = os.environ.get("SEC_USER_AGENT")
+        if not user_agent:
+            raise SystemExit(
+                "SEC_USER_AGENT is required and must identify the application owner"
+            )
+        try:
+            result = CompanyResearchService(
+                database_path=args.database,
+                artifact_root=args.artifact_root,
+                sec_client=SecClient(user_agent),
+                analysis_adapter=OpenAIFinancialAnalysisAdapter(),
+            ).research(ticker=args.ticker.upper(), question=args.question)
+        except (
+            AnalysisGenerationError,
+            SecClientError,
+            ValueError,
+            XbrlFactError,
+        ) as error:
+            raise SystemExit(str(error)) from error
+        print(
+            json.dumps(
+                {
+                    "analysis": result.analysis.analysis.model_dump(),
+                    "analysis_artifact_id": result.analysis.artifact_id,
+                    "company": result.company.name,
+                    "evidence_gaps": result.analysis.evidence_gaps,
+                    "filing_accession": result.filing.accession_number,
+                    "filing_date": result.filing.filing_date,
+                    "model": result.analysis.model,
+                    "prompt_version": result.analysis.prompt_version,
+                    "run_id": result.run.run_id,
+                    "state": result.run.state,
+                    "ticker": result.company.ticker,
+                },
+                sort_keys=True,
+            )
+        )
         return 0
 
     if args.command in {
@@ -239,8 +324,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Initialized workflow database: {args.database}")
         return 0
 
+    upgrade_database(args.database)
     repository = SqliteRunRepository(args.database)
-    repository.initialize()
+
+    if args.command == "list-runs":
+        runs = repository.list_runs()
+        if not runs:
+            print("No research runs found.")
+            return 0
+        print("RUN ID                                STATE        AS OF")
+        for run in runs:
+            print(f"{run.run_id:<36}  {run.state:<11}  {run.as_of}")
+        return 0
+
+    if args.command == "show-run":
+        run = repository.get_run(args.run_id)
+        claims = SqliteClaimRepository(args.database).list_for_run(run.run_id)
+        analysis = SqliteAnalysisRepository(args.database).latest_for_run(run.run_id)
+        _print_run(run, claims, analysis)
+        return 0
 
     if args.command == "create-run":
         run = repository.create_run(memo_id=args.memo_id, as_of=args.as_of)
@@ -278,6 +380,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "analysis": artifact.analysis.model_dump(),
                     "artifact_id": artifact.artifact_id,
                     "input_claim_ids": artifact.input_claim_ids,
+                    "evidence_gaps": artifact.evidence_gaps,
                     "model": artifact.model,
                     "prompt_version": artifact.prompt_version,
                     "provider_response_id": artifact.provider_response_id,
@@ -301,3 +404,26 @@ def _run_dict(run: object) -> dict[str, str]:
         "created_at": run.created_at,
         "updated_at": run.updated_at,
     }
+
+
+def _print_run(run: object, claims: list[object], artifact: object | None) -> None:
+    print(f"Run: {run.run_id}")
+    print(f"State: {run.state}")
+    print(f"As of: {run.as_of}")
+    print(f"Claims: {len(claims)}")
+    for claim in claims:
+        print(f"  - [{claim.claim_id}] {claim.statement}")
+    if artifact is None:
+        print("Analysis: not available")
+        return
+    print(f"Analysis: {artifact.analysis.assessment}")
+    print(f"Model: {artifact.model} (prompt {artifact.prompt_version})")
+    print(f"Summary: {artifact.analysis.summary}")
+    for title, points in (
+        ("Strengths", artifact.analysis.strengths),
+        ("Concerns", artifact.analysis.concerns),
+        ("Uncertainties", artifact.analysis.uncertainties),
+    ):
+        print(f"{title}:")
+        for point in points:
+            print(f"  - {point.text}")

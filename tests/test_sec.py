@@ -6,7 +6,13 @@ from typing import Any
 
 import pytest
 
-from agentic_trading.sec import FilingMetadata, SecClient, SecClientError, normalize_cik
+from agentic_trading.sec import (
+    CompanyIdentity,
+    FilingMetadata,
+    SecClient,
+    SecClientError,
+    normalize_cik,
+)
 
 
 class Response(io.BytesIO):
@@ -56,6 +62,23 @@ def test_client_reads_company_facts() -> None:
 
     assert client.get_company_facts(320193) == {"facts": {}}
     assert captured_request.full_url.endswith("companyfacts/CIK0000320193.json")
+
+
+def test_resolve_ticker() -> None:
+    def opener(request: Any, *, timeout: int) -> Response:
+        assert timeout == 30
+        assert request.full_url.endswith("company_tickers.json")
+        return Response(
+            json.dumps(
+                {"0": {"cik_str": 320193, "ticker": "AAPL", "title": "Apple Inc."}}
+            ).encode()
+        )
+
+    client = SecClient("AgenticTrading/0.1 owner@domain.test", opener=opener)
+
+    assert client.resolve_ticker("aapl") == CompanyIdentity(
+        cik="0000320193", ticker="AAPL", name="Apple Inc."
+    )
 
 
 def test_client_retrieves_primary_filing_document() -> None:

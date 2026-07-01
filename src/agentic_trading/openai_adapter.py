@@ -41,6 +41,7 @@ class GeneratedFinancialAnalysis:
     provider_response_id: str
     prompt_version: str
     input_claim_ids: tuple[str, ...]
+    evidence_gaps: tuple[str, ...]
 
 
 class OpenAIFinancialAnalysisAdapter:
@@ -55,6 +56,7 @@ class OpenAIFinancialAnalysisAdapter:
         *,
         question: str,
         claims: Sequence[CandidateClaim],
+        evidence_gaps: Sequence[str] = (),
     ) -> GeneratedFinancialAnalysis:
         """Analyze validated claims and reject unknown output references."""
         if not claims:
@@ -68,6 +70,7 @@ class OpenAIFinancialAnalysisAdapter:
                     {
                         "investment_question": question,
                         "candidate_claims": [_claim_payload(claim) for claim in claims],
+                        "known_evidence_gaps": list(evidence_gaps),
                     },
                     sort_keys=True,
                 ),
@@ -94,6 +97,7 @@ class OpenAIFinancialAnalysisAdapter:
             provider_response_id=response.id,
             prompt_version=FINANCIAL_PROMPT_VERSION,
             input_claim_ids=tuple(sorted(known_claim_ids)),
+            evidence_gaps=tuple(evidence_gaps),
         )
 
 

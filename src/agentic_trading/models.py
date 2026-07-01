@@ -126,6 +126,7 @@ class AnalysisArtifactModel(Base):
         String, nullable=False, unique=True
     )
     prompt_version: Mapped[str] = mapped_column(String, nullable=False)
+    evidence_gaps_json: Mapped[str] = mapped_column(String, nullable=False)
     content_json: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)
 

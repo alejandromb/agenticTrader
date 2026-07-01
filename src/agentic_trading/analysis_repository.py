@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from agentic_trading.analysis import FinancialAnalysis
@@ -29,6 +31,7 @@ class AnalysisArtifact:
     prompt_version: str
     analysis: FinancialAnalysis
     input_claim_ids: tuple[str, ...]
+    evidence_gaps: tuple[str, ...]
     created_at: str
 
 
@@ -58,6 +61,7 @@ class SqliteAnalysisRepository:
             model=generated.model,
             provider_response_id=generated.provider_response_id,
             prompt_version=generated.prompt_version,
+            evidence_gaps_json=json.dumps(generated.evidence_gaps),
             content_json=generated.analysis.model_dump_json(),
             created_at=created_at,
         )
@@ -82,5 +86,38 @@ class SqliteAnalysisRepository:
             prompt_version=model.prompt_version,
             analysis=FinancialAnalysis.model_validate_json(model.content_json),
             input_claim_ids=generated.input_claim_ids,
+            evidence_gaps=generated.evidence_gaps,
             created_at=created_at,
         )
+
+    def latest_for_run(self, run_id: str) -> AnalysisArtifact | None:
+        """Return the newest analysis artifact for a run."""
+        with self._sessions() as session:
+            model = session.scalar(
+                select(AnalysisArtifactModel)
+                .where(AnalysisArtifactModel.run_id == run_id)
+                .order_by(AnalysisArtifactModel.created_at.desc())
+            )
+            if model is None:
+                return None
+            claim_ids = tuple(
+                session.scalars(
+                    select(AnalysisInputClaimModel.claim_id)
+                    .where(AnalysisInputClaimModel.artifact_id == model.artifact_id)
+                    .order_by(AnalysisInputClaimModel.claim_id)
+                ).all()
+            )
+            return AnalysisArtifact(
+                artifact_id=model.artifact_id,
+                run_id=model.run_id,
+                artifact_type=model.artifact_type,
+                schema_version=model.schema_version,
+                provider=model.provider,
+                model=model.model,
+                provider_response_id=model.provider_response_id,
+                prompt_version=model.prompt_version,
+                analysis=FinancialAnalysis.model_validate_json(model.content_json),
+                input_claim_ids=claim_ids,
+                evidence_gaps=tuple(json.loads(model.evidence_gaps_json)),
+                created_at=model.created_at,
+            )

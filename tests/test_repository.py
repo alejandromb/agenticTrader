@@ -117,3 +117,13 @@ def test_active_run_can_fail(repository: SqliteRunRepository) -> None:
     )
 
     assert failed.state is WorkflowState.FAILED
+
+
+def test_list_runs_returns_persisted_runs(repository: SqliteRunRepository) -> None:
+    run = repository.create_run(
+        run_id="run-001",
+        memo_id="memo-001",
+        as_of="2025-10-31T23:59:59Z",
+    )
+
+    assert repository.list_runs() == [run]
