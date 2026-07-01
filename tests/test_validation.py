@@ -16,6 +16,14 @@ def test_example_memo_is_valid() -> None:
     validate_memo(EXAMPLE, SCHEMA)
 
 
+def test_version_two_requires_scenario_and_challenge_sections() -> None:
+    memo = copy.deepcopy(EXAMPLE)
+    memo["schema_version"] = "2.0.0"
+
+    with pytest.raises(MemoValidationError, match="bull_case"):
+        validate_memo(memo, SCHEMA)
+
+
 def test_unknown_evidence_reference_is_rejected() -> None:
     memo = copy.deepcopy(EXAMPLE)
     memo["claims"][0]["evidence_ids"] = ["missing-evidence"]

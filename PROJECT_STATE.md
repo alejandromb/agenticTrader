@@ -130,6 +130,10 @@ Implement ADR-0011 and the Version 2 product contract.
   populated with claim references.
 - Added persisted OpenAI input/output token counts and request latency so Version
   2 quality, cost, and speed can be evaluated against the Version 1 baseline.
+- Measured the final live Version 2 model call at 20,593 input tokens, 7,538
+  output tokens, and 47,872 ms request latency.
+- Upgraded the canonical memo contract to schema 2.0 so bull, base, bear, and
+  devil's-advocate sections are independently required and preserved.
 
 ## Accepted decisions
 

@@ -153,6 +153,10 @@ def test_research_company_runs_end_to_end(tmp_path: Path) -> None:
     assert result.analysis.prompt_version == "1.1.0"
     assert result.memo.memo["human_disposition"] == {"status": "undecided"}
     assert result.memo.memo["subject"]["ticker"] == "AAPL"
+    assert result.memo.memo["schema_version"] == "2.0.0"
+    assert {"bull_case", "base_case", "bear_case", "devils_advocate"} <= set(
+        result.memo.memo["sections"]
+    )
     assert (
         SqliteInvestmentMemoRepository(tmp_path / "state.db").latest_for_run(
             result.run.run_id

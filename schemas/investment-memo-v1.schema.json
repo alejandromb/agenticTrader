@@ -20,7 +20,7 @@
     "human_disposition"
   ],
   "properties": {
-    "schema_version": { "const": "1.0.0" },
+    "schema_version": { "enum": ["1.0.0", "2.0.0"] },
     "memo_id": { "$ref": "#/$defs/nonEmptyString" },
     "created_at": { "$ref": "#/$defs/dateTime" },
     "as_of": { "$ref": "#/$defs/dateTime" },
@@ -64,7 +64,11 @@
         "business": { "$ref": "#/$defs/analysisSection" },
         "financials": { "$ref": "#/$defs/analysisSection" },
         "valuation": { "$ref": "#/$defs/analysisSection" },
-        "risks": { "$ref": "#/$defs/analysisSection" }
+        "risks": { "$ref": "#/$defs/analysisSection" },
+        "bull_case": { "$ref": "#/$defs/analysisSection" },
+        "base_case": { "$ref": "#/$defs/analysisSection" },
+        "bear_case": { "$ref": "#/$defs/analysisSection" },
+        "devils_advocate": { "$ref": "#/$defs/analysisSection" }
       }
     },
     "claims": {
@@ -107,6 +111,30 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "schema_version": { "const": "2.0.0" } },
+        "required": ["schema_version"]
+      },
+      "then": {
+        "properties": {
+          "sections": {
+            "required": [
+              "business",
+              "financials",
+              "valuation",
+              "risks",
+              "bull_case",
+              "base_case",
+              "bear_case",
+              "devils_advocate"
+            ]
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "nonEmptyString": { "type": "string", "minLength": 1 },
     "dateTime": { "type": "string", "format": "date-time" },

@@ -21,7 +21,7 @@ from agentic_trading.sec import CompanyIdentity
 from agentic_trading.source_repository import SourceDocument
 from agentic_trading.validation import load_json, validate_memo
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "2.0.0"
 DEFAULT_SCHEMA_PATH = (
     Path(__file__).parents[2] / "schemas/investment-memo-v1.schema.json"
 )
@@ -139,6 +139,10 @@ class SqliteInvestmentMemoRepository:
                         *analysis.devils_advocate,
                     )
                 ),
+                "bull_case": _section(analysis.bull_case),
+                "base_case": _section(analysis.base_case),
+                "bear_case": _section(analysis.bear_case),
+                "devils_advocate": _section(analysis.devils_advocate),
             },
             "claims": memo_claims,
             "evidence": evidence,
