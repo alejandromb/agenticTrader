@@ -96,10 +96,16 @@ class SqliteDecisionMonitoring:
     def create_monitor(
         self, *, run_id: str, name: str, rules_path: Path
     ) -> DecisionMonitor:
+        return self.create_monitor_bytes(
+            run_id=run_id, name=name, payload=rules_path.read_bytes()
+        )
+
+    def create_monitor_bytes(
+        self, *, run_id: str, name: str, payload: bytes
+    ) -> DecisionMonitor:
         name = name.strip()
         if not name:
             raise MonitoringError("Monitor name is required")
-        payload = rules_path.read_bytes()
         rules = _parse_rules(payload)
         with self._sessions() as session:
             run = session.get(ResearchRunModel, run_id)
@@ -131,6 +137,16 @@ class SqliteDecisionMonitoring:
         with self._sessions.begin() as session:
             session.add(model)
         return _monitor_from_model(model)
+
+    def list_monitors(self) -> tuple[DecisionMonitor, ...]:
+        with self._sessions() as session:
+            models = session.scalars(
+                select(DecisionMonitorModel).order_by(
+                    DecisionMonitorModel.created_at.desc(),
+                    DecisionMonitorModel.monitor_id,
+                )
+            ).all()
+            return tuple(_monitor_from_model(model) for model in models)
 
     def get_monitor(self, monitor_id: str) -> DecisionMonitor:
         with self._sessions() as session:

@@ -1,10 +1,14 @@
 import json
+import threading
 from pathlib import Path
+from urllib.request import Request, urlopen
 
 import pytest
 from sqlalchemy.orm import Session
 
 from agentic_trading.cli import main
+from agentic_trading.dashboard import create_dashboard_server
+from agentic_trading.dashboard_workspace import DashboardWorkspaceService
 from agentic_trading.database import create_sqlite_engine
 from agentic_trading.market_data import SqlitePriceDatasetRepository
 from agentic_trading.migrations import upgrade_database
@@ -274,6 +278,7 @@ def test_comparison_is_idempotent_and_reconstructable_after_restart(tmp_path) ->
 
     assert repeated == first
     assert restarted.get(first.review_id) == first
+    assert restarted.list_reviews() == (first,)
 
     with pytest.raises(ResearchReviewError, match="must differ"):
         restarted.compare("baseline", "baseline")
@@ -400,6 +405,75 @@ def test_complete_cli_review_workflow(tmp_path, capsys) -> None:
     shown = json.loads(capsys.readouterr().out)
     assert shown["review_id"] == review["review_id"]
     assert shown["human_outcome"]["outcome"] == "revise_thesis"
+
+
+def test_dashboard_workspace_review_lifecycle(tmp_path) -> None:
+    database, artifacts = setup_reviews(tmp_path)
+    workspace = DashboardWorkspaceService(database, artifacts)
+
+    review = workspace.compare_research("baseline", "current")
+    assert workspace.review(review["review_id"])["ticker"] == "AAPL"
+    assert workspace.snapshot()["reviews"][0]["review_id"] == review["review_id"]
+
+    outcome = workspace.record_review_outcome(
+        review["review_id"],
+        outcome="investigate",
+        rationale="Review refreshed evidence",
+    )
+    assert outcome["outcome"] == "investigate"
+    assert workspace.review(review["review_id"])["human_outcome"] == outcome
+
+
+def test_dashboard_http_review_lifecycle(tmp_path) -> None:
+    database, artifacts = setup_reviews(tmp_path)
+    server = create_dashboard_server(
+        host="127.0.0.1",
+        port=0,
+        database_path=database,
+        artifact_root=artifacts,
+        research_runner=lambda ticker, question: {},
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urlopen(f"{base}/api/config") as response:  # noqa: S310
+            token = json.load(response)["csrf_token"]
+
+        def post(path: str, payload: dict):
+            request = Request(
+                f"{base}{path}",
+                data=json.dumps(payload).encode(),
+                headers={
+                    "Content-Type": "application/json",
+                    "X-Agentic-CSRF": token,
+                },
+                method="POST",
+            )
+            with urlopen(request) as response:  # noqa: S310
+                return response.status, json.load(response)
+
+        status, review = post(
+            "/api/reviews",
+            {"baseline_run_id": "baseline", "current_run_id": "current"},
+        )
+        assert status == 201
+        with urlopen(  # noqa: S310
+            f"{base}/api/reviews/{review['review_id']}"
+        ) as response:
+            shown = json.load(response)
+        assert shown["ticker"] == "AAPL"
+
+        status, outcome = post(
+            f"/api/reviews/{review['review_id']}/outcome",
+            {"outcome": "investigate", "rationale": "Review via dashboard"},
+        )
+        assert status == 201
+        assert outcome["outcome"] == "investigate"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
 
 
 @pytest.mark.parametrize(

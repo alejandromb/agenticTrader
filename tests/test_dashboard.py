@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import threading
 from contextlib import contextmanager
@@ -17,6 +18,8 @@ from agentic_trading.dashboard import (
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.workflow import WorkflowState
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def awaiting_run(database: Path) -> str:
@@ -181,3 +184,136 @@ def test_research_endpoint_validates_and_uses_existing_service_boundary(
         assert status == 201
         assert result["ticker"] == "AAPL"
         assert calls == [("AAPL", "Assess the evidence")]
+
+
+def test_quantitative_monitoring_and_alert_http_workflow(tmp_path, monkeypatch) -> None:
+    with running_dashboard(tmp_path, monkeypatch) as (base, _, run_id, _):
+        _, config, _ = get_json(f"{base}/api/config")
+        token = config["csrf_token"]
+        price_bytes = (FIXTURES / "prices-backtest.csv").read_bytes()
+        status, dataset = post_json(
+            f"{base}/api/prices/import",
+            {
+                "content_base64": base64.b64encode(price_bytes).decode(),
+                "source": "Dashboard fixture",
+                "adjustment_note": "Fixture adjusted closes",
+            },
+            token,
+        )
+        assert status == 201
+        assert Path(dataset["storage_path"]).read_bytes() == price_bytes
+
+        _, snapshot, _ = get_json(f"{base}/api/workspace")
+        assert [item["dataset_id"] for item in snapshot["datasets"]] == [
+            dataset["dataset_id"]
+        ]
+
+        status, screen = post_json(
+            f"{base}/api/screens",
+            {"as_of": "2027-01-01T00:00:00Z"},
+            token,
+        )
+        assert status == 201
+        assert screen["screen_id"]
+        assert screen["results"] == []
+
+        holdings = b"ticker,shares\nAAPL,2\n"
+        status, portfolio = post_json(
+            f"{base}/api/portfolio",
+            {
+                "content_base64": base64.b64encode(holdings).decode(),
+                "dataset_id": dataset["dataset_id"],
+                "benchmark": "SPY",
+                "as_of": "2025-01-15",
+            },
+            token,
+        )
+        assert status == 201
+        assert portfolio["results"]["total_value"] == "18"
+
+        status, backtest = post_json(
+            f"{base}/api/backtests",
+            {
+                "dataset_id": dataset["dataset_id"],
+                "ticker": "AAPL",
+                "benchmark": "SPY",
+                "short_window": 2,
+                "long_window": 3,
+                "initial_cash": "10000",
+                "transaction_cost_bps": "10",
+            },
+            token,
+        )
+        assert status == 201
+        assert backtest["strategy_version"] == "1.0"
+        assert backtest["results"]["trades"]
+
+        post_json(
+            f"{base}/api/runs/{run_id}/disposition",
+            {"status": "watch", "rationale": "Eligible monitoring fixture"},
+            token,
+        )
+        status, monitor = post_json(
+            f"{base}/api/monitors",
+            {
+                "run_id": run_id,
+                "name": "Dashboard monitor",
+                "rules": [
+                    {
+                        "rule_id": "price-floor",
+                        "type": "price_below",
+                        "ticker": "AAPL",
+                        "threshold": "10",
+                    }
+                ],
+            },
+            token,
+        )
+        assert status == 201
+        status, evaluation = post_json(
+            f"{base}/api/monitors/{monitor['monitor_id']}/evaluate",
+            {"dataset_id": dataset["dataset_id"], "as_of": "2025-01-15"},
+            token,
+        )
+        assert status == 201
+        assert evaluation["results"][0]["triggered"] is True
+
+        _, snapshot, _ = get_json(f"{base}/api/workspace")
+        alert = snapshot["alerts"][0]
+        assert alert["status"] == "open"
+        status, acknowledgement = post_json(
+            f"{base}/api/alerts/{alert['alert_id']}/acknowledge",
+            {"note": "Reviewed in dashboard"},
+            token,
+        )
+        assert status == 201
+        assert acknowledgement["alert_id"] == alert["alert_id"]
+
+
+def test_uploaded_file_requires_strict_base64(tmp_path, monkeypatch) -> None:
+    with running_dashboard(tmp_path, monkeypatch) as (base, _, _, _):
+        _, config, _ = get_json(f"{base}/api/config")
+        with pytest.raises(HTTPError) as rejected:
+            post_json(
+                f"{base}/api/prices/import",
+                {
+                    "content_base64": "not base64!",
+                    "source": "Invalid",
+                    "adjustment_note": "Invalid",
+                },
+                config["csrf_token"],
+            )
+        assert rejected.value.code == 400
+        assert "valid base64" in error_json(rejected.value)["error"]
+
+        with pytest.raises(HTTPError) as invalid_filter:
+            post_json(
+                f"{base}/api/screens",
+                {
+                    "as_of": "2027-01-01T00:00:00Z",
+                    "min_revenue_growth": [],
+                },
+                config["csrf_token"],
+            )
+        assert invalid_filter.value.code == 400
+        assert "decimal" in error_json(invalid_filter.value)["error"]

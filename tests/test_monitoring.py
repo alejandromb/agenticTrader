@@ -63,6 +63,14 @@ def test_monitor_creation_requires_eligible_human_disposition(tmp_path) -> None:
         == (FIXTURES / "monitor-rules.json").read_bytes()
     )
     assert service.get_monitor(monitor.monitor_id) == monitor
+    assert service.list_monitors() == (monitor,)
+
+    uploaded = service.create_monitor_bytes(
+        run_id=run_id,
+        name="Uploaded rules",
+        payload=(FIXTURES / "monitor-rules.json").read_bytes(),
+    )
+    assert uploaded.rules == monitor.rules
 
 
 def test_rejected_disposition_is_ineligible(tmp_path) -> None:

@@ -59,6 +59,8 @@ Start the local dashboard:
 Then open `http://127.0.0.1:8765`. This is the recommended interface for
 starting company research, reading saved memos, reviewing limitations, and
 recording the human disposition. Press `Ctrl+C` in the terminal to stop it.
+The same dashboard includes the quantitative lab, decision monitoring, alert
+ledger, and research-refresh reviews under the top workspace navigation.
 
 Run company research:
 

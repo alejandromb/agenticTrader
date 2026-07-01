@@ -164,6 +164,16 @@ class SqliteResearchReviewRepository:
                 raise ResearchReviewError(f"Research review not found: {review_id}")
             return _review_from_model(model)
 
+    def list_reviews(self) -> tuple[ResearchReview, ...]:
+        with self._sessions() as session:
+            models = session.scalars(
+                select(ResearchReviewModel).order_by(
+                    ResearchReviewModel.created_at.desc(),
+                    ResearchReviewModel.review_id,
+                )
+            ).all()
+            return tuple(_review_from_model(model) for model in models)
+
     def record_outcome(
         self,
         review_id: str,

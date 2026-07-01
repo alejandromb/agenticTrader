@@ -31,10 +31,19 @@ Open `http://127.0.0.1:8765`. From there you can:
    model telemetry; and
 5. record your human disposition when the run is ready.
 
+The top navigation also exposes:
+
+- `Quant lab` for immutable price import, screens, holdings analytics, and
+  backtests;
+- `Monitoring` for explicit watch rules, point-in-time evaluation, alerts, and
+  acknowledgement; and
+- `Reviews` for comparing completed same-company research and recording a human
+  refresh outcome.
+
 The terminal must remain open while using the dashboard. Press `Ctrl+C` to stop
 the server. It accepts loopback connections only and is not a remote web app.
-The CLI sections below remain useful for reproducible diagnostics and advanced
-quantitative, monitoring, and refresh-review workflows.
+The CLI sections below remain useful for reproducible diagnostics and scripted
+workflows, but the accepted capabilities no longer require terminal commands.
 
 ## First-time setup
 

@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Local dashboard v1 accepted
+Session status: Milestone 6 complete
 
 ## Current phase
 
-Local browser product surface after accepted Milestone 5.
+Milestone 6 unified local operator workspace accepted.
 
 ## Active objective
 
-Use and evaluate the accepted local dashboard before expanding its surface.
+Use and evaluate the accepted unified dashboard before adding new capabilities.
 
 ## Completed
 
@@ -185,6 +185,17 @@ Use and evaluate the accepted local dashboard before expanding its surface.
   limitation review, telemetry, saved-run navigation, and human disposition.
 - Browser-verified the dashboard against the real research database at desktop
   and mobile widths and accepted its 110-test security and lifecycle audit.
+- Accepted ADR-0016 and recorded the Milestone 6 unified-workspace contract and
+  usability experiment.
+- Added exact-byte browser uploads and list/reconstruction methods for price
+  datasets, monitors, alerts, and research reviews.
+- Added guarded dashboard APIs for screening, hypothetical portfolio analysis,
+  backtesting, monitor evaluation, alert acknowledgement, and research reviews.
+- Added responsive Quant lab, Monitoring, Alert ledger, and Reviews workspaces
+  while retaining the Research workflow and existing domain validation.
+- Accepted the Milestone 6 usability experiment after 115 tests, full HTTP
+  lifecycle coverage, real-database browser verification, mobile containment,
+  and zero browser console errors.
 
 ## Accepted decisions
 
@@ -203,6 +214,7 @@ Use and evaluate the accepted local dashboard before expanding its surface.
 - ADR-0013: Scope Milestone 4 as deterministic decision monitoring.
 - ADR-0014: Scope Milestone 5 as research-refresh reviews.
 - ADR-0015: Add a loopback-only local dashboard.
+- ADR-0016: Scope Milestone 6 as a unified operator workspace.
 
 ## Open questions
 
@@ -217,8 +229,8 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Use the dashboard for real research and collect usability evidence before
-   exposing quantitative, monitoring, or refresh-review workflows in the UI.
+1. Use the unified dashboard for real operator sessions and record measured
+   friction before adding feeds, charts, scheduling, or new models.
 
 ## Future integration note
 
@@ -230,6 +242,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Dashboard v1 is complete. Begin with real operator use and record concrete
-friction before adding more UI. Keep remote access, automation, DiveTrader, and
-execution out of scope.
+Milestone 6 is complete. Begin with real operator use and outcome measurement.
+Keep remote access, automation, DiveTrader, and execution out of scope.

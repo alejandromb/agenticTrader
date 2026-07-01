@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import binascii
 import ipaddress
 import json
 import os
@@ -17,6 +19,7 @@ from typing import Any
 from urllib.parse import unquote, urlparse
 
 from agentic_trading.analysis_repository import SqliteAnalysisRepository
+from agentic_trading.dashboard_workspace import DashboardWorkspaceService
 from agentic_trading.disposition_repository import (
     ALLOWED_DISPOSITIONS,
     SqliteDispositionRepository,
@@ -36,7 +39,8 @@ from agentic_trading.xbrl import XbrlFactError
 
 _ASSETS = Path(__file__).parent / "dashboard_assets"
 _TICKER = re.compile(r"^[A-Z][A-Z0-9.-]{0,9}$")
-_MAX_BODY = 64 * 1024
+_MAX_BODY = 8 * 1024 * 1024
+_MAX_FILE = 5 * 1024 * 1024
 
 
 class DashboardError(ValueError):
@@ -201,6 +205,7 @@ def create_dashboard_server(
     upgrade_database(database_path)
     token = secrets.token_urlsafe(32)
     data = DashboardDataService(database_path)
+    workspace = DashboardWorkspaceService(database_path, artifact_root)
     run_research = research_runner or _default_research_runner(
         database_path, artifact_root
     )
@@ -231,6 +236,16 @@ def create_dashboard_server(
             if path == "/api/runs":
                 self._json({"runs": data.list_runs()})
                 return
+            if path == "/api/workspace":
+                self._json(workspace.snapshot())
+                return
+            review_prefix = "/api/reviews/"
+            if path.startswith(review_prefix) and path.count("/") == 3:
+                try:
+                    self._json(workspace.review(path.removeprefix(review_prefix)))
+                except (LookupError, ValueError) as error:
+                    self._error(HTTPStatus.NOT_FOUND, str(error))
+                return
             prefix = "/api/runs/"
             if path.startswith(prefix) and path.count("/") == 3:
                 try:
@@ -253,6 +268,12 @@ def create_dashboard_server(
             if path == "/api/research":
                 self._research(payload)
                 return
+            try:
+                if self._workspace_post(path, payload):
+                    return
+            except (LookupError, ValueError) as error:
+                self._error(HTTPStatus.BAD_REQUEST, str(error))
+                return
             suffix = "/disposition"
             if path.startswith("/api/runs/") and path.endswith(suffix):
                 run_id = path.removeprefix("/api/runs/").removesuffix(suffix)
@@ -271,6 +292,66 @@ def create_dashboard_server(
                 self._json(result, status=HTTPStatus.CREATED)
                 return
             self._error(HTTPStatus.NOT_FOUND, "Not found")
+
+        def _workspace_post(self, path: str, payload: dict[str, Any]) -> bool:
+            if path == "/api/prices/import":
+                result = workspace.import_prices(
+                    _base64_bytes(payload, "content_base64"),
+                    source=_string(payload, "source"),
+                    adjustment_note=_string(payload, "adjustment_note"),
+                )
+            elif path == "/api/screens":
+                result = workspace.screen(payload)
+            elif path == "/api/portfolio":
+                result = workspace.analyze_portfolio(
+                    _base64_bytes(payload, "content_base64"),
+                    dataset_id=_string(payload, "dataset_id"),
+                    benchmark=_string(payload, "benchmark"),
+                    as_of=_string(payload, "as_of"),
+                )
+            elif path == "/api/backtests":
+                result = workspace.backtest(payload)
+            elif path == "/api/monitors":
+                rules = payload.get("rules")
+                if not isinstance(rules, list):
+                    raise DashboardError("rules must be an array")
+                result = workspace.create_monitor(
+                    run_id=_string(payload, "run_id"),
+                    name=_string(payload, "name"),
+                    rules=rules,
+                )
+            elif path.startswith("/api/monitors/") and path.endswith("/evaluate"):
+                monitor_id = path.removeprefix("/api/monitors/").removesuffix(
+                    "/evaluate"
+                )
+                result = workspace.evaluate_monitor(
+                    monitor_id,
+                    dataset_id=_string(payload, "dataset_id"),
+                    as_of=_string(payload, "as_of"),
+                )
+            elif path.startswith("/api/alerts/") and path.endswith("/acknowledge"):
+                alert_id = path.removeprefix("/api/alerts/").removesuffix(
+                    "/acknowledge"
+                )
+                result = workspace.acknowledge_alert(
+                    alert_id, note=_string(payload, "note")
+                )
+            elif path == "/api/reviews":
+                result = workspace.compare_research(
+                    _string(payload, "baseline_run_id"),
+                    _string(payload, "current_run_id"),
+                )
+            elif path.startswith("/api/reviews/") and path.endswith("/outcome"):
+                review_id = path.removeprefix("/api/reviews/").removesuffix("/outcome")
+                result = workspace.record_review_outcome(
+                    review_id,
+                    outcome=_string(payload, "outcome"),
+                    rationale=_string(payload, "rationale"),
+                )
+            else:
+                return False
+            self._json(result, status=HTTPStatus.CREATED)
+            return True
 
         def _research(self, payload: dict[str, Any]) -> None:
             try:
@@ -388,3 +469,14 @@ def _string(payload: dict[str, Any], key: str) -> str:
     if not isinstance(value, str):
         raise DashboardError(f"{key} must be a string")
     return value
+
+
+def _base64_bytes(payload: dict[str, Any], key: str) -> bytes:
+    value = _string(payload, key)
+    try:
+        decoded = base64.b64decode(value, validate=True)
+    except (binascii.Error, ValueError) as error:
+        raise DashboardError(f"{key} must be valid base64") from error
+    if not decoded or len(decoded) > _MAX_FILE:
+        raise DashboardError("Uploaded file size is invalid")
+    return decoded

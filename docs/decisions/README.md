@@ -29,6 +29,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0013](0013-milestone-four-decision-monitoring.md) | Scope Milestone 4 as deterministic decision monitoring | Accepted |
 | [0014](0014-milestone-five-research-refresh-reviews.md) | Scope Milestone 5 as research-refresh reviews | Accepted |
 | [0015](0015-local-dashboard-surface.md) | Add a loopback-only local dashboard | Accepted |
+| [0016](0016-milestone-six-unified-operator-workspace.md) | Scope Milestone 6 as a unified operator workspace | Accepted |
 
 ## Convention
 

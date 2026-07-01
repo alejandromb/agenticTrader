@@ -29,6 +29,17 @@ def test_import_is_immutable_retrievable_and_content_addressed(tmp_path) -> None
     assert dataset.end_date == "2025-01-06"
     assert Path(dataset.storage_path).read_bytes() == FIXTURE.read_bytes()
     assert len(prices.observations(dataset.dataset_id)) == 6
+    assert prices.list_datasets() == (dataset,)
+
+
+def test_import_bytes_preserves_exact_payload(tmp_path) -> None:
+    prices = repository(tmp_path)
+    payload = FIXTURE.read_bytes()
+
+    dataset = prices.import_bytes(payload, source="Browser upload")
+
+    assert Path(dataset.storage_path).read_bytes() == payload
+    assert prices.import_bytes(payload, source="Repeated upload") == dataset
 
 
 @pytest.mark.parametrize(

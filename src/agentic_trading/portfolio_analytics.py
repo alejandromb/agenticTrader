@@ -64,11 +64,26 @@ class SqlitePortfolioAnalyzer:
         benchmark: str,
         as_of: str,
     ) -> PortfolioAnalysisArtifact:
+        return self.analyze_bytes(
+            holdings_path.read_bytes(),
+            dataset_id=dataset_id,
+            benchmark=benchmark,
+            as_of=as_of,
+        )
+
+    def analyze_bytes(
+        self,
+        payload: bytes,
+        *,
+        dataset_id: str,
+        benchmark: str,
+        as_of: str,
+    ) -> PortfolioAnalysisArtifact:
+        """Analyze exact holdings CSV bytes without a temporary server file."""
         boundary = _date(as_of)
         benchmark = benchmark.strip().upper()
         if not _TICKER.fullmatch(benchmark):
             raise PortfolioAnalysisError("Invalid benchmark ticker")
-        payload = holdings_path.read_bytes()
         holdings = _parse_holdings(payload)
         holding_artifact = self._artifacts.put(payload)
         dataset = self._prices.get(dataset_id)

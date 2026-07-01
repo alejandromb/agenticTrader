@@ -53,6 +53,14 @@ def test_analysis_is_point_in_time_persisted_and_retrievable(tmp_path) -> None:
     )
     assert analyzer.get(artifact.analysis_id) == artifact
 
+    uploaded = analyzer.analyze_bytes(
+        (FIXTURES / "holdings-valid.csv").read_bytes(),
+        dataset_id=dataset.dataset_id,
+        benchmark="SPY",
+        as_of="2025-01-06",
+    )
+    assert uploaded.results == artifact.results
+
 
 @pytest.mark.parametrize(
     ("payload", "message"),

@@ -61,9 +61,20 @@ class SqlitePriceDatasetRepository:
         source: str,
         adjustment_note: str = "Adjusted-close values supplied by dataset source.",
     ) -> PriceDataset:
+        return self.import_bytes(
+            path.read_bytes(), source=source, adjustment_note=adjustment_note
+        )
+
+    def import_bytes(
+        self,
+        payload: bytes,
+        *,
+        source: str,
+        adjustment_note: str = "Adjusted-close values supplied by dataset source.",
+    ) -> PriceDataset:
+        """Import exact CSV bytes without requiring a temporary server file."""
         if not source.strip():
             raise PriceDatasetError("Dataset source is required")
-        payload = path.read_bytes()
         observations = _parse_csv(payload)
         artifact = self._artifacts.put(payload)
         with self._sessions() as session:
@@ -100,6 +111,16 @@ class SqlitePriceDatasetRepository:
                 for item in observations
             )
         return _dataset_from_model(model)
+
+    def list_datasets(self) -> tuple[PriceDataset, ...]:
+        with self._sessions() as session:
+            models = session.scalars(
+                select(PriceDatasetModel).order_by(
+                    PriceDatasetModel.created_at.desc(),
+                    PriceDatasetModel.dataset_id,
+                )
+            ).all()
+            return tuple(_dataset_from_model(model) for model in models)
 
     def get(self, dataset_id: str) -> PriceDataset:
         with self._sessions() as session:
