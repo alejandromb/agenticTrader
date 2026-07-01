@@ -1,8 +1,8 @@
 # Project State
 
-Last updated: 2026-06-30
+Last updated: 2026-07-01
 
-Session status: Paused at a clean handoff point
+Session status: Active
 
 ## Current phase
 
@@ -10,8 +10,8 @@ Architecture and project foundation.
 
 ## Active objective
 
-Persist structured OpenAI financial-analysis artifacts and run the first live
-evaluation after local API-key configuration.
+Complete the first live OpenAI financial-analysis evaluation after API quota is
+available.
 
 ## Completed
 
@@ -46,6 +46,10 @@ evaluation after local API-key configuration.
 - Selected OpenAI Responses with strict Structured Outputs in ADR-0008.
 - Implemented a pinned, configurable OpenAI financial-analysis adapter with
   domain-level claim-lineage validation.
+- Added versioned analysis-artifact persistence with database-enforced input
+  claim lineage.
+- Added the Financial Analysis Evaluation Rubric v1.
+- Verified the replacement API key is correctly configured and Git-ignored.
 
 ## Accepted decisions
 
@@ -60,8 +64,8 @@ evaluation after local API-key configuration.
 
 ## Open questions
 
-- What evaluation rubric should determine whether a model-generated financial
-  analysis is acceptable?
+- Does the first live artifact meet the v1 rubric, and which observed failures
+  require prompt or contract changes?
 
 ## Blockers
 
@@ -69,25 +73,24 @@ Docker and Compose configuration validation passes. Full image execution remains
 to be verified because the local Docker daemon stalled while resolving image
 metadata, including for an already cached base image.
 
-A live OpenAI evaluation requires `OPENAI_API_KEY` to be configured locally.
-The key must not be pasted into chat, committed, or persisted in the database.
+The first live request reached OpenAI but returned `insufficient_quota`. Billing
+or API credits must be enabled before the evaluation can complete. No analysis
+artifact was created from the failed request.
 
 ## Next actions
 
-1. Persist structured financial-analysis artifacts and model metadata.
-2. Define an initial analysis evaluation rubric.
-3. Configure `OPENAI_API_KEY` locally.
-4. Evaluate the pinned model against the captured Apple evidence and claims.
+1. Enable OpenAI API billing or credits for the configured project key.
+2. Retry the pinned-model Apple analysis.
+3. Score the result with Financial Analysis Evaluation Rubric v1.
+4. Record the evaluation and revise the prompt only from observed failures.
 
 ## Resume here
 
-First, confirm `OPENAI_API_KEY` is configured locally without displaying it.
-Then add the analysis artifact ORM model and migration, run the first live
-structured analysis against the retained Apple claims, and evaluate its claim
-references and content. Never store the key in Git, logs, prompts, artifacts,
-or the database.
+First, confirm API quota is available, then retry `analyze-financials` against
+the retained Apple run. Evaluate the saved artifact with
+`docs/evaluation/financial-analysis-v1.md`. Never display or persist the key.
 
 ## Working-tree note
 
-The implementation is checkpointed through commit `d6184ba`. The session-close
-documentation update may appear in the immediately following commit.
+The foundation session is checkpointed through `651b7d4`. The current analysis
+artifact work is pending its session checkpoint commit.

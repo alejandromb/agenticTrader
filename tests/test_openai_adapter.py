@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from openai import OpenAIError
 
 from agentic_trading.analysis import AnalysisPoint, FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
@@ -42,7 +43,12 @@ class FakeResponses:
 
     def parse(self, **arguments: Any) -> SimpleNamespace:
         self.arguments = arguments
-        return SimpleNamespace(output_parsed=self.analysis)
+        return SimpleNamespace(id="response-001", output_parsed=self.analysis)
+
+
+class FailingResponses:
+    def parse(self, **_: Any) -> None:
+        raise OpenAIError("provider failed")
 
 
 def test_adapter_uses_structured_responses_and_validates_claims() -> None:
@@ -59,7 +65,9 @@ def test_adapter_uses_structured_responses_and_validates_claims() -> None:
 
     result = adapter.analyze(question="Assess financial condition", claims=[claim()])
 
-    assert result == analysis
+    assert result.analysis == analysis
+    assert result.provider_response_id == "response-001"
+    assert result.input_claim_ids == ("claim-001",)
     assert responses.arguments["model"] == "test-model"
     assert responses.arguments["text_format"] is FinancialAnalysis
     payload = json.loads(responses.arguments["input"])
@@ -91,3 +99,14 @@ def test_empty_claim_input_is_rejected() -> None:
 
     with pytest.raises(ValueError, match="At least one"):
         adapter.analyze(question="Assess financial condition", claims=[])
+
+
+def test_provider_errors_are_redacted() -> None:
+    adapter = OpenAIFinancialAnalysisAdapter(
+        client=SimpleNamespace(responses=FailingResponses())
+    )
+
+    with pytest.raises(
+        AnalysisGenerationError, match="OpenAI request failed: OpenAIError"
+    ):
+        adapter.analyze(question="Assess financial condition", claims=[claim()])

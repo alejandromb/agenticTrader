@@ -86,6 +86,7 @@ class CandidateClaimModel(Base):
             "period_end",
             name="uq_candidate_fact_observation",
         ),
+        UniqueConstraint("claim_id", "run_id", name="uq_candidate_claim_run"),
         Index("candidate_claims_run_id", "run_id", "claim_id"),
     )
 
@@ -104,3 +105,46 @@ class CandidateClaimModel(Base):
     accession_number: Mapped[str] = mapped_column(String, nullable=False)
     extraction_method: Mapped[str] = mapped_column(String, nullable=False)
     extracted_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class AnalysisArtifactModel(Base):
+    __tablename__ = "analysis_artifacts"
+    __table_args__ = (
+        UniqueConstraint("artifact_id", "run_id", name="uq_analysis_artifact_run"),
+        Index("analysis_artifacts_run_id", "run_id", "artifact_id"),
+    )
+
+    artifact_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("research_runs.run_id"), nullable=False
+    )
+    artifact_type: Mapped[str] = mapped_column(String, nullable=False)
+    schema_version: Mapped[str] = mapped_column(String, nullable=False)
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    model: Mapped[str] = mapped_column(String, nullable=False)
+    provider_response_id: Mapped[str] = mapped_column(
+        String, nullable=False, unique=True
+    )
+    prompt_version: Mapped[str] = mapped_column(String, nullable=False)
+    content_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class AnalysisInputClaimModel(Base):
+    __tablename__ = "analysis_input_claims"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["artifact_id", "run_id"],
+            ["analysis_artifacts.artifact_id", "analysis_artifacts.run_id"],
+            name="fk_analysis_input_artifact_run",
+        ),
+        ForeignKeyConstraint(
+            ["claim_id", "run_id"],
+            ["candidate_claims.claim_id", "candidate_claims.run_id"],
+            name="fk_analysis_input_claim_run",
+        ),
+    )
+
+    artifact_id: Mapped[str] = mapped_column(String, primary_key=True)
+    claim_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(String, primary_key=True)

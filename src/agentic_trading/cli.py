@@ -9,10 +9,17 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+from agentic_trading.analysis_repository import SqliteAnalysisRepository
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.claim_repository import SqliteClaimRepository
 from agentic_trading.financials import extract_annual_financial_snapshot
 from agentic_trading.migrations import upgrade_database
+from agentic_trading.openai_adapter import (
+    AnalysisGenerationError,
+    OpenAIFinancialAnalysisAdapter,
+)
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.sec import SecClient
 from agentic_trading.source_repository import SqliteSourceRepository
@@ -78,10 +85,18 @@ def build_parser() -> argparse.ArgumentParser:
     transition.add_argument("target_state", type=WorkflowState)
     transition.add_argument("--reason")
 
+    analyze = commands.add_parser(
+        "analyze-financials", help="generate and persist structured analysis"
+    )
+    analyze.add_argument("database", type=Path)
+    analyze.add_argument("run_id")
+    analyze.add_argument("question")
+
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    load_dotenv()
     args = build_parser().parse_args(argv)
 
     if args.command == "validate-memo":
@@ -240,6 +255,37 @@ def main(argv: Sequence[str] | None = None) -> int:
             reason=args.reason,
         )
         print(json.dumps(_run_dict(run), sort_keys=True))
+        return 0
+
+    if args.command == "analyze-financials":
+        claims = SqliteClaimRepository(args.database).list_for_run(args.run_id)
+        try:
+            generated = OpenAIFinancialAnalysisAdapter().analyze(
+                question=args.question,
+                claims=claims,
+            )
+        except AnalysisGenerationError as error:
+            raise SystemExit(str(error)) from error
+        artifact = SqliteAnalysisRepository(
+            args.database
+        ).save_openai_financial_analysis(
+            run_id=args.run_id,
+            generated=generated,
+        )
+        print(
+            json.dumps(
+                {
+                    "analysis": artifact.analysis.model_dump(),
+                    "artifact_id": artifact.artifact_id,
+                    "input_claim_ids": artifact.input_claim_ids,
+                    "model": artifact.model,
+                    "prompt_version": artifact.prompt_version,
+                    "provider_response_id": artifact.provider_response_id,
+                    "schema_version": artifact.schema_version,
+                },
+                sort_keys=True,
+            )
+        )
         return 0
 
     raise AssertionError(f"Unhandled command: {args.command}")
