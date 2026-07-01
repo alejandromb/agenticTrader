@@ -119,6 +119,9 @@ Implement ADR-0011 and the Version 2 product contract.
   with explicit growth, discount, terminal-growth, horizon, and base-cash-flow
   assumptions plus input-claim lineage; outputs are not equity price targets and
   prompt version is now 2.1.
+- Added deterministic canonical investment-memo synthesis, schema and semantic
+  validation, durable ORM persistence, saved-run visibility, and workflow
+  progression to `awaiting_human_disposition`.
 
 ## Accepted decisions
 

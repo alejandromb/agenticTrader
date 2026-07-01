@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from agentic_trading.analysis import AnalysisPoint, FinancialAnalysis
+from agentic_trading.memo_repository import SqliteInvestmentMemoRepository
 from agentic_trading.openai_adapter import GeneratedFinancialAnalysis
 from agentic_trading.research import CompanyResearchService
 from agentic_trading.sec import CompanyIdentity, FilingMetadata
@@ -144,10 +145,18 @@ def test_research_company_runs_end_to_end(tmp_path: Path) -> None:
     result = service.research(ticker="AAPL", question="Assess Apple")
 
     assert result.company.ticker == "AAPL"
-    assert result.run.state is WorkflowState.CHALLENGING
+    assert result.run.state is WorkflowState.AWAITING_HUMAN_DISPOSITION
     assert len(result.claims) == 8
     assert sum(claim.claim_type == "calculation" for claim in result.claims) == 2
     assert len(result.revision_audits) == 1
     assert result.revision_audits[0].revision.absolute_change == 1000000000
     assert result.analysis.prompt_version == "1.1.0"
+    assert result.memo.memo["human_disposition"] == {"status": "undecided"}
+    assert result.memo.memo["subject"]["ticker"] == "AAPL"
+    assert (
+        SqliteInvestmentMemoRepository(tmp_path / "state.db").latest_for_run(
+            result.run.run_id
+        )
+        == result.memo
+    )
     assert Path(result.source.storage_path).exists()

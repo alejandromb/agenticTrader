@@ -15,6 +15,7 @@ from agentic_trading.analysis_repository import SqliteAnalysisRepository
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.claim_repository import SqliteClaimRepository
 from agentic_trading.financials import extract_annual_financial_snapshot
+from agentic_trading.memo_repository import SqliteInvestmentMemoRepository
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.openai_adapter import (
     AnalysisGenerationError,
@@ -180,6 +181,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "filing_accession": result.filing.accession_number,
                     "filing_date": result.filing.filing_date,
                     "model": result.analysis.model,
+                    "memo_artifact_id": result.memo.artifact_id,
                     "prompt_version": result.analysis.prompt_version,
                     "run_id": result.run.run_id,
                     "state": result.run.state,
@@ -342,8 +344,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         run = repository.get_run(args.run_id)
         claims = SqliteClaimRepository(args.database).list_for_run(run.run_id)
         analysis = SqliteAnalysisRepository(args.database).latest_for_run(run.run_id)
+        memo = SqliteInvestmentMemoRepository(args.database).latest_for_run(run.run_id)
         audits = SqliteRevisionAuditRepository(args.database).list_for_run(run.run_id)
-        _print_run(run, claims, analysis, audits)
+        _print_run(run, claims, analysis, audits, memo)
         return 0
 
     if args.command == "create-run":
@@ -409,7 +412,11 @@ def _run_dict(run: object) -> dict[str, str]:
 
 
 def _print_run(
-    run: object, claims: list[object], artifact: object | None, audits: list[object]
+    run: object,
+    claims: list[object],
+    artifact: object | None,
+    audits: list[object],
+    memo: object | None,
 ) -> None:
     print(f"Run: {run.run_id}")
     print(f"State: {run.state}")
@@ -426,6 +433,11 @@ def _print_run(
             f"{revision.later_value} ({revision.later_accession}); "
             f"classification={revision.classification}"
         )
+    if memo is None:
+        print("Investment memo: not available")
+    else:
+        print(f"Investment memo: {memo.artifact_id}")
+        print(f"Human disposition: {memo.memo['human_disposition']['status']}")
     if artifact is None:
         print("Analysis: not available")
         return

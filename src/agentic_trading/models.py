@@ -203,3 +203,18 @@ class RevisionAuditModel(Base):
     later_value: Mapped[str] = mapped_column(String, nullable=False)
     absolute_change: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class InvestmentMemoArtifactModel(Base):
+    __tablename__ = "investment_memo_artifacts"
+
+    artifact_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("research_runs.run_id"), nullable=False, unique=True
+    )
+    analysis_artifact_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_artifacts.artifact_id"), nullable=False
+    )
+    schema_version: Mapped[str] = mapped_column(String, nullable=False)
+    content_json: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)

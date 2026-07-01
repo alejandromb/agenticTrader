@@ -24,6 +24,10 @@ from agentic_trading.financials import (
     extract_available_annual_financial_snapshot,
     infer_annual_period_start,
 )
+from agentic_trading.memo_repository import (
+    InvestmentMemoArtifact,
+    SqliteInvestmentMemoRepository,
+)
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.openai_adapter import OpenAIFinancialAnalysisAdapter
 from agentic_trading.repository import ResearchRun, SqliteRunRepository
@@ -51,6 +55,7 @@ class ResearchResult:
     claims: tuple[CandidateClaim, ...]
     revision_audits: tuple[RevisionAudit, ...]
     analysis: AnalysisArtifact
+    memo: InvestmentMemoArtifact
 
 
 class CompanyResearchService:
@@ -129,6 +134,37 @@ class CompanyResearchService:
                 target_state=WorkflowState.CHALLENGING,
                 reason="financial_analysis_completed",
             )
+            state = run.state
+            run = runs.transition(
+                run.run_id,
+                expected_state=state,
+                target_state=WorkflowState.SYNTHESIZING,
+                reason="company_analysis_challenged",
+            )
+            state = run.state
+            memo = SqliteInvestmentMemoRepository(
+                self._database_path
+            ).synthesize_and_save(
+                run=run,
+                company=company,
+                question=question,
+                source=source,
+                claims=claims,
+                analysis=analysis,
+            )
+            run = runs.transition(
+                run.run_id,
+                expected_state=state,
+                target_state=WorkflowState.VALIDATING,
+                reason="investment_memo_synthesized",
+            )
+            state = run.state
+            run = runs.transition(
+                run.run_id,
+                expected_state=state,
+                target_state=WorkflowState.AWAITING_HUMAN_DISPOSITION,
+                reason="investment_memo_validated",
+            )
             return ResearchResult(
                 company=company,
                 filing=filing,
@@ -137,6 +173,7 @@ class CompanyResearchService:
                 claims=tuple(claims),
                 revision_audits=tuple(revision_audits),
                 analysis=analysis,
+                memo=memo,
             )
         except Exception:
             if state not in {WorkflowState.COMPLETE, WorkflowState.FAILED}:

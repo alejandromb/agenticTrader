@@ -109,4 +109,5 @@ def test_list_and_show_saved_run(
     output = capsys.readouterr().out
     assert "State: draft" in output
     assert "Cross-filing revision audits: 0" in output
+    assert "Investment memo: not available" in output
     assert "Analysis: not available" in output
