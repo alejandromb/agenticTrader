@@ -32,6 +32,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0016](0016-milestone-six-unified-operator-workspace.md) | Scope Milestone 6 as a unified operator workspace | Accepted |
 | [0017](0017-milestone-seven-quarterly-research-updates.md) | Scope Milestone 7 as period-safe quarterly research updates | Accepted |
 | [0018](0018-milestone-eight-cognitive-load.md) | Scope Milestone 8 as dashboard cognitive-load reduction | Accepted |
+| [0019](0019-milestone-nine-research-quality-ledger.md) | Scope Milestone 9 as a research-quality evaluation ledger | Accepted |
 
 ## Convention
 

@@ -57,7 +57,7 @@ async function loadWorkspace() {
 }
 
 function renderWorkspaceData() {
-  const workspace = state.workspace || { datasets: [], monitors: [], alerts: [], reviews: [] };
+  const workspace = state.workspace || { datasets: [], monitors: [], alerts: [], reviews: [], quality_evaluations: [] };
   text(byId("dataset-count"), workspace.datasets.length);
   text(byId("monitor-count"), workspace.monitors.length);
   text(byId("open-alert-count"), workspace.alerts.filter((alert) => alert.status === "open").length);
@@ -70,13 +70,16 @@ function renderWorkspaceData() {
   const reviewRuns = state.runs.filter((run) => run.state === "complete" && run.memo_available);
   fillSelect("review-baseline", reviewRuns, "run_id", runLabel);
   fillSelect("review-current", reviewRuns, "run_id", runLabel);
+  fillSelect("quality-run", state.runs.filter((run) => run.memo_available), "run_id", runLabel);
   setFormAvailability("portfolio-form", workspace.datasets.length > 0);
   setFormAvailability("backtest-form", workspace.datasets.length > 0);
   setFormAvailability("monitor-form", eligibleRuns.length > 0);
   setFormAvailability("monitor-evaluate-form", workspace.monitors.length > 0 && workspace.datasets.length > 0);
   setFormAvailability("review-form", reviewRuns.length > 1);
+  setFormAvailability("quality-evaluation-form", state.runs.some((run) => run.memo_available));
   renderAlerts(workspace.alerts);
   renderReviews(workspace.reviews);
+  renderQualityEvaluations(workspace.quality_evaluations || []);
 }
 
 function setFormAvailability(formId, available) {
@@ -492,6 +495,50 @@ async function submitReviewOutcome(event) {
   });
 }
 
+const QUALITY_CRITERIA = ["numerical_fidelity", "evidence_fidelity", "fact_judgment_separation", "balance", "uncertainty", "decision_usefulness"];
+
+function renderQualityEvaluations(evaluations) {
+  const list = byId("quality-evaluation-list");
+  list.replaceChildren();
+  if (!evaluations.length) {
+    list.append(node("p", "empty-list", "No research-quality evaluations yet."));
+    return;
+  }
+  for (const evaluation of evaluations) {
+    const card = node("details", "review-button quality-entry");
+    const summary = node("summary");
+    const passedGates = Object.values(evaluation.gates).filter(Boolean).length;
+    summary.append(node("strong", "", `${evaluation.total_score}/12 · ${evaluation.accepted ? "accepted" : "not accepted"}`));
+    summary.append(node("span", "", `${passedGates}/${Object.keys(evaluation.gates).length} gates · prompt ${evaluation.provenance.prompt_version} · ${evaluation.run_id.slice(0, 8)}`));
+    const detail = node("div", "quality-entry-detail");
+    for (const [gate, passed] of Object.entries(evaluation.gates)) {
+      detail.append(node("p", passed ? "gate-pass" : "gate-fail", `${passed ? "Pass" : "Fail"} · ${gate.replaceAll("_", " ")}`));
+    }
+    for (const [criterion, score] of Object.entries(evaluation.scores)) {
+      detail.append(node("p", "", `${criterion.replaceAll("_", " ")} · ${score.score}/2 — ${score.rationale}`));
+    }
+    card.append(summary, detail);
+    list.append(card);
+  }
+}
+
+async function submitQualityEvaluation(event) {
+  event.preventDefault();
+  await withFormButton(event, async () => {
+    const scores = Object.fromEntries(QUALITY_CRITERIA.map((criterion) => [criterion, {
+      score: Number(byId(`quality-${criterion}-score`).value),
+      rationale: byId(`quality-${criterion}-rationale`).value,
+    }]));
+    await api("/api/quality-evaluations", {
+      method: "POST",
+      body: JSON.stringify({ run_id: byId("quality-run").value, scores }),
+    });
+    for (const criterion of QUALITY_CRITERIA) byId(`quality-${criterion}-rationale`).value = "";
+    await loadWorkspace();
+    showToast("Research-quality evaluation recorded.");
+  });
+}
+
 function renderJsonResult(container, value) {
   container.replaceChildren();
   const pre = node("pre", "json-result", JSON.stringify(value, null, 2));
@@ -581,5 +628,6 @@ byId("monitor-form").addEventListener("submit", submitMonitor);
 byId("monitor-evaluate-form").addEventListener("submit", submitMonitorEvaluation);
 byId("review-form").addEventListener("submit", submitReview);
 byId("review-outcome-form").addEventListener("submit", submitReviewOutcome);
+byId("quality-evaluation-form").addEventListener("submit", submitQualityEvaluation);
 byId("refresh-workspace").addEventListener("click", loadWorkspace);
 bootstrap();

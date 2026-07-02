@@ -15,6 +15,7 @@ from agentic_trading.dashboard import (
     DashboardError,
     create_dashboard_server,
 )
+from agentic_trading.dashboard_workspace import DashboardWorkspaceService
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.workflow import WorkflowState
@@ -128,6 +129,8 @@ def test_dashboard_assets_and_configuration_are_secret_safe(
         assert "private-openai-secret" not in json.dumps(config)
         assert "private-sec-identity" not in json.dumps(config)
         assert headers["Cache-Control"] == "no-store"
+        _, workspace, _ = get_json(f"{base}/api/workspace")
+        assert workspace["quality_evaluations"] == []
 
 
 def test_run_list_detail_and_disposition_lifecycle(tmp_path, monkeypatch) -> None:
@@ -317,3 +320,42 @@ def test_uploaded_file_requires_strict_base64(tmp_path, monkeypatch) -> None:
             )
         assert invalid_filter.value.code == 400
         assert "decimal" in error_json(invalid_filter.value)["error"]
+
+
+def test_quality_evaluation_endpoint_preserves_human_score_payload(
+    tmp_path, monkeypatch
+) -> None:
+    captured = {}
+
+    def fake_evaluate(self, *, run_id, scores):
+        captured.update({"run_id": run_id, "scores": scores})
+        return {"evaluation_id": "quality-1", "accepted": True, "total_score": 12}
+
+    monkeypatch.setattr(
+        DashboardWorkspaceService,
+        "evaluate_research_quality",
+        fake_evaluate,
+    )
+    with running_dashboard(tmp_path, monkeypatch) as (base, _, run_id, _):
+        _, config, _ = get_json(f"{base}/api/config")
+        score_payload = {
+            criterion: {"score": 2, "rationale": f"Reviewed {criterion}"}
+            for criterion in (
+                "numerical_fidelity",
+                "evidence_fidelity",
+                "fact_judgment_separation",
+                "balance",
+                "uncertainty",
+                "decision_usefulness",
+            )
+        }
+
+        status, result = post_json(
+            f"{base}/api/quality-evaluations",
+            {"run_id": run_id, "scores": score_payload},
+            config["csrf_token"],
+        )
+
+        assert status == 201
+        assert result["evaluation_id"] == "quality-1"
+        assert captured == {"run_id": run_id, "scores": score_payload}

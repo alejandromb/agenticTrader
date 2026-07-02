@@ -12,6 +12,7 @@ from agentic_trading.backtesting import SqliteBacktester
 from agentic_trading.market_data import SqlitePriceDatasetRepository
 from agentic_trading.monitoring import SqliteDecisionMonitoring
 from agentic_trading.portfolio_analytics import SqlitePortfolioAnalyzer
+from agentic_trading.research_quality import SqliteResearchQualityRepository
 from agentic_trading.research_reviews import SqliteResearchReviewRepository
 from agentic_trading.screener import ScreenFilters, SqliteResearchScreener
 
@@ -24,6 +25,7 @@ class DashboardWorkspaceService:
         self._backtests = SqliteBacktester(database_path, artifact_root)
         self._monitoring = SqliteDecisionMonitoring(database_path, artifact_root)
         self._reviews = SqliteResearchReviewRepository(database_path)
+        self._quality = SqliteResearchQualityRepository(database_path)
 
     def snapshot(self) -> dict[str, Any]:
         return {
@@ -42,6 +44,10 @@ class DashboardWorkspaceService:
                     ),
                 }
                 for item in self._reviews.list_reviews()
+            ],
+            "quality_evaluations": [
+                _quality_payload(item)
+                for item in self._quality.list_evaluations()
             ],
         }
 
@@ -145,6 +151,11 @@ class DashboardWorkspaceService:
             )
         )
 
+    def evaluate_research_quality(
+        self, *, run_id: str, scores: dict[str, Any]
+    ) -> dict[str, Any]:
+        return _quality_payload(self._quality.evaluate(run_id, scores=scores))
+
 
 def _monitor_payload(monitor) -> dict[str, Any]:
     return {
@@ -175,6 +186,15 @@ def _review_payload(review) -> dict[str, Any]:
         "ticker": review.ticker,
         "content": review.content,
         "created_at": review.created_at,
+    }
+
+
+def _quality_payload(evaluation) -> dict[str, Any]:
+    return {
+        **asdict(evaluation),
+        "scores": {
+            key: asdict(value) for key, value in evaluation.scores.items()
+        },
     }
 
 

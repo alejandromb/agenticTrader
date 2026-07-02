@@ -2,11 +2,11 @@
 
 Last updated: 2026-07-02
 
-Session status: Milestone 8 complete
+Session status: Milestone 9 complete
 
 ## Current phase
 
-Milestone 8 dashboard cognitive-load reduction accepted.
+Milestone 9 research-quality evaluation ledger accepted.
 
 ## Active objective
 
@@ -218,6 +218,18 @@ Select the next measured research outcome without expanding system authority.
   preserving the full memo and model metadata in a secondary disclosure.
 - Accepted Milestone 8 after 120 passing tests, real-database desktop/mobile
   browser verification, mobile containment, and zero browser console errors.
+- Accepted ADR-0019 and defined Milestone 9 as an append-only research-quality
+  evaluation ledger that does not use stock performance or an LLM judge.
+- Added five reproducible integrity gates covering artifacts, claim lineage,
+  visible evidence gaps, provenance, and preserved human authority.
+- Added six validated human rubric scores with required rationales and derived
+  acceptance using the versioned 9-of-12 threshold.
+- Persisted append-only evaluations with prompt, model, schema, token, latency,
+  actor, gate, score, and rationale context plus CLI create/list workflows.
+- Added a progressive-disclosure dashboard rubric and expandable evaluation
+  ledger without adding model calls, market outcomes, or execution authority.
+- Accepted Milestone 9 after 128 passing tests, restart reconstruction,
+  real-database desktop/mobile browser verification, and zero console errors.
 
 ## Accepted decisions
 
@@ -239,6 +251,7 @@ Select the next measured research outcome without expanding system authority.
 - ADR-0016: Scope Milestone 6 as a unified operator workspace.
 - ADR-0017: Scope Milestone 7 as period-safe quarterly research updates.
 - ADR-0018: Scope Milestone 8 as dashboard cognitive-load reduction.
+- ADR-0019: Scope Milestone 9 as a research-quality evaluation ledger.
 
 ## Open questions
 
@@ -253,10 +266,10 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Choose the next milestone using ADR-0010's measured-outcome requirement.
-2. Keep future visualizations and conversational operation in the measured
-   backlog until their decision-quality benefit is testable.
-3. Preserve the research/execution boundary and human authority.
+1. Use the quality ledger on future prompt/workflow changes before adoption.
+2. Select the next milestone using ADR-0010's measured-outcome requirement.
+3. Keep market-outcome scoring, chat/MCP, automation, and execution out of scope
+   without separate controlled experiments.
 
 ## Future integration note
 
@@ -268,6 +281,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Milestone 8 is complete. Begin the next session by selecting a measured research
-outcome; do not add visualizations, chat/MCP, automation, or execution without a
-separate product contract and evaluation baseline.
+Milestone 9 is complete. Begin the next session by selecting a measured research
+outcome and use the quality ledger to evaluate any material workflow change.

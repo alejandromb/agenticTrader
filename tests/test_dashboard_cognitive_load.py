@@ -59,8 +59,9 @@ def test_dashboard_uses_progressive_disclosure_without_losing_workflows() -> Non
         "monitor-form",
         "monitor-evaluate-form",
         "review-form",
+        "quality-evaluation-form",
     }
-    assert structure.question_summaries == 7
+    assert structure.question_summaries == 8
     assert page.index('id="decision-panel"') < page.index(
         'class="evidence-disclosure"'
     )

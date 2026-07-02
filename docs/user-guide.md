@@ -297,3 +297,32 @@ Retrieve the packet later and record the human review outcome:
 Allowed outcomes are `no_thesis_change`, `revise_thesis`, `investigate`, and
 `close_watch`. These are append-only review records. Even `close_watch` does not
 change a monitor or trigger another workflow.
+
+## Research-quality evaluations
+
+Create a JSON score file containing exactly the six rubric criteria. Every
+criterion requires a score from 0 to 2 and a human rationale:
+
+```json
+{
+  "numerical_fidelity": {"score": 2, "rationale": "Values and periods match the cited claims."},
+  "evidence_fidelity": {"score": 2, "rationale": "Conclusions stay within cited evidence."},
+  "fact_judgment_separation": {"score": 2, "rationale": "Judgments are labeled as analysis."},
+  "balance": {"score": 2, "rationale": "Credible strengths and concerns are present."},
+  "uncertainty": {"score": 2, "rationale": "Material evidence gaps remain visible."},
+  "decision_usefulness": {"score": 2, "rationale": "The memo identifies useful follow-up work."}
+}
+```
+
+Record and retrieve evaluations:
+
+```bash
+.venv/bin/agentic-trading evaluate-research-quality RUN_ID \
+  --scores quality-scores.json
+
+.venv/bin/agentic-trading list-research-evaluations --run-id RUN_ID
+```
+
+Acceptance is derived: all integrity gates must pass, no score may be zero, and
+the total must be at least 9 of 12. This does not score later returns, judge the
+company, or change the run's human disposition.

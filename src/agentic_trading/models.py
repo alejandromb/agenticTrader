@@ -407,3 +407,34 @@ class ResearchReviewOutcomeModel(Base):
     rationale: Mapped[str] = mapped_column(String, nullable=False)
     actor: Mapped[str] = mapped_column(String, nullable=False)
     recorded_at: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class ResearchQualityEvaluationModel(Base):
+    __tablename__ = "research_quality_evaluations"
+    __table_args__ = (
+        Index(
+            "research_quality_evaluations_run_id",
+            "run_id",
+            "created_at",
+            "evaluation_id",
+        ),
+    )
+
+    evaluation_id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("research_runs.run_id"), nullable=False
+    )
+    analysis_artifact_id: Mapped[str] = mapped_column(
+        ForeignKey("analysis_artifacts.artifact_id"), nullable=False
+    )
+    memo_artifact_id: Mapped[str] = mapped_column(
+        ForeignKey("investment_memo_artifacts.artifact_id"), nullable=False
+    )
+    rubric_version: Mapped[str] = mapped_column(String, nullable=False)
+    gates_json: Mapped[str] = mapped_column(String, nullable=False)
+    scores_json: Mapped[str] = mapped_column(String, nullable=False)
+    total_score: Mapped[int] = mapped_column(Integer, nullable=False)
+    accepted: Mapped[int] = mapped_column(Integer, nullable=False)
+    provenance_json: Mapped[str] = mapped_column(String, nullable=False)
+    actor: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(String, nullable=False)

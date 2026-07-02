@@ -349,6 +349,13 @@ def create_dashboard_server(
                     outcome=_string(payload, "outcome"),
                     rationale=_string(payload, "rationale"),
                 )
+            elif path == "/api/quality-evaluations":
+                scores = payload.get("scores")
+                if not isinstance(scores, dict):
+                    raise DashboardError("scores must be an object")
+                result = workspace.evaluate_research_quality(
+                    run_id=_string(payload, "run_id"), scores=scores
+                )
             else:
                 return False
             self._json(result, status=HTTPStatus.CREATED)

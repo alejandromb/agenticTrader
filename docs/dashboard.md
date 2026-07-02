@@ -15,16 +15,17 @@ The unified workspace supports:
 - company research using the existing SEC and OpenAI pipeline;
 - saved-run browsing;
 - readable memo, analysis, limitation, and telemetry views; and
-- explicit human disposition for eligible runs.
+- explicit human disposition for eligible runs;
 - immutable price-data import and deterministic screens;
 - hypothetical portfolio analytics and cost-aware backtesting;
 - monitor creation/evaluation and alert acknowledgement; and
-- research-refresh comparison and human review outcomes.
+- research-refresh comparison and human review outcomes; and
+- append-only research-quality evaluations with deterministic integrity gates.
 
-Use the top navigation to move between `Research`, `Quant lab`, `Monitoring`,
-and `Reviews`. Each form displays only persisted eligible artifacts where that
-can be determined in advance. Domain-invalid combinations still fail explicitly
-instead of being silently adjusted.
+Use the primary navigation for `Research` and `Reviews`; `Quant lab` and
+`Monitoring` remain under `Tools`. Advanced forms use question-led progressive
+disclosure and display only persisted eligible artifacts where that can be
+determined in advance. Domain-invalid combinations still fail explicitly.
 
 The server is intentionally local-only. It rejects non-loopback bind addresses,
 loads no external assets, and never returns API keys or the SEC user-agent value.

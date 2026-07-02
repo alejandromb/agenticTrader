@@ -40,6 +40,10 @@ from agentic_trading.portfolio_analytics import (
 )
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.research import CompanyResearchService
+from agentic_trading.research_quality import (
+    ResearchQualityError,
+    SqliteResearchQualityRepository,
+)
 from agentic_trading.research_reviews import (
     REVIEW_OUTCOMES,
     ResearchReviewError,
@@ -267,6 +271,23 @@ def build_parser() -> argparse.ArgumentParser:
     record_review.add_argument("outcome", choices=sorted(REVIEW_OUTCOMES))
     record_review.add_argument("--rationale", required=True)
     record_review.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    evaluate_research = commands.add_parser(
+        "evaluate-research-quality",
+        help="append a rubric-scored research-quality evaluation",
+    )
+    evaluate_research.add_argument("run_id")
+    evaluate_research.add_argument("--scores", type=Path, required=True)
+    evaluate_research.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    list_evaluations = commands.add_parser(
+        "list-research-evaluations",
+        help="list persisted research-quality evaluations",
+    )
+    list_evaluations.add_argument("--run-id")
+    list_evaluations.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
     dashboard = commands.add_parser(
@@ -776,6 +797,26 @@ def main(argv: Sequence[str] | None = None) -> int:
         except ResearchReviewError as error:
             raise SystemExit(str(error)) from error
         print(json.dumps(asdict(outcome), sort_keys=True))
+        return 0
+
+    if args.command == "evaluate-research-quality":
+        upgrade_database(args.database)
+        try:
+            score_payload = json.loads(args.scores.read_text())
+            evaluation = SqliteResearchQualityRepository(args.database).evaluate(
+                args.run_id, scores=score_payload
+            )
+        except (OSError, json.JSONDecodeError, ResearchQualityError) as error:
+            raise SystemExit(str(error)) from error
+        print(json.dumps(asdict(evaluation), sort_keys=True))
+        return 0
+
+    if args.command == "list-research-evaluations":
+        upgrade_database(args.database)
+        evaluations = SqliteResearchQualityRepository(
+            args.database
+        ).list_evaluations(run_id=args.run_id)
+        print(json.dumps([asdict(item) for item in evaluations], sort_keys=True))
         return 0
 
     if args.command == "create-run":

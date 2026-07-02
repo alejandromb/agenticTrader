@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import asdict
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,10 @@ from agentic_trading.cli import main
 from agentic_trading.disposition_repository import SqliteDispositionRepository
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
+from agentic_trading.research_quality import (
+    CriterionScore,
+    ResearchQualityEvaluation,
+)
 from agentic_trading.workflow import WorkflowState
 
 ROOT = Path(__file__).parents[1]
@@ -189,6 +194,92 @@ def test_record_disposition_completes_awaiting_run(
     output = json.loads(capsys.readouterr().out)
     assert output["status"] == "watch"
     assert output["state"] == "complete"
+
+
+def test_research_quality_cli_creates_and_lists_evaluations(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    score_path = tmp_path / "scores.json"
+    score_path.write_text(
+        json.dumps(
+            {
+                criterion: {"score": 2, "rationale": "Reviewed"}
+                for criterion in (
+                    "numerical_fidelity",
+                    "evidence_fidelity",
+                    "fact_judgment_separation",
+                    "balance",
+                    "uncertainty",
+                    "decision_usefulness",
+                )
+            }
+        )
+    )
+    evaluation = ResearchQualityEvaluation(
+        evaluation_id="quality-cli",
+        run_id="run-cli",
+        analysis_artifact_id="analysis-cli",
+        memo_artifact_id="memo-cli",
+        rubric_version="1.0.0",
+        gates={"artifacts_present": True},
+        scores={
+            "balance": CriterionScore(score=2, rationale="Reviewed")
+        },
+        total_score=12,
+        accepted=True,
+        provenance={"prompt_version": "2.2.0"},
+        actor="human_user",
+        created_at="2026-07-02T00:00:00Z",
+    )
+
+    class FakeRepository:
+        def __init__(self, database):
+            self.database = database
+
+        def evaluate(self, run_id, *, scores):
+            assert run_id == "run-cli"
+            assert scores["balance"]["score"] == 2
+            return evaluation
+
+        def list_evaluations(self, *, run_id=None):
+            assert run_id == "run-cli"
+            return (evaluation,)
+
+    monkeypatch.setattr(
+        "agentic_trading.cli.SqliteResearchQualityRepository", FakeRepository
+    )
+    database = tmp_path / "state.db"
+
+    assert (
+        main(
+            [
+                "evaluate-research-quality",
+                "run-cli",
+                "--scores",
+                str(score_path),
+                "--database",
+                str(database),
+            ]
+        )
+        == 0
+    )
+    assert json.loads(capsys.readouterr().out) == asdict(evaluation)
+
+    assert (
+        main(
+            [
+                "list-research-evaluations",
+                "--run-id",
+                "run-cli",
+                "--database",
+                str(database),
+            ]
+        )
+        == 0
+    )
+    assert json.loads(capsys.readouterr().out) == [asdict(evaluation)]
 
 
 def test_import_prices_command(

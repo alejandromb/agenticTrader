@@ -42,9 +42,10 @@ def test_upgrade_database_creates_versioned_schema(tmp_path: Path) -> None:
         "alert_acknowledgements",
         "research_reviews",
         "research_review_outcomes",
+        "research_quality_evaluations",
         "research_runs",
         "revision_audits",
         "source_documents",
         "transition_events",
     } <= tables
-    assert version == ("20260701_0017",)
+    assert version == ("20260702_0018",)

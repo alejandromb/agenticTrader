@@ -153,3 +153,11 @@ changes, links time-bounded baseline-monitor alerts, and awaits one explicit
 human outcome. It cannot refresh research automatically or mutate a memo,
 monitor, portfolio, or broker. See [docs/milestone-5.md](docs/milestone-5.md) and
 the [acceptance audit](docs/evaluation/milestone-five-acceptance.md).
+
+## Milestone 9 research-quality ledger
+
+Milestone 9 evaluates saved research artifacts using five reproducible integrity
+gates and six human-scored criteria. Results retain prompt, model, schema, token,
+and latency context in an append-only ledger. The score evaluates research
+quality—not the company, later stock returns, or investment attractiveness—and
+does not call a model. See [docs/milestone-9.md](docs/milestone-9.md).
