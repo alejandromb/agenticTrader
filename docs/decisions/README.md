@@ -30,6 +30,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0014](0014-milestone-five-research-refresh-reviews.md) | Scope Milestone 5 as research-refresh reviews | Accepted |
 | [0015](0015-local-dashboard-surface.md) | Add a loopback-only local dashboard | Accepted |
 | [0016](0016-milestone-six-unified-operator-workspace.md) | Scope Milestone 6 as a unified operator workspace | Accepted |
+| [0017](0017-milestone-seven-quarterly-research-updates.md) | Scope Milestone 7 as period-safe quarterly research updates | Accepted |
 
 ## Convention
 

@@ -167,8 +167,8 @@ class DashboardDataService:
 
 def _default_research_runner(
     database_path: Path, artifact_root: Path
-) -> Callable[[str, str], dict[str, Any]]:
-    def run(ticker: str, question: str) -> dict[str, Any]:
+) -> Callable[[str, str, str], dict[str, Any]]:
+    def run(ticker: str, question: str, form: str) -> dict[str, Any]:
         user_agent = os.environ.get("SEC_USER_AGENT")
         if not user_agent:
             raise DashboardError("SEC_USER_AGENT is not configured")
@@ -179,12 +179,13 @@ def _default_research_runner(
             artifact_root=artifact_root,
             sec_client=SecClient(user_agent),
             analysis_adapter=OpenAIFinancialAnalysisAdapter(),
-        ).research(ticker=ticker, question=question)
+        ).research(ticker=ticker, question=question, form=form)
         return {
             "run_id": result.run.run_id,
             "state": result.run.state.value,
             "ticker": result.company.ticker,
             "company": result.company.name,
+            "filing_form": result.filing.form,
             "memo_artifact_id": result.memo.artifact_id,
         }
 
@@ -197,7 +198,7 @@ def create_dashboard_server(
     port: int,
     database_path: Path,
     artifact_root: Path,
-    research_runner: Callable[[str, str], dict[str, Any]] | None = None,
+    research_runner: Callable[[str, str, str], dict[str, Any]] | None = None,
 ) -> LoopbackDashboardServer:
     _validate_loopback(host)
     if not 0 <= port <= 65535:
@@ -357,13 +358,20 @@ def create_dashboard_server(
             try:
                 ticker = _string(payload, "ticker").strip().upper()
                 question = _string(payload, "question").strip()
+                form = (
+                    _string(payload, "form").strip()
+                    if "form" in payload
+                    else "10-K"
+                )
                 if not _TICKER.fullmatch(ticker):
                     raise DashboardError("Ticker format is invalid")
                 if not question:
                     raise DashboardError("Research question is required")
                 if len(question) > 4_000:
                     raise DashboardError("Research question is too long")
-                result = run_research(ticker, question)
+                if form not in {"10-K", "10-Q"}:
+                    raise DashboardError("Research form must be 10-K or 10-Q")
+                result = run_research(ticker, question, form)
             except (
                 AnalysisGenerationError,
                 DashboardError,

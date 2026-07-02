@@ -81,12 +81,19 @@ The command reports only booleans. It never prints secret values.
   --question "Assess fiscal financial condition, major strengths, concerns, and missing evidence."
 ```
 
+The default is the latest Form 10-K. To run a quarterly update instead:
+
+```bash
+.venv/bin/agentic-trading research-company WMT --form 10-Q \
+  --question "Assess the latest quarter and identify what still requires annual evidence."
+```
+
 This command:
 
 1. migrates the local database;
 2. resolves the ticker with the SEC;
 3. creates an auditable research run;
-4. downloads and hashes the latest Form 10-K;
+4. downloads and hashes the latest explicitly selected Form 10-K or 10-Q;
 5. records source provenance;
 6. extracts current and comparable annual facts from one filing context;
 7. detects changed values across filing accessions;
@@ -162,9 +169,11 @@ cannot invoke this command or choose the human disposition.
 
 ## Current limitations
 
-- Only annual Form 10-K research is orchestrated.
-- Analysis is limited to facts and narrative supported by the selected annual
-  filing and SEC company-facts data.
+- Annual Form 10-K and quarterly Form 10-Q research are orchestrated explicitly;
+  annual remains the default.
+- Analysis is limited to facts and narrative supported by the selected filing
+  and SEC company-facts data. Quarterly research does not refresh complete
+  annual business/risk evidence, annualize values, or generate DCF scenarios.
 - Cross-filing value differences are labeled neutrally; a formal restatement
   label requires explicit filing evidence.
 - Capital-allocation table extraction is deterministic and issuer layouts can

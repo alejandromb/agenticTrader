@@ -134,6 +134,88 @@ class FakeAnalysisAdapter:
         )
 
 
+class FakeQuarterlySecClient(FakeSecClient):
+    filing = FilingMetadata(
+        accession_number="0000320193-25-000999",
+        form="10-Q",
+        filing_date="2025-08-01",
+        report_date="2025-06-28",
+        primary_document="aapl-20250628.htm",
+    )
+
+    def list_recent_filings(
+        self, submissions: dict[str, Any], *, form: str | None = None
+    ) -> list[FilingMetadata]:
+        assert form == "10-Q"
+        return [self.filing]
+
+    def get_company_facts(self, cik: str) -> dict[str, Any]:
+        def observation(
+            value: int, *, start: str | None, concept: str
+        ) -> dict[str, Any]:
+            item: dict[str, Any] = {
+                "end": "2025-06-28",
+                "val": value,
+                "accn": self.filing.accession_number,
+                "fy": 2025,
+                "fp": "Q3",
+                "form": "10-Q",
+                "filed": self.filing.filing_date,
+            }
+            if start is not None:
+                item["start"] = start
+            return {"label": concept, "units": {"USD": [item]}}
+
+        concepts = {
+            "RevenueFromContractWithCustomerExcludingAssessedTax": observation(
+                94_000_000_000,
+                start="2025-03-30",
+                concept="Revenue",
+            ),
+            "NetIncomeLoss": observation(
+                23_000_000_000,
+                start="2025-03-30",
+                concept="Net income",
+            ),
+            "NetCashProvidedByUsedInOperatingActivities": observation(
+                81_000_000_000,
+                start="2024-09-29",
+                concept="Operating cash flow",
+            ),
+            "Assets": observation(331_000_000_000, start=None, concept="Assets"),
+        }
+        return {"facts": {"us-gaap": concepts}}
+
+
+class FakeQuarterlyAnalysisAdapter:
+    def analyze(self, **kwargs: Any) -> GeneratedFinancialAnalysis:
+        claims = kwargs["claims"]
+        gaps = kwargs["evidence_gaps"]
+        assert any("annual business-model" in gap for gap in gaps)
+        assert any("discrete quarter" in claim.statement for claim in claims)
+        assert any("year-to-date" in claim.statement for claim in claims)
+        assert all(claim.claim_type != "valuation_scenario" for claim in claims)
+        claim_ids = tuple(claim.claim_id for claim in claims)
+        return GeneratedFinancialAnalysis(
+            analysis=FinancialAnalysis(
+                assessment="mixed",
+                summary="Quarterly evidence is intentionally bounded.",
+                strengths=[
+                    AnalysisPoint(
+                        text="Revenue reported.", claim_ids=[claim_ids[0]]
+                    )
+                ],
+                concerns=[],
+                uncertainties=[],
+            ),
+            model="test-model",
+            provider_response_id="quarterly-response",
+            prompt_version="2.2.0",
+            input_claim_ids=claim_ids,
+            evidence_gaps=gaps,
+        )
+
+
 def test_research_company_runs_end_to_end(tmp_path: Path) -> None:
     service = CompanyResearchService(
         database_path=tmp_path / "state.db",
@@ -164,3 +246,17 @@ def test_research_company_runs_end_to_end(tmp_path: Path) -> None:
         == result.memo
     )
     assert Path(result.source.storage_path).exists()
+
+
+def test_quarterly_research_is_period_safe_and_has_no_dcf(tmp_path: Path) -> None:
+    result = CompanyResearchService(
+        database_path=tmp_path / "state.db",
+        artifact_root=tmp_path / "artifacts",
+        sec_client=FakeQuarterlySecClient(),
+        analysis_adapter=FakeQuarterlyAnalysisAdapter(),
+    ).research(ticker="AAPL", question="Assess Apple quarter", form="10-Q")
+
+    assert result.filing.form == "10-Q"
+    assert result.run.state is WorkflowState.AWAITING_HUMAN_DISPOSITION
+    assert all(claim.claim_type != "valuation_scenario" for claim in result.claims)
+    assert result.analysis.prompt_version == "2.2.0"

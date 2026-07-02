@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-01
 
-Session status: Milestone 6 complete
+Session status: Milestone 7 complete
 
 ## Current phase
 
-Milestone 6 unified local operator workspace accepted.
+Milestone 7 period-safe quarterly research updates accepted.
 
 ## Active objective
 
-Use and evaluate the accepted unified dashboard before adding new capabilities.
+Select the next measured product objective without expanding execution authority.
 
 ## Completed
 
@@ -196,6 +196,18 @@ Use and evaluate the accepted unified dashboard before adding new capabilities.
 - Accepted the Milestone 6 usability experiment after 115 tests, full HTTP
   lifecycle coverage, real-database browser verification, mobile containment,
   and zero browser console errors.
+- Recorded the conversational research operator as a deferred product
+  requirement pending measured value and stable tool contracts.
+- Accepted ADR-0017 and recorded the Milestone 7 quarterly-period-integrity
+  contract and experiment.
+- Added explicit annual 10-K or quarterly 10-Q selection to the CLI and
+  dashboard while retaining annual research as the default.
+- Added discrete-quarter, year-to-date, and instant SEC fact selection with
+  exact-period calculations and same-form cross-filing revision audits.
+- Prevented quarterly annualization and DCF generation, added explicit annual
+  evidence-refresh limitations, and updated the analysis prompt to version 2.2.
+- Accepted Milestone 7 after 118 passing tests and a read-only live Apple 10-Q
+  extraction for accession `0000320193-26-000013` with correct period shapes.
 
 ## Accepted decisions
 
@@ -215,6 +227,7 @@ Use and evaluate the accepted unified dashboard before adding new capabilities.
 - ADR-0014: Scope Milestone 5 as research-refresh reviews.
 - ADR-0015: Add a loopback-only local dashboard.
 - ADR-0016: Scope Milestone 6 as a unified operator workspace.
+- ADR-0017: Scope Milestone 7 as period-safe quarterly research updates.
 
 ## Open questions
 
@@ -223,14 +236,16 @@ Use and evaluate the accepted unified dashboard before adding new capabilities.
 
 ## Blockers
 
-None for the documented Milestone 4 local workflow. Docker image execution
+None for the documented local workflow. Docker image execution
 remains a non-blocking environment follow-up because the local daemon previously
 stalled while resolving image metadata.
 
 ## Next actions
 
-1. Use the unified dashboard for real operator sessions and record measured
-   friction before adding feeds, charts, scheduling, or new models.
+1. Choose the next milestone using ADR-0010's measured-outcome requirement.
+2. Keep the conversational operator deferred until stable tool contracts and a
+   concrete evaluation baseline exist.
+3. Preserve the research/execution boundary and human authority.
 
 ## Future integration note
 
@@ -242,5 +257,6 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Milestone 6 is complete. Begin with real operator use and outcome measurement.
-Keep remote access, automation, DiveTrader, and execution out of scope.
+Milestone 7 is complete. Start the next session by selecting a measured research
+outcome; keep chat/MCP, automation, DiveTrader, and execution out of scope until
+their separate acceptance criteria are defined.

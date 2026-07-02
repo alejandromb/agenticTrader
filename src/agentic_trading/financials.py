@@ -135,6 +135,8 @@ ANNUAL_FINANCIAL_METRICS = (
     ),
 )
 
+_DISCRETE_QUARTER_METRICS = {"revenue", "net_income", "operating_income"}
+
 
 def infer_annual_period_start(
     company_facts: dict[str, Any], *, accession_number: str, period_end: str
@@ -229,6 +231,75 @@ def extract_annual_financial_history(
     return history
 
 
+def extract_available_quarterly_financial_snapshot(
+    company_facts: dict[str, Any],
+    *,
+    accession_number: str,
+    period_end: str,
+) -> tuple[dict[str, FilingFact], tuple[str, ...]]:
+    """Select discrete, YTD, and instant facts from one exact Form 10-Q."""
+    snapshot: dict[str, FilingFact] = {}
+    gaps: list[str] = []
+    for metric in ANNUAL_FINANCIAL_METRICS:
+        fact = _select_quarterly_metric_fact(
+            company_facts,
+            metric=metric,
+            accession_number=accession_number,
+            period_end=period_end,
+        )
+        if fact is None:
+            gaps.append(f"Missing {metric.name} ({metric.taxonomy}:{metric.concept})")
+        else:
+            snapshot[metric.name] = fact
+    return snapshot, tuple(gaps)
+
+
+def extract_quarterly_financial_history(
+    company_facts: dict[str, Any],
+    *,
+    accession_number: str,
+    through_period_end: str,
+    limit: int = 4,
+) -> dict[str, tuple[FilingFact, ...]]:
+    """Extract compatible quarterly contexts presented in one Form 10-Q."""
+    history: dict[str, tuple[FilingFact, ...]] = {}
+    for metric in ANNUAL_FINANCIAL_METRICS:
+        facts = _list_metric_facts(
+            company_facts,
+            metric=metric,
+            accession_number=accession_number,
+            form="10-Q",
+        )
+        if facts is None:
+            continue
+        eligible = [fact for fact in facts if fact.period_end <= through_period_end]
+        if metric.duration:
+            eligible = [
+                fact
+                for fact in eligible
+                if _matches_quarterly_shape(
+                    fact, discrete=metric.name in _DISCRETE_QUARTER_METRICS
+                )
+            ]
+            by_end: dict[str, FilingFact] = {}
+            for fact in eligible:
+                current = by_end.get(fact.period_end)
+                if current is None:
+                    by_end[fact.period_end] = fact
+                    continue
+                if metric.name in _DISCRETE_QUARTER_METRICS:
+                    if _duration_days(fact) < _duration_days(current):
+                        by_end[fact.period_end] = fact
+                elif _duration_days(fact) > _duration_days(current):
+                    by_end[fact.period_end] = fact
+            eligible = [by_end[key] for key in sorted(by_end)]
+        else:
+            eligible = [fact for fact in eligible if fact.period_start is None]
+        if eligible:
+            history[metric.name] = tuple(eligible[-limit:])
+    return history
+
+
 def _select_metric_fact(
     company_facts: dict[str, Any],
     *,
@@ -258,6 +329,7 @@ def _list_metric_facts(
     *,
     metric: FinancialMetricSpec,
     accession_number: str,
+    form: str = "10-K",
 ) -> tuple[FilingFact, ...] | None:
     for concept in (metric.concept, *metric.aliases):
         try:
@@ -267,10 +339,44 @@ def _list_metric_facts(
                 concept=concept,
                 unit=metric.unit,
                 accession_number=accession_number,
+                form=form,
             )
         except XbrlFactError:
             continue
     return None
+
+
+def _select_quarterly_metric_fact(
+    company_facts: dict[str, Any],
+    *,
+    metric: FinancialMetricSpec,
+    accession_number: str,
+    period_end: str,
+) -> FilingFact | None:
+    facts = _list_metric_facts(
+        company_facts,
+        metric=metric,
+        accession_number=accession_number,
+        form="10-Q",
+    )
+    if facts is None:
+        return None
+    ending = [fact for fact in facts if fact.period_end == period_end]
+    if not metric.duration:
+        instant = [fact for fact in ending if fact.period_start is None]
+        return instant[0] if len(instant) == 1 else None
+    candidates = [
+        fact
+        for fact in ending
+        if _matches_quarterly_shape(
+            fact, discrete=metric.name in _DISCRETE_QUARTER_METRICS
+        )
+    ]
+    if not candidates:
+        return None
+    if metric.name in _DISCRETE_QUARTER_METRICS:
+        return min(candidates, key=_duration_days)
+    return max(candidates, key=_duration_days)
 
 
 def _matches_annual_shape(fact: FilingFact, *, duration: bool) -> bool:
@@ -282,3 +388,18 @@ def _matches_annual_shape(fact: FilingFact, *, duration: bool) -> bool:
         date.fromisoformat(fact.period_end) - date.fromisoformat(fact.period_start)
     ).days
     return 300 <= days <= 380
+
+
+def _matches_quarterly_shape(fact: FilingFact, *, discrete: bool) -> bool:
+    if fact.period_start is None:
+        return False
+    days = _duration_days(fact)
+    return 60 <= days <= (120 if discrete else 300)
+
+
+def _duration_days(fact: FilingFact) -> int:
+    if fact.period_start is None:
+        raise ValueError("Duration fact requires a period start")
+    return (
+        date.fromisoformat(fact.period_end) - date.fromisoformat(fact.period_start)
+    ).days

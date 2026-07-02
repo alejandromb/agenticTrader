@@ -12,9 +12,9 @@ human investment judgment.
 Version one can:
 
 - resolve a U.S. public company from its ticker;
-- capture its latest Form 10-K from SEC EDGAR;
+- capture its latest Form 10-K or explicitly selected Form 10-Q from SEC EDGAR;
 - store the filing as a content-addressed artifact;
-- extract current and comparable annual financial facts without mixing filing
+- extract annual or period-safe quarterly financial facts without mixing filing
   contexts;
 - persist source-linked facts, filing statements, and deterministic calculation
   claims;
@@ -68,6 +68,10 @@ Run company research:
 .venv/bin/agentic-trading research-company AAPL \
   --question "Assess the company's financial condition and identify the next research needed."
 ```
+
+Annual 10-K research is the default. For a bounded quarterly update, add
+`--form 10-Q`; quarterly values are not annualized and do not generate DCF
+scenarios.
 
 The command creates `data/agentic-trading.db` and stores source artifacts under
 `artifacts/`. Both paths are excluded from Git.

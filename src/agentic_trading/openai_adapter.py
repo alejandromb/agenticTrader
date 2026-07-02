@@ -15,7 +15,7 @@ from agentic_trading.analysis import FinancialAnalysis
 from agentic_trading.claim_repository import CandidateClaim
 
 DEFAULT_OPENAI_MODEL = "gpt-5.4-2026-03-05"
-FINANCIAL_PROMPT_VERSION = "2.1.0"
+FINANCIAL_PROMPT_VERSION = "2.2.0"
 
 INSTRUCTIONS = """You are the financial-analysis stage of an investment research system.
 Use only the candidate claims provided in the input. Distinguish strengths,
@@ -53,6 +53,12 @@ being compared. Calculate absolute or percentage changes only from cited input
 claims. Do not describe a one-period value as a trend, infer a missing period,
 or mix filing accessions without explicitly identifying a cross-filing
 revision."""
+
+INSTRUCTIONS += """
+Duration facts from a 10-Q may represent either a discrete quarter or a
+year-to-date period. Preserve the supplied period start and end, compare only
+compatible durations, and never annualize quarterly values. Do not produce or
+imply a DCF valuation unless valuation scenario claims are explicitly supplied."""
 
 INSTRUCTIONS += """
 Use known_limitations to state what could not be verified from the supplied

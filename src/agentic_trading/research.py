@@ -22,6 +22,8 @@ from agentic_trading.filing_sections import extract_business_and_risk_evidence
 from agentic_trading.financials import (
     extract_annual_financial_history,
     extract_available_annual_financial_snapshot,
+    extract_available_quarterly_financial_snapshot,
+    extract_quarterly_financial_history,
     infer_annual_period_start,
 )
 from agentic_trading.memo_repository import (
@@ -74,14 +76,18 @@ class CompanyResearchService:
         self._sec = sec_client
         self._analysis_adapter = analysis_adapter
 
-    def research(self, *, ticker: str, question: str) -> ResearchResult:
-        """Research the latest annual filing for *ticker* and persist the run."""
+    def research(
+        self, *, ticker: str, question: str, form: str = "10-K"
+    ) -> ResearchResult:
+        """Research the latest explicitly selected filing for *ticker*."""
+        if form not in {"10-K", "10-Q"}:
+            raise ValueError("Research form must be 10-K or 10-Q")
         upgrade_database(self._database_path)
         company = self._sec.resolve_ticker(ticker)
         submissions = self._sec.get_submissions(company.cik)
-        filings = self._sec.list_recent_filings(submissions, form="10-K")
+        filings = self._sec.list_recent_filings(submissions, form=form)
         if not filings:
-            raise ValueError(f"No 10-K filing found for {company.ticker}")
+            raise ValueError(f"No {form} filing found for {company.ticker}")
         filing = filings[0]
 
         runs = SqliteRunRepository(self._database_path)
@@ -95,7 +101,7 @@ class CompanyResearchService:
                 run.run_id,
                 expected_state=state,
                 target_state=WorkflowState.COLLECTING_EVIDENCE,
-                reason="annual_research_started",
+                reason=f"{form.lower().replace('-', '')}_research_started",
             )
             state = run.state
 
@@ -104,7 +110,7 @@ class CompanyResearchService:
                 run.run_id,
                 expected_state=state,
                 target_state=WorkflowState.EVIDENCE_READY,
-                reason="annual_filing_captured",
+                reason=f"{form.lower().replace('-', '')}_filing_captured",
             )
             state = run.state
 
@@ -211,6 +217,8 @@ class CompanyResearchService:
         run_id: str,
         source: SourceDocument,
     ) -> tuple[list[CandidateClaim], tuple[str, ...], list[RevisionAudit]]:
+        if filing.form == "10-Q":
+            return self._extract_quarterly_claims(company, filing, run_id, source)
         company_facts = self._sec.get_company_facts(company.cik)
         period_start = infer_annual_period_start(
             company_facts,
@@ -349,10 +357,109 @@ class CompanyResearchService:
             raise ValueError("No supported annual financial facts were available")
         return claims, evidence_gaps, revision_audits
 
+    def _extract_quarterly_claims(
+        self,
+        company: CompanyIdentity,
+        filing: FilingMetadata,
+        run_id: str,
+        source: SourceDocument,
+    ) -> tuple[list[CandidateClaim], tuple[str, ...], list[RevisionAudit]]:
+        """Persist a 10-Q update without annualizing or creating a DCF."""
+        company_facts = self._sec.get_company_facts(company.cik)
+        snapshot, evidence_gaps = extract_available_quarterly_financial_snapshot(
+            company_facts,
+            accession_number=filing.accession_number,
+            period_end=filing.report_date,
+        )
+        history = extract_quarterly_financial_history(
+            company_facts,
+            accession_number=filing.accession_number,
+            through_period_end=filing.report_date,
+        )
+        repository = SqliteClaimRepository(self._database_path)
+        claims: list[CandidateClaim] = []
+        fact_claim_ids: dict[tuple[str, str | None, str, str], str] = {}
+        current_keys = {
+            (fact.concept, fact.period_start, fact.period_end)
+            for fact in snapshot.values()
+        }
+        for metric_name, fact in snapshot.items():
+            claim = repository.register_xbrl_fact(
+                run_id=run_id,
+                source_id=source.source_id,
+                fact=fact,
+                statement=_quarterly_fact_statement(metric_name, fact),
+            )
+            claims.append(claim)
+            fact_claim_ids[_fact_key(fact)] = claim.claim_id
+        for metric_name, facts in history.items():
+            for fact in facts:
+                if (fact.concept, fact.period_start, fact.period_end) in current_keys:
+                    continue
+                claim = repository.register_xbrl_fact(
+                    run_id=run_id,
+                    source_id=source.source_id,
+                    fact=fact,
+                    statement=_quarterly_fact_statement(metric_name, fact),
+                )
+                claims.append(claim)
+                fact_claim_ids[_fact_key(fact)] = claim.claim_id
+
+        audit_repository = SqliteRevisionAuditRepository(self._database_path)
+        revision_audits: list[RevisionAudit] = []
+        for facts in history.values():
+            for later in facts:
+                original = find_original_filing_fact(company_facts, later=later)
+                if original is None:
+                    continue
+                revision = compare_filing_facts(original, later)
+                if revision is not None:
+                    revision_audits.append(audit_repository.register(run_id, revision))
+
+        for calculation in calculate_financial_history(history):
+            input_claim_ids = tuple(
+                fact_claim_ids[_fact_key(fact)] for fact in calculation.input_facts
+            )
+            claims.append(
+                repository.register_calculation(
+                    run_id=run_id,
+                    source_id=source.source_id,
+                    calculation=calculation,
+                    input_claim_ids=input_claim_ids,
+                )
+            )
+        evidence_gaps += (
+            "Quarterly update does not include a complete annual business-model "
+            "evidence refresh",
+            "Quarterly update does not include a complete annual risk-factor "
+            "evidence refresh",
+            "Capital-allocation narrative was not extracted from the quarterly filing",
+        )
+        if not claims:
+            raise ValueError("No supported quarterly financial facts were available")
+        return claims, evidence_gaps, revision_audits
+
 
 def _memo_id(company: CompanyIdentity, filing: FilingMetadata) -> str:
     suffix = uuid4().hex[:8]
     return f"memo-{company.ticker.lower()}-{filing.report_date}-{suffix}"
+
+
+def _quarterly_fact_statement(metric_name: str, fact: FilingFact) -> str:
+    if fact.period_start is None:
+        context = "quarter-end instant"
+    else:
+        from datetime import date
+
+        days = (
+            date.fromisoformat(fact.period_end)
+            - date.fromisoformat(fact.period_start)
+        ).days
+        context = "discrete quarter" if days <= 120 else "year-to-date"
+    return (
+        f"{metric_name.replace('_', ' ').title()} was {fact.value} {fact.unit} "
+        f"for the {context} context ending {fact.period_end}."
+    )
 
 
 def _fact_key(fact: FilingFact) -> tuple[str, str | None, str, str]:

@@ -6,6 +6,8 @@ from agentic_trading.financials import (
     extract_annual_financial_history,
     extract_annual_financial_snapshot,
     extract_available_annual_financial_snapshot,
+    extract_available_quarterly_financial_snapshot,
+    extract_quarterly_financial_history,
     infer_annual_period_start,
 )
 
@@ -256,3 +258,67 @@ def test_available_snapshot_uses_supported_dividend_alias() -> None:
 
     assert snapshot["dividends_paid"].value == Decimal("7507000000")
     assert not any("dividends_paid" in gap for gap in gaps)
+
+
+def test_quarterly_snapshot_separates_discrete_ytd_and_instant_contexts() -> None:
+    accession = "0000320193-25-000050"
+
+    def observation(start, end, value):
+        item = {
+            "end": end,
+            "val": value,
+            "accn": accession,
+            "fy": 2025,
+            "fp": "Q2",
+            "form": "10-Q",
+            "filed": "2025-07-31",
+        }
+        if start is not None:
+            item["start"] = start
+        return item
+
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "RevenueFromContractWithCustomerExcludingAssessedTax": {
+                    "label": "Revenue",
+                    "units": {
+                        "USD": [
+                            observation("2024-04-01", "2024-06-29", 90),
+                            observation("2025-03-31", "2025-06-28", 100),
+                            observation("2024-12-30", "2025-06-28", 190),
+                        ]
+                    },
+                },
+                "NetCashProvidedByUsedInOperatingActivities": {
+                    "label": "Operating cash flow",
+                    "units": {
+                        "USD": [
+                            observation("2025-03-31", "2025-06-28", 20),
+                            observation("2024-12-30", "2025-06-28", 45),
+                        ]
+                    },
+                },
+                "Assets": {
+                    "label": "Assets",
+                    "units": {"USD": [observation(None, "2025-06-28", 300)]},
+                },
+            }
+        }
+    }
+
+    snapshot, gaps = extract_available_quarterly_financial_snapshot(
+        facts, accession_number=accession, period_end="2025-06-28"
+    )
+    history = extract_quarterly_financial_history(
+        facts, accession_number=accession, through_period_end="2025-06-28"
+    )
+
+    assert snapshot["revenue"].period_start == "2025-03-31"
+    assert snapshot["revenue"].value == 100
+    assert snapshot["operating_cash_flow"].period_start == "2024-12-30"
+    assert snapshot["operating_cash_flow"].value == 45
+    assert snapshot["assets"].period_start is None
+    assert [fact.value for fact in history["revenue"]] == [90, 100]
+    assert [fact.value for fact in history["operating_cash_flow"]] == [45]
+    assert any("Missing net_income" in gap for gap in gaps)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 
 from agentic_trading.xbrl import FilingFact
@@ -26,7 +27,7 @@ class DerivedCalculation:
 def calculate_financial_history(
     history: dict[str, tuple[FilingFact, ...]],
 ) -> tuple[DerivedCalculation, ...]:
-    """Calculate supported annual metrics only when exact inputs are available."""
+    """Calculate metrics only from compatible exact-period inputs."""
     calculations: list[DerivedCalculation] = []
     calculations.extend(_growth(history.get("revenue", ())))
     calculations.extend(
@@ -64,7 +65,7 @@ def calculate_financial_history(
 def _growth(facts: tuple[FilingFact, ...]) -> list[DerivedCalculation]:
     values: list[DerivedCalculation] = []
     for prior, current in zip(facts, facts[1:], strict=False):
-        if prior.value == 0:
+        if prior.value == 0 or not _compatible_duration_shape(prior, current):
             continue
         value = ((current.value - prior.value) / abs(prior.value) * 100).quantize(
             _SIX_PLACES
@@ -93,10 +94,15 @@ def _ratio_by_period(
     label: str,
     percent: bool = True,
 ) -> list[DerivedCalculation]:
-    denominators = {fact.period_end: fact for fact in history.get(denominator, ())}
+    denominators = {
+        (fact.period_start, fact.period_end): fact
+        for fact in history.get(denominator, ())
+    }
     values = []
     for numerator_fact in history.get(numerator, ()):
-        denominator_fact = denominators.get(numerator_fact.period_end)
+        denominator_fact = denominators.get(
+            (numerator_fact.period_start, numerator_fact.period_end)
+        )
         if denominator_fact is None or denominator_fact.value == 0:
             continue
         multiplier = Decimal(100) if percent else Decimal(1)
@@ -121,10 +127,15 @@ def _ratio_by_period(
 def _free_cash_flow(
     history: dict[str, tuple[FilingFact, ...]],
 ) -> list[DerivedCalculation]:
-    capex = {fact.period_end: fact for fact in history.get("capital_expenditure", ())}
+    capex = {
+        (fact.period_start, fact.period_end): fact
+        for fact in history.get("capital_expenditure", ())
+    }
     values = []
     for cash_flow in history.get("operating_cash_flow", ()):
-        capital_expenditure = capex.get(cash_flow.period_end)
+        capital_expenditure = capex.get(
+            (cash_flow.period_start, cash_flow.period_end)
+        )
         if capital_expenditure is None:
             continue
         values.append(
@@ -167,3 +178,20 @@ def _calculation(
         accession_number=next(iter(accessions)),
         input_facts=inputs,
     )
+
+
+def _compatible_duration_shape(left: FilingFact, right: FilingFact) -> bool:
+    if (
+        left.form == right.form == "10-K"
+        and left.fiscal_period == right.fiscal_period == "FY"
+    ):
+        return True
+    if left.period_start is None or right.period_start is None:
+        return left.period_start is right.period_start
+    left_days = (
+        date.fromisoformat(left.period_end) - date.fromisoformat(left.period_start)
+    ).days
+    right_days = (
+        date.fromisoformat(right.period_end) - date.fromisoformat(right.period_start)
+    ).days
+    return abs(left_days - right_days) <= 7

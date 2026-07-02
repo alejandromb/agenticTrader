@@ -49,8 +49,8 @@ def running_dashboard(tmp_path, monkeypatch):
     monkeypatch.setenv("SEC_USER_AGENT", "private-sec-identity")
     calls = []
 
-    def fake_research(ticker: str, question: str):
-        calls.append((ticker, question))
+    def fake_research(ticker: str, question: str, form: str):
+        calls.append((ticker, question, form))
         return {
             "run_id": "new-run",
             "state": "awaiting_human_disposition",
@@ -178,12 +178,12 @@ def test_research_endpoint_validates_and_uses_existing_service_boundary(
 
         status, result = post_json(
             f"{base}/api/research",
-            {"ticker": "aapl", "question": "Assess the evidence"},
+            {"ticker": "aapl", "question": "Assess the evidence", "form": "10-Q"},
             token,
         )
         assert status == 201
         assert result["ticker"] == "AAPL"
-        assert calls == [("AAPL", "Assess the evidence")]
+        assert calls == [("AAPL", "Assess the evidence", "10-Q")]
 
 
 def test_quantitative_monitoring_and_alert_http_workflow(tmp_path, monkeypatch) -> None:

@@ -112,6 +112,7 @@
         <div class="dialog-heading"><div><span class="eyebrow">New evidence run</span><h2>Research a company</h2></div><button class="icon-button" id="close-research" type="button" aria-label="Close research form">×</button></div>
         <p>This performs SEC requests and one paid OpenAI analysis. It can take about a minute.</p>
         <label>Ticker<input id="research-ticker" name="ticker" required maxlength="10" placeholder="AAPL" autocomplete="off"></label>
+        <label>Filing scope<select id="research-form-type" name="form"><option value="10-K">Annual report (10-K)</option><option value="10-Q">Quarterly update (10-Q)</option></select></label>
         <label>Research question<textarea id="research-question" name="question" required rows="5" maxlength="4000">Assess financial condition, business quality, material risks, valuation scenarios, and missing evidence.</textarea></label>
         <div class="dialog-actions"><button class="secondary-button" value="cancel" type="button" id="cancel-research">Cancel</button><button class="primary-button" type="submit" id="submit-research">Start evidence run</button></div>
         <p class="form-message" id="research-message" aria-live="polite"></p>

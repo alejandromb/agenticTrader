@@ -233,7 +233,7 @@ async function submitResearch(event) {
   try {
     const result = await api("/api/research", {
       method: "POST",
-      body: JSON.stringify({ ticker: byId("research-ticker").value, question: byId("research-question").value }),
+      body: JSON.stringify({ ticker: byId("research-ticker").value, question: byId("research-question").value, form: byId("research-form-type").value }),
     });
     byId("research-dialog").close();
     showToast(`${result.ticker} research completed.`);

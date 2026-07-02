@@ -123,6 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     research.add_argument("ticker")
     research.add_argument("--question", required=True)
+    research.add_argument("--form", choices=("10-K", "10-Q"), default="10-K")
     research.add_argument(
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
@@ -336,7 +337,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 artifact_root=args.artifact_root,
                 sec_client=SecClient(user_agent),
                 analysis_adapter=OpenAIFinancialAnalysisAdapter(),
-            ).research(ticker=args.ticker.upper(), question=args.question)
+            ).research(
+                ticker=args.ticker.upper(), question=args.question, form=args.form
+            )
         except (
             AnalysisGenerationError,
             SecClientError,
@@ -353,6 +356,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "evidence_gaps": result.analysis.evidence_gaps,
                     "filing_accession": result.filing.accession_number,
                     "filing_date": result.filing.filing_date,
+                    "filing_form": result.filing.form,
                     "model": result.analysis.model,
                     "memo_artifact_id": result.memo.artifact_id,
                     "model_usage": {
