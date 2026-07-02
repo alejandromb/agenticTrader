@@ -60,7 +60,9 @@ Then open `http://127.0.0.1:8765`. This is the recommended interface for
 starting company research, reading saved memos, reviewing limitations, and
 recording the human disposition. Press `Ctrl+C` in the terminal to stop it.
 The same dashboard includes the quantitative lab, decision monitoring, alert
-ledger, and research-refresh reviews under the top workspace navigation.
+ledger, and research-refresh reviews. Research and Reviews are primary;
+Quant lab and Monitoring remain available under Tools so advanced forms do not
+compete with the main decision workflow.
 
 Run company research:
 

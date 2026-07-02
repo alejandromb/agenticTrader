@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-02
 
-Session status: Milestone 8 defined
+Session status: Milestone 8 complete
 
 ## Current phase
 
-Milestone 8 dashboard cognitive-load reduction.
+Milestone 8 dashboard cognitive-load reduction accepted.
 
 ## Active objective
 
-Simplify the dashboard using progressive disclosure without adding capabilities.
+Select the next measured research outcome without expanding system authority.
 
 ## Completed
 
@@ -210,6 +210,14 @@ Simplify the dashboard using progressive disclosure without adding capabilities.
   extraction for accession `0000320193-26-000013` with correct period shapes.
 - Accepted ADR-0018 and defined Milestone 8 around cognitive-load reduction;
   future portfolio and comparison visualizations remain a measured backlog.
+- Reduced primary dashboard navigation from four choices to Research and
+  Reviews, with Quant and Monitoring retained under a Tools disclosure.
+- Converted seven advanced workflows into question-led disclosures with zero
+  forms expanded by default and at most one open per workspace.
+- Moved the human checkpoint directly after thesis and known limitations while
+  preserving the full memo and model metadata in a secondary disclosure.
+- Accepted Milestone 8 after 120 passing tests, real-database desktop/mobile
+  browser verification, mobile containment, and zero browser console errors.
 
 ## Accepted decisions
 
@@ -245,10 +253,10 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Baseline representative dashboard tasks and competing visible actions.
-2. Design progressive disclosure for non-primary workspaces.
-3. Implement and verify the simpler research/review journey without adding
-   analytics, chat/MCP, automation, or execution.
+1. Choose the next milestone using ADR-0010's measured-outcome requirement.
+2. Keep future visualizations and conversational operation in the measured
+   backlog until their decision-quality benefit is testable.
+3. Preserve the research/execution boundary and human authority.
 
 ## Future integration note
 
@@ -260,5 +268,6 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Begin Milestone 8 with a task-based dashboard baseline. Preserve all existing
-capabilities and evidence visibility while reducing simultaneous choices.
+Milestone 8 is complete. Begin the next session by selecting a measured research
+outcome; do not add visualizations, chat/MCP, automation, or execution without a
+separate product contract and evaluation baseline.

@@ -30,3 +30,9 @@ the Milestone 7 dashboard.
 
 No new analytics, charts, model capabilities, automation, or execution paths.
 The future-dashboard list remains a measured backlog.
+
+## Acceptance
+
+Accepted on 2026-07-02 with 120 passing tests, JavaScript syntax validation,
+real-database browser verification, mobile containment, and zero browser console
+errors. See `docs/experiments/0007-dashboard-cognitive-load.md`.

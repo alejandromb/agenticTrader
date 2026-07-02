@@ -16,10 +16,15 @@
           <span><strong>Agentic Trading</strong><small>Research workspace</small></span>
         </a>
         <nav class="workspace-nav" aria-label="Workspace">
-          <button class="nav-button active" type="button" data-workspace="research">Research</button>
-          <button class="nav-button" type="button" data-workspace="quant">Quant lab</button>
-          <button class="nav-button" type="button" data-workspace="monitoring">Monitoring</button>
+          <button class="nav-button active" type="button" data-workspace="research" aria-current="page">Research</button>
           <button class="nav-button" type="button" data-workspace="reviews">Reviews</button>
+          <details class="workspace-more" id="workspace-more">
+            <summary>Tools</summary>
+            <div class="workspace-menu">
+              <button class="nav-button" type="button" data-workspace="quant"><strong>Quant lab</strong><span>Test data and hypotheses</span></button>
+              <button class="nav-button" type="button" data-workspace="monitoring"><strong>Monitoring</strong><span>Revisit explicit watch criteria</span></button>
+            </div>
+          </details>
         </nav>
         <div class="status-group" aria-label="Configuration status">
           <span class="status" id="sec-status">SEC checking</span>
@@ -54,12 +59,10 @@
             <div><span class="eyebrow" id="detail-state"></span><h2 id="detail-title"></h2><p id="detail-meta"></p></div>
             <span class="decision-badge" id="detail-disposition"></span>
           </div>
-          <div class="metric-grid" id="metric-grid"></div>
           <div class="content-grid">
             <article class="panel panel-wide"><span class="eyebrow">Executive view</span><h3>Research thesis</h3><p class="lead" id="memo-thesis"></p><div class="counterpoint"><strong>Counter-thesis</strong><p id="memo-counter"></p></div></article>
             <article class="panel"><span class="eyebrow">Known limitations</span><h3>What remains unverified</h3><ul class="limitation-list" id="limitations"></ul></article>
           </div>
-          <div class="section-stack" id="memo-sections"></div>
           <article class="panel decision-panel hidden" id="decision-panel">
             <span class="eyebrow">Human checkpoint</span><h3>Record your disposition</h3>
             <p>This event is append-only. It completes the run but does not change the memo or place a trade.</p>
@@ -69,16 +72,21 @@
               <button class="primary-button" type="submit">Record human decision</button>
             </form>
           </article>
+          <details class="evidence-disclosure">
+            <summary><span><strong>Explore the full decision record</strong><small>Memo sections, model provenance, and processing metadata</small></span></summary>
+            <div class="metric-grid" id="metric-grid"></div>
+            <div class="section-stack" id="memo-sections"></div>
+          </details>
         </section>
 
         <section class="tool-workspace hidden" id="quant-workspace" data-testid="quant-workspace">
           <div class="workspace-heading"><div><span class="eyebrow">Point-in-time analytics</span><h2>Quant lab</h2><p>Import immutable data, screen accepted research, inspect hypothetical portfolio risk, and test one versioned strategy.</p></div><span class="boundary-badge">No live feeds · No orders</span></div>
           <div class="artifact-strip"><div><span>Price datasets</span><strong id="dataset-count">0</strong></div><div><span>Data contract</span><strong>Adjusted close</strong></div><div><span>Execution model</span><strong>Next observation</strong></div></div>
-          <div class="tool-grid">
-            <article class="panel tool-card"><span class="eyebrow">Data</span><h3>Import prices</h3><p>Store exact CSV bytes with source and adjustment assumptions.</p><form id="price-import-form"><label>CSV file<input id="price-file" type="file" accept=".csv,text/csv" required></label><label>Source<input id="price-source" required placeholder="Provider and retrieval date"></label><label>Adjustment note<input id="price-adjustment" required value="Adjusted-close values supplied by dataset source."></label><button class="primary-button" type="submit">Import immutable dataset</button></form></article>
-            <article class="panel tool-card"><span class="eyebrow">Research universe</span><h3>Screen research</h3><p>Apply deterministic minimums to the latest eligible memo per ticker.</p><form id="screen-form"><label>As of<input id="screen-as-of" type="datetime-local" required></label><div class="field-pair"><label>Min revenue growth<input id="screen-growth" type="number" step="any" placeholder="Optional"></label><label>Min operating margin<input id="screen-margin" type="number" step="any" placeholder="Optional"></label></div><div class="field-pair"><label>Min current ratio<input id="screen-current" type="number" step="any" placeholder="Optional"></label><label>Min free cash flow<input id="screen-fcf" type="number" step="any" placeholder="Optional"></label></div><button class="primary-button" type="submit">Run persisted screen</button></form></article>
-            <article class="panel tool-card"><span class="eyebrow">Risk</span><h3>Analyze holdings</h3><p>Value a hypothetical ticker/shares file on explicitly aligned dates.</p><form id="portfolio-form"><label>Holdings CSV<input id="holdings-file" type="file" accept=".csv,text/csv" required></label><label>Dataset<select id="portfolio-dataset" required></select></label><div class="field-pair"><label>Benchmark<input id="portfolio-benchmark" value="SPY" required></label><label>As of<input id="portfolio-as-of" type="date" required></label></div><button class="primary-button" type="submit">Calculate portfolio risk</button></form></article>
-            <article class="panel tool-card"><span class="eyebrow">Historical simulation</span><h3>Run backtest</h3><p>Long/cash moving-average simulation with next-observation execution and costs.</p><form id="backtest-form"><label>Dataset<select id="backtest-dataset" required></select></label><div class="field-pair"><label>Ticker<input id="backtest-ticker" value="AAPL" required></label><label>Benchmark<input id="backtest-benchmark" value="SPY" required></label></div><div class="field-pair"><label>Short window<input id="backtest-short" type="number" min="1" value="20" required></label><label>Long window<input id="backtest-long" type="number" min="2" value="100" required></label></div><div class="field-pair"><label>Initial cash<input id="backtest-cash" type="number" min="1" value="10000" required></label><label>Cost (bps)<input id="backtest-cost" type="number" min="0" step="any" value="10" required></label></div><button class="primary-button" type="submit">Run versioned backtest</button></form></article>
+          <div class="tool-grid disclosure-grid">
+            <details class="tool-disclosure"><summary><span class="eyebrow">Data foundation</span><strong>Do I have a reproducible price dataset?</strong><small>Import exact adjusted-price CSV bytes</small></summary><article class="panel tool-card"><h3>Import prices</h3><p>Store exact CSV bytes with source and adjustment assumptions.</p><form id="price-import-form"><label>CSV file<input id="price-file" type="file" accept=".csv,text/csv" required></label><label>Source<input id="price-source" required placeholder="Provider and retrieval date"></label><label>Adjustment note<input id="price-adjustment" required value="Adjusted-close values supplied by dataset source."></label><button class="primary-button" type="submit">Import immutable dataset</button></form></article></details>
+            <details class="tool-disclosure"><summary><span class="eyebrow">Research universe</span><strong>Which accepted companies meet my criteria?</strong><small>Screen persisted research as of a chosen time</small></summary><article class="panel tool-card"><h3>Screen research</h3><p>Apply deterministic minimums to the latest eligible memo per ticker.</p><form id="screen-form"><label>As of<input id="screen-as-of" type="datetime-local" required></label><div class="field-pair"><label>Min revenue growth<input id="screen-growth" type="number" step="any" placeholder="Optional"></label><label>Min operating margin<input id="screen-margin" type="number" step="any" placeholder="Optional"></label></div><div class="field-pair"><label>Min current ratio<input id="screen-current" type="number" step="any" placeholder="Optional"></label><label>Min free cash flow<input id="screen-fcf" type="number" step="any" placeholder="Optional"></label></div><button class="primary-button" type="submit">Run persisted screen</button></form></article></details>
+            <details class="tool-disclosure"><summary><span class="eyebrow">Risk</span><strong>Where is this hypothetical portfolio concentrated?</strong><small>Analyze aligned holdings and benchmark observations</small></summary><article class="panel tool-card"><h3>Analyze holdings</h3><p>Value a hypothetical ticker/shares file on explicitly aligned dates.</p><form id="portfolio-form"><label>Holdings CSV<input id="holdings-file" type="file" accept=".csv,text/csv" required></label><label>Dataset<select id="portfolio-dataset" required></select></label><div class="field-pair"><label>Benchmark<input id="portfolio-benchmark" value="SPY" required></label><label>As of<input id="portfolio-as-of" type="date" required></label></div><button class="primary-button" type="submit">Calculate portfolio risk</button></form></article></details>
+            <details class="tool-disclosure"><summary><span class="eyebrow">Historical simulation</span><strong>How did this explicit rule behave historically?</strong><small>Run the versioned long/cash simulation</small></summary><article class="panel tool-card"><h3>Run backtest</h3><p>Long/cash moving-average simulation with next-observation execution and costs.</p><form id="backtest-form"><label>Dataset<select id="backtest-dataset" required></select></label><div class="field-pair"><label>Ticker<input id="backtest-ticker" value="AAPL" required></label><label>Benchmark<input id="backtest-benchmark" value="SPY" required></label></div><div class="field-pair"><label>Short window<input id="backtest-short" type="number" min="1" value="20" required></label><label>Long window<input id="backtest-long" type="number" min="2" value="100" required></label></div><div class="field-pair"><label>Initial cash<input id="backtest-cash" type="number" min="1" value="10000" required></label><label>Cost (bps)<input id="backtest-cost" type="number" min="0" step="any" value="10" required></label></div><button class="primary-button" type="submit">Run versioned backtest</button></form></article></details>
           </div>
           <article class="panel result-panel"><span class="eyebrow">Latest result</span><h3 id="quant-result-title">Choose a workflow</h3><div id="quant-result" class="structured-result"><p>No quantitative operation has run in this session.</p></div></article>
         </section>
@@ -86,11 +94,11 @@
         <section class="tool-workspace hidden" id="monitoring-workspace" data-testid="monitoring-workspace">
           <div class="workspace-heading"><div><span class="eyebrow">Human-defined criteria</span><h2>Decision monitoring</h2><p>Evaluate explicit rules against immutable datasets. Alerts remain evidence records and cannot trigger another action.</p></div><span class="boundary-badge">Manual evaluation · Human acknowledgement</span></div>
           <div class="artifact-strip"><div><span>Monitors</span><strong id="monitor-count">0</strong></div><div><span>Open alerts</span><strong id="open-alert-count">0</strong></div><div><span>Delivery</span><strong>Local ledger</strong></div></div>
-          <div class="tool-grid two-column">
-            <article class="panel tool-card"><span class="eyebrow">Definition</span><h3>Create monitor</h3><form id="monitor-form"><label>Eligible research run<select id="monitor-run" required></select></label><label>Monitor name<input id="monitor-name" required placeholder="Apple thesis watch"></label><label>Rules JSON<textarea id="monitor-rules" rows="9" required>[
+          <div class="tool-grid two-column disclosure-grid">
+            <details class="tool-disclosure"><summary><span class="eyebrow">Definition</span><strong>What evidence would make me revisit this thesis?</strong><small>Create an immutable monitor</small></summary><article class="panel tool-card"><h3>Create monitor</h3><form id="monitor-form"><label>Eligible research run<select id="monitor-run" required></select></label><label>Monitor name<input id="monitor-name" required placeholder="Apple thesis watch"></label><label>Rules JSON<textarea id="monitor-rules" rows="9" required>[
   {"rule_id":"price-floor","type":"price_below","ticker":"AAPL","threshold":"90"}
-]</textarea></label><button class="primary-button" type="submit">Create immutable monitor</button></form></article>
-            <article class="panel tool-card"><span class="eyebrow">Evaluation</span><h3>Evaluate monitor</h3><form id="monitor-evaluate-form"><label>Monitor<select id="evaluate-monitor" required></select></label><label>Dataset<select id="evaluate-dataset" required></select></label><label>As of<input id="evaluate-as-of" type="date" required></label><button class="primary-button" type="submit">Evaluate rules</button></form><div class="structured-result compact" id="monitor-result"><p>Select a monitor and immutable dataset.</p></div></article>
+]</textarea></label><button class="primary-button" type="submit">Create immutable monitor</button></form></article></details>
+            <details class="tool-disclosure"><summary><span class="eyebrow">Evaluation</span><strong>Have any of my explicit criteria triggered?</strong><small>Evaluate rules against immutable prices</small></summary><article class="panel tool-card"><h3>Evaluate monitor</h3><form id="monitor-evaluate-form"><label>Monitor<select id="evaluate-monitor" required></select></label><label>Dataset<select id="evaluate-dataset" required></select></label><label>As of<input id="evaluate-as-of" type="date" required></label><button class="primary-button" type="submit">Evaluate rules</button></form><div class="structured-result compact" id="monitor-result"><p>Select a monitor and immutable dataset.</p></div></article></details>
           </div>
           <div class="section-heading"><div><span class="eyebrow">Alert ledger</span><h3>Triggered criteria</h3></div><button class="secondary-button" id="refresh-workspace" type="button">Refresh ledger</button></div>
           <div class="alert-grid" id="alert-list"></div>
@@ -98,9 +106,9 @@
 
         <section class="tool-workspace hidden" id="reviews-workspace" data-testid="reviews-workspace">
           <div class="workspace-heading"><div><span class="eyebrow">Research change control</span><h2>Refresh reviews</h2><p>Compare completed same-company memos without letting the model judge whether the thesis improved.</p></div><span class="boundary-badge">Period-safe · Human outcome</span></div>
-          <div class="tool-grid two-column">
-            <article class="panel tool-card"><span class="eyebrow">New comparison</span><h3>Compare research</h3><form id="review-form"><label>Baseline run<select id="review-baseline" required></select></label><label>Current run<select id="review-current" required></select></label><button class="primary-button" type="submit">Create refresh review</button></form></article>
-            <article class="panel tool-card"><span class="eyebrow">Saved packets</span><h3>Research reviews</h3><div class="review-list" id="review-list"></div></article>
+          <div class="review-layout">
+            <article class="panel tool-card"><span class="eyebrow">Saved packets</span><h3>What changed since the prior review?</h3><div class="review-list" id="review-list"></div></article>
+            <details class="tool-disclosure"><summary><span class="eyebrow">New comparison</span><strong>Compare two completed research runs</strong><small>Create a deterministic refresh packet</small></summary><article class="panel tool-card"><h3>Compare research</h3><form id="review-form"><label>Baseline run<select id="review-baseline" required></select></label><label>Current run<select id="review-current" required></select></label><button class="primary-button" type="submit">Create refresh review</button></form></article></details>
           </div>
           <article class="panel result-panel hidden" id="review-detail"><div class="section-heading"><div><span class="eyebrow">Review packet</span><h3 id="review-detail-title"></h3></div><span class="decision-badge" id="review-outcome-badge"></span></div><div id="review-summary" class="review-summary"></div><form id="review-outcome-form" class="inline-form"><label>Human outcome<select id="review-outcome"><option value="no_thesis_change">No thesis change</option><option value="revise_thesis">Revise thesis</option><option value="investigate">Investigate</option><option value="close_watch">Close watch record</option></select></label><label>Rationale<input id="review-rationale" required placeholder="Explain the evidence behind this outcome"></label><button class="primary-button" type="submit">Record outcome</button></form></article>
         </section>

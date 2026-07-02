@@ -143,7 +143,11 @@ function switchWorkspace(name) {
   document.querySelector(".sidebar").classList.toggle("hidden", !research);
   for (const button of document.querySelectorAll("[data-workspace]")) {
     button.classList.toggle("active", button.dataset.workspace === name);
+    button.setAttribute("aria-current", button.dataset.workspace === name ? "page" : "false");
   }
+  const more = byId("workspace-more");
+  more.classList.toggle("tool-active", ["quant", "monitoring"].includes(name));
+  more.open = false;
   byId("quant-workspace").classList.toggle("hidden", name !== "quant");
   byId("monitoring-workspace").classList.toggle("hidden", name !== "monitoring");
   byId("reviews-workspace").classList.toggle("hidden", name !== "reviews");
@@ -561,6 +565,14 @@ byId("research-form").addEventListener("submit", submitResearch);
 byId("disposition-form").addEventListener("submit", submitDisposition);
 byId("refresh-runs").addEventListener("click", () => loadRuns(state.selectedRunId));
 for (const button of document.querySelectorAll("[data-workspace]")) button.addEventListener("click", () => switchWorkspace(button.dataset.workspace));
+for (const disclosure of document.querySelectorAll(".disclosure-grid .tool-disclosure")) {
+  disclosure.addEventListener("toggle", () => {
+    if (!disclosure.open) return;
+    for (const sibling of disclosure.parentElement.querySelectorAll(".tool-disclosure[open]")) {
+      if (sibling !== disclosure) sibling.open = false;
+    }
+  });
+}
 byId("price-import-form").addEventListener("submit", submitPriceImport);
 byId("screen-form").addEventListener("submit", submitScreen);
 byId("portfolio-form").addEventListener("submit", submitPortfolio);
