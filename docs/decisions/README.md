@@ -31,6 +31,7 @@ the system. They explain the context, the chosen direction, and its tradeoffs.
 | [0015](0015-local-dashboard-surface.md) | Add a loopback-only local dashboard | Accepted |
 | [0016](0016-milestone-six-unified-operator-workspace.md) | Scope Milestone 6 as a unified operator workspace | Accepted |
 | [0017](0017-milestone-seven-quarterly-research-updates.md) | Scope Milestone 7 as period-safe quarterly research updates | Accepted |
+| [0018](0018-milestone-eight-cognitive-load.md) | Scope Milestone 8 as dashboard cognitive-load reduction | Accepted |
 
 ## Convention
 

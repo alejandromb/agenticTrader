@@ -1,16 +1,16 @@
 # Project State
 
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
-Session status: Milestone 7 complete
+Session status: Milestone 8 defined
 
 ## Current phase
 
-Milestone 7 period-safe quarterly research updates accepted.
+Milestone 8 dashboard cognitive-load reduction.
 
 ## Active objective
 
-Select the next measured product objective without expanding execution authority.
+Simplify the dashboard using progressive disclosure without adding capabilities.
 
 ## Completed
 
@@ -208,6 +208,8 @@ Select the next measured product objective without expanding execution authority
   evidence-refresh limitations, and updated the analysis prompt to version 2.2.
 - Accepted Milestone 7 after 118 passing tests and a read-only live Apple 10-Q
   extraction for accession `0000320193-26-000013` with correct period shapes.
+- Accepted ADR-0018 and defined Milestone 8 around cognitive-load reduction;
+  future portfolio and comparison visualizations remain a measured backlog.
 
 ## Accepted decisions
 
@@ -228,6 +230,7 @@ Select the next measured product objective without expanding execution authority
 - ADR-0015: Add a loopback-only local dashboard.
 - ADR-0016: Scope Milestone 6 as a unified operator workspace.
 - ADR-0017: Scope Milestone 7 as period-safe quarterly research updates.
+- ADR-0018: Scope Milestone 8 as dashboard cognitive-load reduction.
 
 ## Open questions
 
@@ -242,10 +245,10 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Choose the next milestone using ADR-0010's measured-outcome requirement.
-2. Keep the conversational operator deferred until stable tool contracts and a
-   concrete evaluation baseline exist.
-3. Preserve the research/execution boundary and human authority.
+1. Baseline representative dashboard tasks and competing visible actions.
+2. Design progressive disclosure for non-primary workspaces.
+3. Implement and verify the simpler research/review journey without adding
+   analytics, chat/MCP, automation, or execution.
 
 ## Future integration note
 
@@ -257,6 +260,5 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Milestone 7 is complete. Start the next session by selecting a measured research
-outcome; keep chat/MCP, automation, DiveTrader, and execution out of scope until
-their separate acceptance criteria are defined.
+Begin Milestone 8 with a task-based dashboard baseline. Preserve all existing
+capabilities and evidence visibility while reducing simultaneous choices.
