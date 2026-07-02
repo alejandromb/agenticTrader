@@ -3,7 +3,8 @@
 ## What the platform does
 
 The Version 2 platform researches one U.S. public company at a time from its
-latest annual SEC filing. A successful research run moves through:
+latest explicitly selected annual or quarterly SEC filing. A successful
+research run moves through:
 
 ```text
 ticker -> SEC filing -> stored evidence -> financial claims
@@ -31,7 +32,7 @@ Open `http://127.0.0.1:8765`. From there you can:
    model telemetry; and
 5. record your human disposition when the run is ready.
 
-The top navigation also exposes:
+The top navigation keeps `Research` and `Reviews` visible. Open `Tools` to reach:
 
 - `Quant lab` for immutable price import, screens, holdings analytics, and
   backtests;
@@ -39,6 +40,13 @@ The top navigation also exposes:
   acknowledgement; and
 - `Reviews` for comparing completed same-company research and recording a human
   refresh outcome.
+
+Advanced tools are collapsed under the investment question they answer. Click
+the question card to open its form. When a workflow has no eligible inputs, the
+dashboard displays the missing prerequisite and a button for the next step. For
+example, Monitoring requires a completed `watch` or `consider_for_portfolio`
+human disposition, and price-based workflows require an imported immutable
+price dataset.
 
 The terminal must remain open while using the dashboard. Press `Ctrl+C` to stop
 the server. It accepts loopback connections only and is not a remote web app.

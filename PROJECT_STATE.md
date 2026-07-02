@@ -230,6 +230,8 @@ Select the next measured research outcome without expanding system authority.
   ledger without adding model calls, market outcomes, or execution authority.
 - Accepted Milestone 9 after 128 passing tests, restart reconstruction,
   real-database desktop/mobile browser verification, and zero console errors.
+- Added explicit Quant and Monitoring prerequisite guidance after operator
+  testing showed that collapsed forms with no eligible artifacts looked empty.
 
 ## Accepted decisions
 

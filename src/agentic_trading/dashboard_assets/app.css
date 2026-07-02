@@ -143,6 +143,9 @@ dialog::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
 .artifact-strip span, .artifact-strip strong { display: block; }
 .artifact-strip span { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
 .artifact-strip strong { margin-top: 8px; font: 500 18px var(--serif); }
+.action-callout { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin: 0 0 24px; padding: 20px; border: 1px solid #496327; background: var(--accent-dark); }
+.action-callout strong { font: 500 18px var(--serif); }
+.action-callout p { margin: 6px 0 0; color: #c5d0ca; font-size: 13px; line-height: 1.5; }
 .tool-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .tool-grid.two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .disclosure-grid { align-items: start; }
@@ -218,6 +221,7 @@ dialog::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
   .boundary-badge { display: inline-block; margin-top: 8px; }
   .inline-form { grid-template-columns: 1fr; }
   .review-layout { grid-template-columns: 1fr; }
+  .action-callout { align-items: flex-start; }
 }
 
 @media (max-width: 620px) {
@@ -227,6 +231,7 @@ dialog::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
   .artifact-strip div { border-right: 0; border-bottom: 1px solid var(--line); }
   .artifact-strip div:last-child { border-bottom: 0; }
   .field-pair { grid-template-columns: 1fr; }
+  .action-callout { display: grid; }
   .result-kpis { grid-template-columns: 1fr 1fr; }
   .alert-card { grid-template-columns: 1fr; }
   .alert-actions { display: grid; }

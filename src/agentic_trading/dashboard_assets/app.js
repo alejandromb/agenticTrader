@@ -80,6 +80,47 @@ function renderWorkspaceData() {
   renderAlerts(workspace.alerts);
   renderReviews(workspace.reviews);
   renderQualityEvaluations(workspace.quality_evaluations || []);
+  renderWorkspaceGuidance(workspace, eligibleRuns);
+}
+
+function setGuidance(prefix, { title, message, action, onAction } = {}) {
+  const callout = byId(`${prefix}-guidance`);
+  callout.classList.toggle("hidden", !title);
+  if (!title) return;
+  text(byId(`${prefix}-guidance-title`), title);
+  text(byId(`${prefix}-guidance-text`), message);
+  text(byId(`${prefix}-guidance-action`), action);
+  byId(`${prefix}-guidance-action`).onclick = onAction;
+}
+
+function renderWorkspaceGuidance(workspace, eligibleRuns) {
+  if (!workspace.datasets.length) {
+    setGuidance("quant", {
+      title: "Start by importing a price dataset",
+      message: "Portfolio analysis, backtests, and monitor evaluation stay disabled until an immutable adjusted-price CSV is available.",
+      action: "Open import prices",
+      onAction: () => { byId("price-import-tool").open = true; },
+    });
+  } else {
+    setGuidance("quant");
+  }
+  if (!eligibleRuns.length) {
+    setGuidance("monitoring", {
+      title: "Monitoring needs a completed Watch decision",
+      message: "Open Research, review a memo such as TXN, and record Watch or Consider for portfolio. Monitoring never activates directly from an undecided memo.",
+      action: "Go to Research",
+      onAction: () => switchWorkspace("research"),
+    });
+  } else if (!workspace.datasets.length) {
+    setGuidance("monitoring", {
+      title: "Import prices before evaluating a monitor",
+      message: "Your eligible research decision exists, but monitoring requires an immutable price dataset.",
+      action: "Go to Quant lab",
+      onAction: () => switchWorkspace("quant"),
+    });
+  } else {
+    setGuidance("monitoring");
+  }
 }
 
 function setFormAvailability(formId, available) {

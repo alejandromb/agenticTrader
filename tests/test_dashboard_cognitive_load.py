@@ -67,6 +67,14 @@ def test_dashboard_uses_progressive_disclosure_without_losing_workflows() -> Non
     )
     assert "Known limitations" in page
     assert "Explore the full decision record" in page
+    assert "quant-guidance" in page
+    assert "monitoring-guidance" in page
+    assert "Start by importing a price dataset" in (
+        ASSETS / "app.js"
+    ).read_text()
+    assert "Monitoring needs a completed Watch decision" in (
+        ASSETS / "app.js"
+    ).read_text()
 
 
 def test_future_visualization_backlog_is_not_added_to_dashboard() -> None:
