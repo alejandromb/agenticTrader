@@ -161,3 +161,14 @@ gates and six human-scored criteria. Results retain prompt, model, schema, token
 and latency context in an append-only ledger. The score evaluates research
 quality—not the company, later stock returns, or investment attractiveness—and
 does not call a model. See [docs/milestone-9.md](docs/milestone-9.md).
+
+## Milestone 10 automatic market data
+
+The Quant workflow is designed around a read-only market-data provider boundary:
+explicitly requested daily adjusted stock bars are normalized and immediately
+persisted through the existing immutable price-dataset contract. Alpaca is
+implemented as an optional adapter, but paid market data is not a v1 dependency.
+When no low-cost provider is configured, explicit CSV import remains the
+auditable fallback. The adapter uses historical market data only and contains no
+account, position, order, or trading client. See
+[docs/milestone-10.md](docs/milestone-10.md).

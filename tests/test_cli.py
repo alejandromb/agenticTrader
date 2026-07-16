@@ -8,6 +8,7 @@ import pytest
 
 from agentic_trading.cli import main
 from agentic_trading.disposition_repository import SqliteDispositionRepository
+from agentic_trading.market_data import PriceDataset
 from agentic_trading.migrations import upgrade_database
 from agentic_trading.repository import SqliteRunRepository
 from agentic_trading.research_quality import (
@@ -117,14 +118,21 @@ def test_doctor_never_prints_secret_values(
     database.touch()
     monkeypatch.setenv("OPENAI_API_KEY", "private-openai-value")
     monkeypatch.setenv("SEC_USER_AGENT", "private-sec-value")
+    monkeypatch.setenv("ALPACA_API_KEY", "private-alpaca-value")
+    monkeypatch.setenv("ALPACA_SECRET_KEY", "private-alpaca-secret")
 
     assert main(["doctor", "--database", str(database)]) == 0
 
     output = capsys.readouterr().out
     assert "private-openai-value" not in output
     assert "private-sec-value" not in output
+    assert "private-alpaca-value" not in output
+    assert "private-alpaca-secret" not in output
     assert json.loads(output) == {
+        "alpaca_market_data_configured": True,
         "database_exists": True,
+        "market_data_configured": True,
+        "market_data_provider": "alpaca",
         "openai_api_key_configured": True,
         "sec_user_agent_configured": True,
     }
@@ -305,6 +313,60 @@ def test_import_prices_command(
     output = json.loads(capsys.readouterr().out)
     assert output["row_count"] == 6
     assert output["start_date"] == "2025-01-02"
+
+
+def test_fetch_prices_command_is_read_only_and_secret_safe(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    captured = {}
+    dataset = PriceDataset(
+        dataset_id="alpaca-dataset",
+        source="Alpaca Market Data v2; feed=iex",
+        retrieved_at="2026-07-02T00:00:00Z",
+        content_sha256="a" * 64,
+        storage_path="artifacts/alpaca",
+        adjustment_note="adjustment=all",
+        row_count=4,
+        start_date="2026-01-01",
+        end_date="2026-01-02",
+        created_at="2026-07-02T00:00:00Z",
+    )
+
+    def fake_fetch(database, artifact_root, **kwargs):
+        captured.update(kwargs)
+        return dataset
+
+    monkeypatch.setenv("ALPACA_API_KEY", "private-key")
+    monkeypatch.setenv("ALPACA_SECRET_KEY", "private-secret")
+    monkeypatch.setattr("agentic_trading.cli.fetch_and_store_alpaca_prices", fake_fetch)
+
+    assert (
+        main(
+            [
+                "fetch-prices",
+                "AAPL",
+                "SPY",
+                "--start",
+                "2026-01-01",
+                "--end",
+                "2026-01-02",
+                "--database",
+                str(tmp_path / "state.db"),
+                "--artifact-root",
+                str(tmp_path / "artifacts"),
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr().out
+    assert json.loads(output)["dataset_id"] == "alpaca-dataset"
+    assert "private-key" not in output
+    assert "private-secret" not in output
+    assert captured["symbols"] == ["AAPL", "SPY"]
+    assert captured["feed"] == "iex"
 
 
 def test_analyze_portfolio_command(

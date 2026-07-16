@@ -17,6 +17,7 @@ The unified workspace supports:
 - readable memo, analysis, limitation, and telemetry views; and
 - explicit human disposition for eligible runs;
 - immutable price-data import and deterministic screens;
+- optional read-only provider historical-price acquisition;
 - hypothetical portfolio analytics and cost-aware backtesting;
 - monitor creation/evaluation and alert acknowledgement; and
 - research-refresh comparison and human review outcomes; and

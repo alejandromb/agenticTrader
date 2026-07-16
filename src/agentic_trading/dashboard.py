@@ -226,11 +226,20 @@ def create_dashboard_server(
                 self._asset("app.js", "text/javascript; charset=utf-8")
                 return
             if path == "/api/config":
+                alpaca_configured = bool(
+                    os.environ.get("ALPACA_API_KEY")
+                    and os.environ.get("ALPACA_SECRET_KEY")
+                )
                 self._json(
                     {
                         "csrf_token": token,
                         "openai_configured": bool(os.environ.get("OPENAI_API_KEY")),
                         "sec_configured": bool(os.environ.get("SEC_USER_AGENT")),
+                        "market_data_configured": alpaca_configured,
+                        "market_data_provider": "alpaca"
+                        if alpaca_configured
+                        else "none",
+                        "alpaca_configured": alpaca_configured,
                     }
                 )
                 return
@@ -300,6 +309,18 @@ def create_dashboard_server(
                     _base64_bytes(payload, "content_base64"),
                     source=_string(payload, "source"),
                     adjustment_note=_string(payload, "adjustment_note"),
+                )
+            elif path == "/api/prices/fetch":
+                symbols = payload.get("symbols")
+                if not isinstance(symbols, list) or not all(
+                    isinstance(symbol, str) for symbol in symbols
+                ):
+                    raise DashboardError("symbols must be an array of strings")
+                result = workspace.fetch_prices(
+                    symbols=symbols,
+                    start=_string(payload, "start"),
+                    end=_string(payload, "end"),
+                    feed=_string(payload, "feed"),
                 )
             elif path == "/api/screens":
                 result = workspace.screen(payload)

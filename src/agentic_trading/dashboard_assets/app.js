@@ -1,6 +1,6 @@
 "use strict";
 
-const state = { csrf: "", runs: [], selectedRunId: null, workspace: null, selectedReviewId: null };
+const state = { csrf: "", config: {}, runs: [], selectedRunId: null, selectedTicker: null, workspace: null, selectedReviewId: null };
 const byId = (id) => document.getElementById(id);
 
 function text(element, value) {
@@ -27,9 +27,11 @@ async function api(path, options = {}) {
 async function bootstrap() {
   try {
     const config = await api("/api/config");
+    state.config = config;
     state.csrf = config.csrf_token;
     setConfigStatus("sec-status", "SEC", config.sec_configured);
     setConfigStatus("ai-status", "OpenAI", config.openai_configured);
+    setConfigStatus("alpaca-status", "Market data", config.market_data_configured || config.alpaca_configured);
     await loadRuns();
     await loadWorkspace();
     setDateDefaults();
@@ -95,12 +97,21 @@ function setGuidance(prefix, { title, message, action, onAction } = {}) {
 
 function renderWorkspaceGuidance(workspace, eligibleRuns) {
   if (!workspace.datasets.length) {
-    setGuidance("quant", {
-      title: "Start by importing a price dataset",
-      message: "Portfolio analysis, backtests, and monitor evaluation stay disabled until an immutable adjusted-price CSV is available.",
-      action: "Open import prices",
-      onAction: () => { byId("price-import-tool").open = true; },
-    });
+    if (state.config.market_data_configured || state.config.alpaca_configured) {
+      setGuidance("quant", {
+        title: "Start by fetching the price history you need",
+        message: "Enter the investigation tickers and dates once. The dataset is persisted automatically and becomes available to every quantitative workflow.",
+        action: "Fetch market data",
+        onAction: () => { byId("alpaca-fetch-tool").open = true; },
+      });
+    } else {
+      setGuidance("quant", {
+        title: "Market data provider not configured",
+        message: "Paid market data is optional for v1. Until a low-cost provider is configured, import an explicit adjusted-price CSV and the backend will persist it as the source of truth.",
+        action: "Open CSV fallback",
+        onAction: () => { byId("price-import-tool").open = true; },
+      });
+    }
   } else {
     setGuidance("quant");
   }
@@ -216,6 +227,8 @@ function renderDetail(detail) {
   byId("empty-state").classList.add("hidden");
   byId("run-detail").classList.remove("hidden");
   const subject = detail.memo?.subject || {};
+  state.selectedTicker = subject.ticker || null;
+  if (state.selectedTicker) byId("alpaca-symbols").value = `${state.selectedTicker}, SPY`;
   text(byId("detail-state"), detail.run.state.replaceAll("_", " "));
   text(byId("detail-title"), subject.company_name || subject.ticker || "Research run");
   text(byId("detail-meta"), `${subject.ticker || "Unknown ticker"} · As of ${formatDate(detail.run.as_of)} · ${detail.run.run_id}`);
@@ -332,6 +345,25 @@ async function submitPriceImport(event) {
     event.target.reset();
     byId("price-adjustment").value = "Adjusted-close values supplied by dataset source.";
     await loadWorkspace();
+  });
+}
+
+async function submitPriceFetch(event) {
+  event.preventDefault();
+  await withFormButton(event, async () => {
+    const symbols = byId("alpaca-symbols").value.split(",").map((value) => value.trim()).filter(Boolean);
+    const result = await api("/api/prices/fetch", {
+      method: "POST",
+      body: JSON.stringify({
+        symbols,
+        start: byId("alpaca-start").value,
+        end: byId("alpaca-end").value,
+        feed: byId("alpaca-feed").value,
+      }),
+    });
+    renderQuantResult("Market data fetched", result);
+    await loadWorkspace();
+    showToast(`${result.row_count} daily prices are ready.`);
   });
 }
 
@@ -621,10 +653,14 @@ function localDateTimeIso(value) {
 function setDateDefaults() {
   const now = new Date();
   const date = now.toISOString().slice(0, 10);
+  const priorYear = new Date(now);
+  priorYear.setUTCFullYear(priorYear.getUTCFullYear() - 1);
   const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   byId("screen-as-of").value = local;
   byId("portfolio-as-of").value = date;
   byId("evaluate-as-of").value = date;
+  byId("alpaca-start").value = priorYear.toISOString().slice(0, 10);
+  byId("alpaca-end").value = date;
 }
 
 function showToast(message, isError = false) {
@@ -662,6 +698,7 @@ for (const disclosure of document.querySelectorAll(".disclosure-grid .tool-discl
   });
 }
 byId("price-import-form").addEventListener("submit", submitPriceImport);
+byId("price-fetch-form").addEventListener("submit", submitPriceFetch);
 byId("screen-form").addEventListener("submit", submitScreen);
 byId("portfolio-form").addEventListener("submit", submitPortfolio);
 byId("backtest-form").addEventListener("submit", submitBacktest);

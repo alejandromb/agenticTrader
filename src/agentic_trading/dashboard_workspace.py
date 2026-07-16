@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
+from agentic_trading.alpaca_market_data import fetch_and_store_alpaca_prices
 from agentic_trading.backtesting import SqliteBacktester
 from agentic_trading.market_data import SqlitePriceDatasetRepository
 from agentic_trading.monitoring import SqliteDecisionMonitoring
@@ -19,6 +21,8 @@ from agentic_trading.screener import ScreenFilters, SqliteResearchScreener
 
 class DashboardWorkspaceService:
     def __init__(self, database_path: Path, artifact_root: Path) -> None:
+        self._database_path = database_path
+        self._artifact_root = artifact_root
         self._prices = SqlitePriceDatasetRepository(database_path, artifact_root)
         self._screens = SqliteResearchScreener(database_path)
         self._portfolios = SqlitePortfolioAnalyzer(database_path, artifact_root)
@@ -59,6 +63,23 @@ class DashboardWorkspaceService:
                 payload, source=source, adjustment_note=adjustment_note
             )
         )
+
+    def fetch_prices(
+        self, *, symbols: list[str], start: str, end: str, feed: str
+    ) -> dict[str, Any]:
+        api_key = os.environ.get("ALPACA_API_KEY", "")
+        secret_key = os.environ.get("ALPACA_SECRET_KEY", "")
+        dataset = fetch_and_store_alpaca_prices(
+            self._database_path,
+            self._artifact_root,
+            api_key=api_key,
+            secret_key=secret_key,
+            symbols=symbols,
+            start=start,
+            end=end,
+            feed=feed,
+        )
+        return asdict(dataset)
 
     def screen(self, payload: dict[str, Any]) -> dict[str, Any]:
         artifact = self._screens.screen(

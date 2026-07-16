@@ -1,16 +1,18 @@
 # Project State
 
-Last updated: 2026-07-02
+Last updated: 2026-07-16
 
-Session status: Milestone 9 complete
+Session status: Milestone 10 active
 
 ## Current phase
 
-Milestone 9 research-quality evaluation ledger accepted.
+Milestone 10 read-only market-data provider boundary.
 
 ## Active objective
 
-Select the next measured research outcome without expanding system authority.
+Make market-data-backed workflows dynamic when a low-friction provider is
+configured, while keeping explicit immutable CSV import as the fallback when
+paid data access is blocked.
 
 ## Completed
 
@@ -232,6 +234,9 @@ Select the next measured research outcome without expanding system authority.
   real-database desktop/mobile browser verification, and zero console errors.
 - Added explicit Quant and Monitoring prerequisite guidance after operator
   testing showed that collapsed forms with no eligible artifacts looked empty.
+- Accepted ADR-0020 and refined Milestone 10 as a read-only market-data provider
+  boundary with Alpaca optional, immutable persistence, and no trading-client
+  capability.
 
 ## Accepted decisions
 
@@ -254,6 +259,7 @@ Select the next measured research outcome without expanding system authority.
 - ADR-0017: Scope Milestone 7 as period-safe quarterly research updates.
 - ADR-0018: Scope Milestone 8 as dashboard cognitive-load reduction.
 - ADR-0019: Scope Milestone 9 as a research-quality evaluation ledger.
+- ADR-0020: Scope Milestone 10 as automatic read-only market data.
 
 ## Open questions
 
@@ -268,10 +274,10 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Use the quality ledger on future prompt/workflow changes before adoption.
-2. Select the next milestone using ADR-0010's measured-outcome requirement.
-3. Keep market-outcome scoring, chat/MCP, automation, and execution out of scope
-   without separate controlled experiments.
+1. Keep Alpaca behind the optional read-only provider boundary.
+2. Persist fetched bars through the existing immutable dataset repository.
+3. Treat paid market-data access as blocked for v1 unless a low-cost provider is
+   selected; retain explicit CSV import as the auditable fallback.
 
 ## Future integration note
 
@@ -283,5 +289,6 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Milestone 9 is complete. Begin the next session by selecting a measured research
-outcome and use the quality ledger to evaluate any material workflow change.
+Continue Milestone 10 from the read-only provider boundary. Do not make paid
+market data a v1 dependency, do not import Alpaca trading APIs, and do not add
+account, position, or order operations.

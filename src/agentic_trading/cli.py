@@ -13,6 +13,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from agentic_trading.alpaca_market_data import (
+    AlpacaMarketDataError,
+    fetch_and_store_alpaca_prices,
+)
 from agentic_trading.analysis_repository import SqliteAnalysisRepository
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.backtesting import BacktestError, SqliteBacktester
@@ -303,6 +307,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--database", type=Path, default=Path("data/agentic-trading.db")
     )
     import_prices.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
+    fetch_prices = commands.add_parser(
+        "fetch-prices",
+        help="fetch and persist read-only provider daily prices",
+    )
+    fetch_prices.add_argument("symbols", nargs="+")
+    fetch_prices.add_argument("--start", required=True)
+    fetch_prices.add_argument("--end", required=True)
+    fetch_prices.add_argument("--feed", choices=("iex", "sip"), default="iex")
+    fetch_prices.add_argument(
+        "--database", type=Path, default=Path("data/agentic-trading.db")
+    )
+    fetch_prices.add_argument("--artifact-root", type=Path, default=Path("artifacts"))
 
     return parser
 
@@ -317,8 +333,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     if args.command == "doctor":
+        alpaca_configured = bool(
+            os.environ.get("ALPACA_API_KEY") and os.environ.get("ALPACA_SECRET_KEY")
+        )
         checks = {
+            "alpaca_market_data_configured": alpaca_configured,
             "database_exists": args.database.exists(),
+            "market_data_configured": alpaca_configured,
+            "market_data_provider": "alpaca" if alpaca_configured else "none",
             "openai_api_key_configured": bool(os.environ.get("OPENAI_API_KEY")),
             "sec_user_agent_configured": bool(os.environ.get("SEC_USER_AGENT")),
         }
@@ -608,6 +630,24 @@ def main(argv: Sequence[str] | None = None) -> int:
                 sort_keys=True,
             )
         )
+        return 0
+
+    if args.command == "fetch-prices":
+        upgrade_database(args.database)
+        try:
+            dataset = fetch_and_store_alpaca_prices(
+                args.database,
+                args.artifact_root,
+                api_key=os.environ.get("ALPACA_API_KEY", ""),
+                secret_key=os.environ.get("ALPACA_SECRET_KEY", ""),
+                symbols=args.symbols,
+                start=args.start,
+                end=args.end,
+                feed=args.feed,
+            )
+        except AlpacaMarketDataError as error:
+            raise SystemExit(str(error)) from error
+        print(json.dumps(asdict(dataset), sort_keys=True))
         return 0
 
     if args.command == "screen-research":

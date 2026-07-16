@@ -53,6 +53,7 @@ def test_dashboard_uses_progressive_disclosure_without_losing_workflows() -> Non
     assert structure.primary_workspaces == ["research", "reviews"]
     assert structure.forms_in_details == {
         "price-import-form",
+        "price-fetch-form",
         "screen-form",
         "portfolio-form",
         "backtest-form",
@@ -61,7 +62,7 @@ def test_dashboard_uses_progressive_disclosure_without_losing_workflows() -> Non
         "review-form",
         "quality-evaluation-form",
     }
-    assert structure.question_summaries == 8
+    assert structure.question_summaries == 9
     assert page.index('id="decision-panel"') < page.index(
         'class="evidence-disclosure"'
     )
@@ -69,7 +70,7 @@ def test_dashboard_uses_progressive_disclosure_without_losing_workflows() -> Non
     assert "Explore the full decision record" in page
     assert "quant-guidance" in page
     assert "monitoring-guidance" in page
-    assert "Start by importing a price dataset" in (
+    assert "Start by fetching the price history you need" in (
         ASSETS / "app.js"
     ).read_text()
     assert "Monitoring needs a completed Watch decision" in (

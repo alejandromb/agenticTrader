@@ -213,7 +213,26 @@ For lower-level diagnostic commands, run:
 
 ## Milestone 3 quantitative workflows
 
-Import an adjusted-price dataset. The exact bytes and SHA-256 are retained:
+Open `Tools` → `Quant lab` → “What price history does this investigation need?”
+to see the current data path. If a read-only market-data provider is configured,
+enter comma-separated tickers and dates and the backend will persist the fetched
+daily bars automatically. Alpaca is supported as an optional adapter through
+`ALPACA_API_KEY` and `ALPACA_SECRET_KEY`, but paid market-data access is not
+required for v1.
+
+The equivalent CLI workflow is:
+
+```bash
+.venv/bin/agentic-trading fetch-prices AAPL SPY \
+  --start 2025-01-01 --end 2026-01-01 --feed iex
+```
+
+For the optional Alpaca adapter, `iex` is the basic feed and `sip` should be
+selected only when the account has that paid data entitlement. No broker account,
+position, or order API is used.
+
+When no provider is configured, import an explicit adjusted-price CSV. The exact
+bytes and SHA-256 are retained:
 
 ```bash
 .venv/bin/agentic-trading import-prices prices.csv \

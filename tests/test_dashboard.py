@@ -48,6 +48,8 @@ def running_dashboard(tmp_path, monkeypatch):
     run_id = awaiting_run(database)
     monkeypatch.setenv("OPENAI_API_KEY", "private-openai-secret")
     monkeypatch.setenv("SEC_USER_AGENT", "private-sec-identity")
+    monkeypatch.setenv("ALPACA_API_KEY", "private-alpaca-key")
+    monkeypatch.setenv("ALPACA_SECRET_KEY", "private-alpaca-secret")
     calls = []
 
     def fake_research(ticker: str, question: str, form: str):
@@ -125,9 +127,14 @@ def test_dashboard_assets_and_configuration_are_secret_safe(
         assert status == 200
         assert config["openai_configured"] is True
         assert config["sec_configured"] is True
+        assert config["alpaca_configured"] is True
+        assert config["market_data_configured"] is True
+        assert config["market_data_provider"] == "alpaca"
         assert len(config["csrf_token"]) >= 32
         assert "private-openai-secret" not in json.dumps(config)
         assert "private-sec-identity" not in json.dumps(config)
+        assert "private-alpaca-key" not in json.dumps(config)
+        assert "private-alpaca-secret" not in json.dumps(config)
         assert headers["Cache-Control"] == "no-store"
         _, workspace, _ = get_json(f"{base}/api/workspace")
         assert workspace["quality_evaluations"] == []
@@ -359,3 +366,39 @@ def test_quality_evaluation_endpoint_preserves_human_score_payload(
         assert status == 201
         assert result["evaluation_id"] == "quality-1"
         assert captured == {"run_id": run_id, "scores": score_payload}
+
+
+def test_market_data_fetch_endpoint_preserves_explicit_request(
+    tmp_path, monkeypatch
+) -> None:
+    captured = {}
+
+    def fake_fetch(self, *, symbols, start, end, feed):
+        captured.update(
+            {"symbols": symbols, "start": start, "end": end, "feed": feed}
+        )
+        return {"dataset_id": "prices-1", "row_count": 4}
+
+    monkeypatch.setattr(DashboardWorkspaceService, "fetch_prices", fake_fetch)
+    with running_dashboard(tmp_path, monkeypatch) as (base, _, _, _):
+        _, config, _ = get_json(f"{base}/api/config")
+
+        status, result = post_json(
+            f"{base}/api/prices/fetch",
+            {
+                "symbols": ["AAPL", "SPY"],
+                "start": "2026-01-01",
+                "end": "2026-02-01",
+                "feed": "iex",
+            },
+            config["csrf_token"],
+        )
+
+        assert status == 201
+        assert result["dataset_id"] == "prices-1"
+        assert captured == {
+            "symbols": ["AAPL", "SPY"],
+            "start": "2026-01-01",
+            "end": "2026-02-01",
+            "feed": "iex",
+        }
