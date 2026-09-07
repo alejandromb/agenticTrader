@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-07-16
+Last updated: 2026-09-07
 
 Session status: Milestone 10 active
 
@@ -237,6 +237,9 @@ paid data access is blocked.
 - Accepted ADR-0020 and refined Milestone 10 as a read-only market-data provider
   boundary with Alpaca optional, immutable persistence, and no trading-client
   capability.
+- Accepted ADR-0021 for Robinhood MCP: use it as read-only portfolio context
+  before any execution capability, with a separate ADR required before orders,
+  day trading, recurring-buy changes, or rebalancing automation.
 
 ## Accepted decisions
 
@@ -265,6 +268,8 @@ paid data access is blocked.
 
 - Which materiality threshold should trigger narrative review of a detected
   cross-filing revision?
+- After Robinhood MCP is connected in Codex, which exact tools are exposed and
+  which can be safely allowlisted for read-only portfolio snapshots?
 
 ## Blockers
 
@@ -292,3 +297,8 @@ idempotency, and reconciliation.
 Continue Milestone 10 from the read-only provider boundary. Do not make paid
 market data a v1 dependency, do not import Alpaca trading APIs, and do not add
 account, position, or order operations.
+
+If Robinhood MCP becomes available in the tool list, first inspect/read only
+portfolio, balances, positions, transactions, watchlists, and scans. Do not use
+order-placement tools unless a later ADR and explicit user action authorize the
+specific order workflow.
