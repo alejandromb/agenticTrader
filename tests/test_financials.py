@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from decimal import Decimal
 
+import pytest
+
 from agentic_trading.financials import (
     extract_annual_financial_history,
     extract_annual_financial_snapshot,
@@ -9,7 +11,93 @@ from agentic_trading.financials import (
     extract_available_quarterly_financial_snapshot,
     extract_quarterly_financial_history,
     infer_annual_period_start,
+    require_filing_fact_coverage,
 )
+
+
+def _scoped_capex_facts(cik=1035267, accession="0001035267-26-000058"):
+    return {
+        "cik": cik,
+        "facts": {
+            "us-gaap": {
+                "PaymentsToAcquireProductiveAssets": {
+                    "label": "Productive assets",
+                    "units": {
+                        "USD": [
+                            {
+                                "start": "2026-01-01",
+                                "end": "2026-06-30",
+                                "val": 215900000,
+                                "accn": accession,
+                                "form": "10-Q",
+                                "filed": "2026-07-21",
+                                "fy": 2026,
+                                "fp": "Q2",
+                            }
+                        ]
+                    },
+                }
+            }
+        },
+    }
+
+
+def test_verified_capex_mapping_preserves_provenance_and_ytd():
+    facts = _scoped_capex_facts()
+    # A standard tag can exist in company history but not the selected filing.
+    facts["facts"]["us-gaap"]["PaymentsToAcquirePropertyPlantAndEquipment"] = {
+        "label": "PP&E",
+        "units": {
+            "USD": [
+                {
+                    "start": "2025-01-01",
+                    "end": "2025-06-30",
+                    "val": 999,
+                    "accn": "older-filing",
+                    "form": "10-Q",
+                    "filed": "2025-07-21",
+                }
+            ]
+        },
+    }
+    snapshot, gaps = extract_available_quarterly_financial_snapshot(
+        facts, accession_number="0001035267-26-000058", period_end="2026-06-30"
+    )
+    fact = snapshot["capital_expenditure"]
+    assert fact.value == Decimal("215900000")
+    assert fact.concept == "PaymentsToAcquireProductiveAssets"
+    assert fact.period_start == "2026-01-01"
+    assert not any("Missing capital_expenditure" in gap for gap in gaps)
+    history = extract_quarterly_financial_history(
+        facts, accession_number=fact.accession_number, through_period_end="2026-06-30"
+    )
+    assert history["capital_expenditure"] == (fact,)
+
+
+@pytest.mark.parametrize(
+    "cik,accession",
+    [
+        (123, "0001035267-26-000058"),
+        (1035267, "0001035267-26-000099"),
+    ],
+)
+def test_capex_mapping_does_not_leak_to_unreviewed_issuer_or_filing(cik, accession):
+    snapshot, gaps = extract_available_quarterly_financial_snapshot(
+        _scoped_capex_facts(cik, accession),
+        accession_number=accession,
+        period_end="2026-06-30",
+    )
+    assert "capital_expenditure" not in snapshot
+    assert any("Missing capital_expenditure" in gap for gap in gaps)
+
+
+def test_filing_coverage_distinguishes_unsupported_concepts_from_absence():
+    facts = _scoped_capex_facts()
+    require_filing_fact_coverage(facts, accession_number="0001035267-26-000058")
+    with pytest.raises(ValueError, match="No older filing was substituted"):
+        require_filing_fact_coverage(facts, accession_number="missing-accession")
+    with pytest.raises(ValueError, match="no observations"):
+        require_filing_fact_coverage({}, accession_number="missing-accession")
 
 
 def test_extract_minimum_annual_financial_snapshot() -> None:

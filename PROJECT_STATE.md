@@ -2,7 +2,14 @@
 
 Last updated: 2026-09-07
 
-Session status: Milestone 11 refresh records and concentration calculations verified
+Session status: Research evidence coverage hardening verified; Milestone 11 live transport remains pending
+
+Latest research-integrity slice: exact-filing coverage diagnostics now distinguish
+absent SEC observations from unsupported metrics. A reviewed ISRG filing-scoped
+cash-capex mapping preserves its original tag and YTD period. Fixed empty
+primary-tag history suppressing alias fallback. Regression/full suite: 159 tests
+pass with loopback access. This does not complete live portfolio integration or
+add execution authority. See [session record](docs/sessions/2026-09-07-006-filing-coverage.md).
 
 ## Progress at a glance
 

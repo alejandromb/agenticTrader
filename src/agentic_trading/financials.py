@@ -138,6 +138,39 @@ ANNUAL_FINANCIAL_METRICS = (
 _DISCRETE_QUARTER_METRICS = {"revenue", "net_income", "operating_income"}
 
 
+def require_filing_fact_coverage(
+    company_facts: dict[str, Any], *, accession_number: str
+) -> None:
+    """Distinguish absent upstream filing coverage from unsupported concepts."""
+    for concepts in company_facts.get("facts", {}).values():
+        for item in concepts.values():
+            for observations in item.get("units", {}).values():
+                if any(row.get("accn") == accession_number for row in observations):
+                    return
+    raise ValueError(
+        f"SEC company-facts response has no observations for filing "
+        f"{accession_number}; upstream filing coverage is unavailable. "
+        "No older filing was substituted."
+    )
+
+
+def _metric_concepts(
+    company_facts: dict[str, Any], metric: FinancialMetricSpec, accession: str
+) -> tuple[str, ...]:
+    concepts = (metric.concept, *metric.aliases)
+    # Reviewed cash-flow statement labels this exact filing's ProductiveAssets
+    # as purchases of PP&E. Do not generalize the broader taxonomy concept.
+    # https://www.sec.gov/Archives/edgar/data/1035267/
+    # 000103526726000058/isrg-20260630.htm
+    if (
+        str(company_facts.get("cik", "")).lstrip("0") == "1035267"
+        and accession == "0001035267-26-000058"
+        and metric.name == "capital_expenditure"
+    ):
+        concepts += ("PaymentsToAcquireProductiveAssets",)
+    return concepts
+
+
 def infer_annual_period_start(
     company_facts: dict[str, Any], *, accession_number: str, period_end: str
 ) -> str:
@@ -308,7 +341,7 @@ def _select_metric_fact(
     period_start: str,
     period_end: str,
 ) -> FilingFact | None:
-    for concept in (metric.concept, *metric.aliases):
+    for concept in _metric_concepts(company_facts, metric, accession_number):
         try:
             return select_filing_fact(
                 company_facts,
@@ -331,9 +364,9 @@ def _list_metric_facts(
     accession_number: str,
     form: str = "10-K",
 ) -> tuple[FilingFact, ...] | None:
-    for concept in (metric.concept, *metric.aliases):
+    for concept in _metric_concepts(company_facts, metric, accession_number):
         try:
-            return list_filing_facts(
+            facts = list_filing_facts(
                 company_facts,
                 taxonomy=metric.taxonomy,
                 concept=concept,
@@ -341,6 +374,8 @@ def _list_metric_facts(
                 accession_number=accession_number,
                 form=form,
             )
+            if facts:
+                return facts
         except XbrlFactError:
             continue
     return None

@@ -25,6 +25,7 @@ from agentic_trading.financials import (
     extract_available_quarterly_financial_snapshot,
     extract_quarterly_financial_history,
     infer_annual_period_start,
+    require_filing_fact_coverage,
 )
 from agentic_trading.memo_repository import (
     InvestmentMemoArtifact,
@@ -366,6 +367,9 @@ class CompanyResearchService:
     ) -> tuple[list[CandidateClaim], tuple[str, ...], list[RevisionAudit]]:
         """Persist a 10-Q update without annualizing or creating a DCF."""
         company_facts = self._sec.get_company_facts(company.cik)
+        require_filing_fact_coverage(
+            company_facts, accession_number=filing.accession_number
+        )
         snapshot, evidence_gaps = extract_available_quarterly_financial_snapshot(
             company_facts,
             accession_number=filing.accession_number,
