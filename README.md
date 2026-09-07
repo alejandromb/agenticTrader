@@ -38,6 +38,11 @@ broker integration, order intent, and execution.
 
 ## Quick start
 
+For development progress, start with [Project state](PROJECT_STATE.md): current
+status, completion evidence, blockers, and the exact next step. Prior handoffs
+live in [session logs](docs/sessions/README.md), and architectural choices in
+[decision records](docs/decisions/README.md).
+
 ```bash
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'

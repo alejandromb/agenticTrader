@@ -2,17 +2,34 @@
 
 Last updated: 2026-09-07
 
-Session status: Milestone 10 active
+Session status: Progress tracking reconciled; portfolio-context planning next
+
+## Progress at a glance
+
+| Work item | Status | Evidence / remaining work |
+| --- | --- | --- |
+| Research foundation through Milestone 9 | Accepted | Completion and validation records below |
+| Milestone 10 provider implementation | Implemented | Commit `0644b2d`; optional Alpaca adapter and immutable dataset persistence |
+| Milestone 10 operator acceptance | Pending | Experiment 0009 remains planned; live provider access is unverified |
+| Robinhood account scope | Recorded | ADR-0021; Agentic only for potential confirmed orders |
+| Portfolio-context integration in the app | Next: define contract | Connected chat tools do not establish app integration |
+| Remote repository backup | Unconfigured | No Git remote; needs a destination |
+| Execution in the research app | Deferred | Requires separate ADR and product contract |
+
+This file is the single current progress tracker. Each active slice must name
+its outcome, evidence of completion, remaining limitations, and exact next step.
+Session logs preserve history; ADRs preserve decisions; Git preserves changes.
 
 ## Current phase
 
-Milestone 10 read-only market-data provider boundary.
+Milestone 10 implementation is committed. Operator acceptance and future
+read-only portfolio context remain separate follow-ups.
 
 ## Active objective
 
-Make market-data-backed workflows dynamic when a low-friction provider is
-configured, while keeping explicit immutable CSV import as the fallback when
-paid data access is blocked.
+Define the next portfolio-context slice with explicit provenance, privacy,
+account scope, and acceptance criteria. Keep the implemented market-data
+provider optional and track its pending operator validation separately.
 
 ## Completed
 
@@ -263,13 +280,17 @@ paid data access is blocked.
 - ADR-0018: Scope Milestone 8 as dashboard cognitive-load reduction.
 - ADR-0019: Scope Milestone 9 as a research-quality evaluation ledger.
 - ADR-0020: Scope Milestone 10 as automatic read-only market data.
+- ADR-0021: Robinhood portfolio context first; only the user-designated Agentic
+  account is in scope for potential confirmed orders. Other accounts are for
+  research insights and recommendations only.
 
 ## Open questions
 
 - Which materiality threshold should trigger narrative review of a detected
   cross-filing revision?
-- After Robinhood MCP is connected in Codex, which exact tools are exposed and
-  which can be safely allowlisted for read-only portfolio snapshots?
+- Which of the available Robinhood read tools belong in the app's future
+  portfolio-snapshot contract, and how will the app obtain authorized access?
+- Which private remote destination should hold the repository backup?
 
 ## Blockers
 
@@ -279,10 +300,13 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Keep Alpaca behind the optional read-only provider boundary.
-2. Persist fetched bars through the existing immutable dataset repository.
-3. Treat paid market-data access as blocked for v1 unless a low-cost provider is
-   selected; retain explicit CSV import as the auditable fallback.
+1. Draft the portfolio-context contract: immutable snapshots, retrieval times,
+   account scope, missing-data handling, and concentration calculations.
+2. Define acceptance fixtures and privacy checks before implementing that slice.
+3. Keep Experiment 0009 pending until its operator acceptance is documented;
+   paid market data remains optional and CSV import remains available.
+4. Configure a private Git remote once the user supplies a destination; do not
+   treat local commits as an off-device backup.
 
 ## Future integration note
 
@@ -294,11 +318,8 @@ idempotency, and reconciliation.
 
 ## Resume here
 
-Continue Milestone 10 from the read-only provider boundary. Do not make paid
-market data a v1 dependency, do not import Alpaca trading APIs, and do not add
-account, position, or order operations.
-
-If Robinhood MCP becomes available in the tool list, first inspect/read only
-portfolio, balances, positions, transactions, watchlists, and scans. Do not use
-order-placement tools unless a later ADR and explicit user action authorize the
-specific order workflow.
+Read the progress table above and the latest session log. The next development
+step is the portfolio-context contract, not rebuilding the committed provider.
+Robinhood tools are available in this chat, but application integration is not
+implemented. Preserve ADR-0021 and the user's account scope. Keep sensitive
+portfolio data and account identifiers out of Git.

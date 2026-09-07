@@ -36,6 +36,17 @@ through Robinhood by default.
 
 ## Required execution preconditions
 
+### User account scope (2026-09-07)
+
+The user designated the account nicknamed `Agentic` as the only account for
+potential order placement, with explicit confirmation before submission.
+Other accounts may be inspected for research insights and recommendations;
+they are not authorized for order placement. Resolve account identifiers at
+runtime through the connection; do not store them in this repository.
+
+This preference establishes account scope, not approval of any specific order
+or authorization to implement execution in the research application.
+
 Any future Robinhood execution capability requires a separate ADR and product
 contract before implementation. That later contract must include:
 
