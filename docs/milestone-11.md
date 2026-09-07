@@ -1,6 +1,6 @@
 # Milestone 11: Portfolio context alongside research
 
-- Status: Planned; contract defined, implementation not started
+- Status: In progress; snapshot storage foundation implemented
 - Date: 2026-09-07
 
 ## Outcome
@@ -92,6 +92,26 @@ adds no order preview, placement, cancellation, or account mutation capability.
 | P11-06 | Compact dashboard overview | Selection survives navigation/reload; stale and incomplete states are visible | P11-04, P11-05 |
 | P11-07 | Operator acceptance | Experiment 0010 passes with actual authorized refresh | P11-06 |
 | BACKUP-01 | Private remote backup | User-selected remote configured and checkpoint verified remotely | Destination needed |
+
+### Implementation checkpoint (2026-09-07)
+
+P11-03 is partially implemented: validated decimal observations, opaque account
+references, SQLAlchemy/Alembic snapshot index, verified content-addressed storage,
+separate save timestamps, account-scoped retrieval, and latest complete equity
+snapshot selection. Nine new tests cover validation, restart, duplicate content,
+incomplete refresh, account isolation, and artifact corruption. Full suite: 146
+passed. No dashboard or live account ingestion is wired yet.
+
+Remaining P11-03 work: collection start/end timestamps, durable failed refresh
+attempts, individual other-asset totals, canonical numeric/time normalization,
+and explicit handling of mixed quote timestamps. Current completeness refers
+only to paginated equity positions and quote availability, not the whole account.
+
+P11-02 discovery: Robinhood's official
+[overview](https://robinhood.com/us/en/support/articles/agentic-trading-overview/)
+documents HTTP MCP access for other compatible platforms. This supports exploring
+a dedicated app client, but does not prove our app's authentication. No tokens
+were extracted or live account data fetched during this checkpoint.
 
 ## Exclusions
 

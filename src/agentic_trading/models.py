@@ -236,6 +236,16 @@ class HumanDispositionEventModel(Base):
     decided_at: Mapped[str] = mapped_column(String, nullable=False)
 
 
+class PortfolioSnapshotModel(Base):
+    __tablename__ = "portfolio_snapshots"
+
+    snapshot_id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_ref: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    collected_at: Mapped[str] = mapped_column(String, nullable=False)
+    content_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    coverage: Mapped[str] = mapped_column(String, nullable=False)
+
+
 class PriceDatasetModel(Base):
     __tablename__ = "price_datasets"
 

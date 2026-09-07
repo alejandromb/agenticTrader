@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-07
 
-Session status: Milestone 11 contract defined; read transport discovery next
+Session status: Milestone 11 snapshot storage foundation verified
 
 ## Progress at a glance
 
@@ -12,7 +12,7 @@ Session status: Milestone 11 contract defined; read transport discovery next
 | Milestone 10 provider implementation | Implemented | Commit `0644b2d`; optional Alpaca adapter and immutable dataset persistence |
 | Milestone 10 operator acceptance | Pending | Experiment 0009 remains planned; live provider access is unverified |
 | Robinhood account scope | Recorded | ADR-0021; Agentic only for potential confirmed orders |
-| Portfolio-context integration in the app | Contract defined; implementation pending | [Milestone 11](docs/milestone-11.md), tasks P11-02 through P11-07 |
+| Portfolio-context integration in the app | Storage foundation implemented; live access/UI pending | [Milestone 11](docs/milestone-11.md); 146 tests pass; P11-03 partial |
 | Remote repository backup | Unconfigured | No Git remote; needs a destination |
 | Execution in the research app | Deferred | Requires separate ADR and product contract |
 
@@ -302,7 +302,8 @@ stalled while resolving image metadata.
 ## Next actions
 
 1. Resolve P11-02: supported authorization/transport for read-only snapshots.
-2. Implement P11-03 snapshot persistence with synthetic acceptance fixtures.
+2. Finish P11-03 collection timestamps, refresh-failure records, other-asset
+   totals and canonical normalization; storage foundation passes synthetic tests.
 3. Keep Experiment 0009 pending until its operator acceptance is documented;
    paid market data remains optional and CSV import remains available.
 4. Configure a private Git remote once the user supplies a destination; do not
