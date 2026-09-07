@@ -177,3 +177,10 @@ When no low-cost provider is configured, explicit CSV import remains the
 auditable fallback. The adapter uses historical market data only and contains no
 account, position, order, or trading client. See
 [docs/milestone-10.md](docs/milestone-10.md).
+
+## Planned: Milestone 11 portfolio context
+
+[Milestone 11](docs/milestone-11.md) defines saved read-only account snapshots,
+concentration, and direct links from holdings to research. Its task list and
+acceptance experiment distinguish planned work from implemented features.
+Live app access is not implemented; the connected chat alone does not supply it.

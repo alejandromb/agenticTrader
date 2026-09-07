@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-07
 
-Session status: Progress tracking reconciled; portfolio-context planning next
+Session status: Milestone 11 contract defined; read transport discovery next
 
 ## Progress at a glance
 
@@ -12,7 +12,7 @@ Session status: Progress tracking reconciled; portfolio-context planning next
 | Milestone 10 provider implementation | Implemented | Commit `0644b2d`; optional Alpaca adapter and immutable dataset persistence |
 | Milestone 10 operator acceptance | Pending | Experiment 0009 remains planned; live provider access is unverified |
 | Robinhood account scope | Recorded | ADR-0021; Agentic only for potential confirmed orders |
-| Portfolio-context integration in the app | Next: define contract | Connected chat tools do not establish app integration |
+| Portfolio-context integration in the app | Contract defined; implementation pending | [Milestone 11](docs/milestone-11.md), tasks P11-02 through P11-07 |
 | Remote repository backup | Unconfigured | No Git remote; needs a destination |
 | Execution in the research app | Deferred | Requires separate ADR and product contract |
 
@@ -27,9 +27,10 @@ read-only portfolio context remain separate follow-ups.
 
 ## Active objective
 
-Define the next portfolio-context slice with explicit provenance, privacy,
-account scope, and acceptance criteria. Keep the implemented market-data
-provider optional and track its pending operator validation separately.
+Resolve P11-02: prove a supported authorized read transport for the local app.
+The snapshot contract and acceptance criteria are recorded in Milestone 11 and
+Experiment 0010. Persistence can be developed with synthetic fixtures while
+transport is investigated, but live acceptance requires a working connection.
 
 ## Completed
 
@@ -300,9 +301,8 @@ stalled while resolving image metadata.
 
 ## Next actions
 
-1. Draft the portfolio-context contract: immutable snapshots, retrieval times,
-   account scope, missing-data handling, and concentration calculations.
-2. Define acceptance fixtures and privacy checks before implementing that slice.
+1. Resolve P11-02: supported authorization/transport for read-only snapshots.
+2. Implement P11-03 snapshot persistence with synthetic acceptance fixtures.
 3. Keep Experiment 0009 pending until its operator acceptance is documented;
    paid market data remains optional and CSV import remains available.
 4. Configure a private Git remote once the user supplies a destination; do not
@@ -319,7 +319,7 @@ idempotency, and reconciliation.
 ## Resume here
 
 Read the progress table above and the latest session log. The next development
-step is the portfolio-context contract, not rebuilding the committed provider.
+step is P11-02 in `docs/milestone-11.md`, not rebuilding the committed provider.
 Robinhood tools are available in this chat, but application integration is not
 implemented. Preserve ADR-0021 and the user's account scope. Keep sensitive
 portfolio data and account identifiers out of Git.
