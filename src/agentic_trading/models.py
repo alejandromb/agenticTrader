@@ -236,6 +236,17 @@ class HumanDispositionEventModel(Base):
     decided_at: Mapped[str] = mapped_column(String, nullable=False)
 
 
+class PortfolioRefreshModel(Base):
+    __tablename__ = "portfolio_refreshes"
+
+    refresh_id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_ref: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    snapshot_id: Mapped[str | None] = mapped_column(
+        ForeignKey("portfolio_snapshots.snapshot_id"), nullable=True
+    )
+    record_json: Mapped[str] = mapped_column(String, nullable=False)
+
+
 class PortfolioSnapshotModel(Base):
     __tablename__ = "portfolio_snapshots"
 

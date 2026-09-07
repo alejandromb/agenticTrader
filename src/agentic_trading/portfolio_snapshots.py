@@ -1,5 +1,6 @@
 """Validated private portfolio observations and append-only snapshot storage."""
 
+import json
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -12,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 
 from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.database import create_sqlite_engine
-from agentic_trading.models import PortfolioSnapshotModel
+from agentic_trading.models import PortfolioRefreshModel, PortfolioSnapshotModel
 
 Money = Annotated[Decimal, Field(allow_inf_nan=False)]
 
@@ -53,6 +54,12 @@ class PortfolioObservation(Observation):
     pending_deposits: Money | None = None
     equity_value: Money | None = None
     other_asset_value: Money | None = None
+    crypto_value: Money | None = None
+    options_value: Money | None = None
+    event_contracts_value: Money | None = None
+    fixed_income_value: Money | None = None
+    futures_value: Money | None = None
+    mutual_funds_value: Money | None = None
     positions_complete: bool
     holdings: tuple[Holding, ...]
 
@@ -75,6 +82,8 @@ class PortfolioObservation(Observation):
             gaps.append("Broker source timestamp is unavailable.")
         if any(h.quote_at is None for h in self.holdings):
             gaps.append("Some quote timestamps are unavailable.")
+        if len({h.quote_at for h in self.holdings if h.quote_at is not None}) > 1:
+            gaps.append("Quotes have different observation times.")
         if any(h.position_type not in ("long", "empty") for h in self.holdings):
             gaps.append("Short or boxed concentration calculations are unsupported.")
         if self.other_asset_value is None or self.other_asset_value != 0:
@@ -99,6 +108,43 @@ class SavedSnapshot(Observation):
     observation: PortfolioObservation
 
 
+class RefreshRecord(Observation):
+    refresh_id: UUID = Field(default_factory=uuid4)
+    account_ref: UUID
+    started_at: AwareDatetime
+    ended_at: AwareDatetime
+    snapshot_id: UUID | None = None
+    failure: (
+        Literal["disconnected", "pagination", "invalid_data", "provider_error"] | None
+    ) = None
+
+    @model_validator(mode="after")
+    def validate_outcome(self):
+        if self.ended_at < self.started_at:
+            raise ValueError("Collection end precedes start")
+        if (self.snapshot_id is None) == (self.failure is None):
+            raise ValueError("Expected exactly one snapshot or failure")
+        return self
+
+
+def _canonical(value):
+    """Normalize numbers without Decimal context rounding; normalize instants to UTC."""
+    if isinstance(value, Decimal):
+        result = format(value, "f")
+        if "." in result:
+            result = result.rstrip("0").rstrip(".")
+        return "0" if value == 0 else result
+    if isinstance(value, datetime):
+        return value.astimezone(UTC).isoformat()
+    if isinstance(value, UUID):
+        return str(value)
+    if isinstance(value, dict):
+        return {key: _canonical(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_canonical(item) for item in value]
+    return value
+
+
 class PortfolioSnapshotRepository:
     def __init__(self, database_path: Path, artifact_root: Path):
         self._sessions = sessionmaker(create_sqlite_engine(database_path))
@@ -114,7 +160,10 @@ class PortfolioSnapshotRepository:
                 "holdings": tuple(sorted(observation.holdings, key=lambda h: h.symbol))
             }
         )
-        artifact = self._artifacts.put(observation.model_dump_json().encode())
+        content = json.dumps(
+            _canonical(observation.model_dump()), sort_keys=True, separators=(",", ":")
+        ).encode()
+        artifact = self._artifacts.put(content)
         snapshot_id = uuid4()
         collected_at = datetime.now(UTC)
         with self._sessions.begin() as session:
@@ -133,6 +182,41 @@ class PortfolioSnapshotRepository:
             content_sha256=artifact.sha256,
             observation=observation,
         )
+
+    def record_refresh(self, record: RefreshRecord) -> RefreshRecord:
+        record = RefreshRecord.model_validate_json(record.model_dump_json())
+        with self._sessions.begin() as session:
+            if record.snapshot_id is not None:
+                snapshot = session.get(PortfolioSnapshotModel, str(record.snapshot_id))
+                if snapshot is None or snapshot.account_ref != str(record.account_ref):
+                    raise LookupError("Snapshot not found for this account")
+            session.add(
+                PortfolioRefreshModel(
+                    refresh_id=str(record.refresh_id),
+                    account_ref=str(record.account_ref),
+                    snapshot_id=str(record.snapshot_id) if record.snapshot_id else None,
+                    record_json=record.model_dump_json(),
+                )
+            )
+        return record
+
+    def refresh_history(self, account_ref: UUID) -> tuple[RefreshRecord, ...]:
+        with self._sessions() as session:
+            rows = session.scalars(
+                select(PortfolioRefreshModel).where(
+                    PortfolioRefreshModel.account_ref == str(account_ref)
+                )
+            ).all()
+            return tuple(
+                sorted(
+                    (
+                        RefreshRecord.model_validate_json(row.record_json)
+                        for row in rows
+                    ),
+                    key=lambda record: (record.ended_at, str(record.refresh_id)),
+                    reverse=True,
+                )
+            )
 
     def get(self, account_ref: UUID, snapshot_id: UUID) -> SavedSnapshot:
         with self._sessions() as session:

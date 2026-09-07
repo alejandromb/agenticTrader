@@ -102,10 +102,15 @@ snapshot selection. Nine new tests cover validation, restart, duplicate content,
 incomplete refresh, account isolation, and artifact corruption. Full suite: 146
 passed. No dashboard or live account ingestion is wired yet.
 
-Remaining P11-03 work: collection start/end timestamps, durable failed refresh
-attempts, individual other-asset totals, canonical numeric/time normalization,
-and explicit handling of mixed quote timestamps. Current completeness refers
-only to paginated equity positions and quote availability, not the whole account.
+Follow-up checkpoint: added collection start/end and typed failure records,
+individual other-asset totals, canonical numeric/time normalization, and mixed
+quote timestamp limitations. Added deterministic equity/account weights and
+estimated unrealized results with null/coverage gates. Full suite: 155 passed.
+
+Remaining: the collection service must wire snapshot saves and refresh records
+into a consistent lifecycle, including interruption recovery. P11-05 calculations
+are implemented, but saved research linking remains pending. Current completeness
+refers only to equity positions and quote availability, not the whole account.
 
 P11-02 discovery: Robinhood's official
 [overview](https://robinhood.com/us/en/support/articles/agentic-trading-overview/)
