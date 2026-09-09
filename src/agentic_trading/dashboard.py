@@ -19,6 +19,7 @@ from typing import Any
 from urllib.parse import unquote, urlparse
 
 from agentic_trading.analysis_repository import SqliteAnalysisRepository
+from agentic_trading.briefing import render_briefing
 from agentic_trading.dashboard_workspace import DashboardWorkspaceService
 from agentic_trading.disposition_repository import (
     ALLOWED_DISPOSITIONS,
@@ -216,6 +217,27 @@ def create_dashboard_server(
 
         def do_GET(self) -> None:  # noqa: N802
             path = unquote(urlparse(self.path).path)
+            if path == "/briefing":
+                try:
+                    payload = render_briefing(
+                        database_path.parent / "briefings" / "latest.json"
+                    )
+                except (ValueError, OSError):
+                    self._error(
+                        HTTPStatus.SERVICE_UNAVAILABLE,
+                        "Briefing unavailable or invalid",
+                    )
+                    return
+                self.send_response(HTTPStatus.OK)
+                self._security_headers("text/html; charset=utf-8")
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+                return
+            if path == "/briefing.css":
+                self._asset("briefing.css", "text/css; charset=utf-8")
+                return
             if path == "/":
                 self._asset("index.html", "text/html; charset=utf-8")
                 return
@@ -386,11 +408,7 @@ def create_dashboard_server(
             try:
                 ticker = _string(payload, "ticker").strip().upper()
                 question = _string(payload, "question").strip()
-                form = (
-                    _string(payload, "form").strip()
-                    if "form" in payload
-                    else "10-K"
-                )
+                form = _string(payload, "form").strip() if "form" in payload else "10-K"
                 if not _TICKER.fullmatch(ticker):
                     raise DashboardError("Ticker format is invalid")
                 if not question:

@@ -2,6 +2,11 @@
 
 Last updated: 2026-09-09
 
+Daily home page: `/briefing` on the local dashboard. See
+[daily briefing workflow](docs/daily-briefing.md). Reads private local JSON on
+request; embedded-browser view opened successfully. 184 tests pass after this
+UI slice. No live feed, automatic trading or recurring monitoring added.
+
 Session status: Manual account loss-review foundation implemented; live transport and scheduled monitoring remain pending
 
 New slice: [account risk checks](docs/account-risk-checks.md) preserves a fixed
