@@ -1,8 +1,14 @@
 # Project State
 
-Last updated: 2026-09-07
+Last updated: 2026-09-09
 
-Session status: Research evidence coverage hardening verified; Milestone 11 live transport remains pending
+Session status: Manual account loss-review foundation implemented; live transport and scheduled monitoring remain pending
+
+New slice: [account risk checks](docs/account-risk-checks.md) preserves a fixed
+baseline, adjusts for external funding, and refuses definitive results with
+stale or incomplete inputs. Private daily notes retain fills and managed-account
+comparison context. This is a manually invoked content-addressed artifact, not
+an active bot, broker order, dashboard integration or scheduled alert.
 
 Latest research-integrity slice: exact-filing coverage diagnostics now distinguish
 absent SEC observations from unsupported metrics. A reviewed ISRG filing-scoped
