@@ -17,6 +17,16 @@ class Base(DeclarativeBase):
     pass
 
 
+class OpportunityEventModel(Base):
+    __tablename__ = "opportunity_events"
+    __table_args__ = (UniqueConstraint("candidate_id", "sequence"),)
+
+    event_id: Mapped[str] = mapped_column(String, primary_key=True)
+    candidate_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    record_json: Mapped[str] = mapped_column(String, nullable=False)
+
+
 class ResearchRunModel(Base):
     __tablename__ = "research_runs"
 

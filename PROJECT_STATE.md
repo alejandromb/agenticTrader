@@ -2,6 +2,12 @@
 
 Last updated: 2026-09-10
 
+Candidate ledger: [append-only ORM workflow](docs/opportunity-ledger.md) added
+with migration 0021. Existing pilot imported without claiming new due diligence.
+Opposite scanner sorts yielded a 400-instrument multi-time union, but totals
+changed, so point-in-time completeness remains unproven. Next: integrate ledger
+history into the dashboard and finish candidate valuation with evidence checks.
+
 Research upgrade: [operating-system work packages](docs/research-upgrade.md).
 Created a separate Robinhood liquid-stock scanner (existing scanner untouched).
 Results are capped, not a fully reviewed universe. Calendar normalization now
