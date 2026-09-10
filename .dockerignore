@@ -10,3 +10,16 @@ data
 artifacts
 logs
 tmp
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.db
+*.sqlite
+*.sqlite3
+.ssh
+.aws
+.codex
+.agents

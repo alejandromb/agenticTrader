@@ -7,6 +7,9 @@ WORKDIR /build
 
 COPY pyproject.toml Agentic_Trading_Project_Summary.md ./
 COPY src ./src
+COPY alembic.ini ./
+COPY migrations ./migrations
+COPY schemas ./schemas
 
 RUN python -m pip install --upgrade pip build \
     && python -m build --wheel --outdir /wheels
@@ -25,7 +28,8 @@ RUN groupadd --system agentic \
 WORKDIR /app
 
 COPY --from=builder /wheels /wheels
-RUN python -m pip install /wheels/*.whl \
+RUN python -m pip install --upgrade 'pip>=26.2.1' \
+    && python -m pip install /wheels/*.whl \
     && rm -rf /wheels
 
 COPY alembic.ini ./

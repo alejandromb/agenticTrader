@@ -22,12 +22,17 @@ agentic-trading = "agentic_trading.cli:main"
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=8.3,<9",
+  "pytest>=9.0.3,<10",
   "ruff>=0.9,<1",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/agentic_trading"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"alembic.ini" = "agentic_trading/_resources/alembic.ini"
+"migrations" = "agentic_trading/_resources/migrations"
+"schemas" = "agentic_trading/_resources/schemas"
 
 [tool.pytest.ini_options]
 addopts = "-q"
