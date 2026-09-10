@@ -3,9 +3,17 @@
 from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlparse
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 class Entry(BaseModel):
@@ -29,6 +37,36 @@ class Entry(BaseModel):
         return value
 
 
+class OpportunityScan(BaseModel):
+    """Coverage declaration, not an automated screener or trading signal."""
+
+    model_config = ConfigDict(extra="forbid")
+    status: Literal["not_run", "partial", "completed"] = "not_run"
+    scanned_at: AwareDatetime | None = None
+    universe: list[str] = Field(default_factory=list)
+    reviewed: list[str] = Field(default_factory=list)
+    method: str = "No opportunity scan recorded."
+    candidates: list[Entry] = Field(default_factory=list, max_length=4)
+    limitations: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def consistent_coverage(self):
+        if len(set(self.universe)) != len(self.universe) or len(
+            set(self.reviewed)
+        ) != len(self.reviewed):
+            raise ValueError("Duplicate coverage symbols")
+        if not set(self.reviewed).issubset(self.universe):
+            raise ValueError("Reviewed symbols must belong to the declared universe")
+        if self.status == "not_run":
+            if self.reviewed or self.candidates or self.scanned_at:
+                raise ValueError("Unrun scan cannot contain results")
+        elif not self.scanned_at or not self.universe:
+            raise ValueError("Scan requires a timestamp and explicit universe")
+        if self.status == "completed" and set(self.reviewed) != set(self.universe):
+            raise ValueError("Completed means every declared symbol was reviewed")
+        return self
+
+
 class Briefing(BaseModel):
     model_config = ConfigDict(extra="forbid")
     updated_at: AwareDatetime
@@ -39,6 +77,8 @@ class Briefing(BaseModel):
     news: list[Entry]
     work: list[Entry]
     limitations: list[str]
+    portfolio_review: str = "Portfolio review coverage not recorded."
+    opportunity_scan: OpportunityScan = Field(default_factory=OpportunityScan)
 
 
 def _entries(items):
@@ -68,17 +108,38 @@ def render_briefing(path: Path) -> bytes:
             if stamp.date() != datetime.now(UTC).date()
             else "Saved snapshot · not a live feed"
         )
+        scan = b.opportunity_scan
+        scan_time = (
+            f" · As of {scan.scanned_at.astimezone(UTC):%d %b %Y %H:%M UTC}"
+            if scan.scanned_at
+            else ""
+        )
+        coverage = (
+            "<section><h2>Review coverage</h2>"
+            f"<p>Portfolio: {escape(b.portfolio_review)}</p>"
+            f"<p>Opportunity scan: {escape(scan.status.replace('_', ' '))}"
+            f" · {len(scan.reviewed)}/{len(scan.universe)} declared names"
+            f"{scan_time}</p>"
+            f"<p>{escape(scan.method)}</p>"
+            f"<p>Universe: {escape(', '.join(scan.universe)) or 'Not declared'}. "
+            "Not a market-wide search or a completed investment thesis.</p></section>"
+        )
         body = (
             f'<p class="eyebrow">DAILY BRIEFING / {stamp:%d %B %Y}</p>'
             f'<h1>{escape(b.headline)}</h1><p class="lead">{escape(b.summary)}</p>'
             f'<p class="freshness">{freshness} · Updated {stamp:%H:%M UTC}</p>'
             f'<section class="metrics">{_entries(b.metrics)}</section>'
-            '<div class="columns"><section><h2>01 / Decisions today</h2>'
+            + coverage
+            + '<div class="columns"><section><h2>01 / Decisions today</h2>'
             f"{_entries(b.decisions)}</section>"
             "<section><h2>02 / Events &amp; evidence</h2>"
             f"{_entries(b.news)}</section></div>"
             '<section><h2>03 / Workbench</h2><div class="work">'
             f"{_entries(b.work)}</div></section>"
+            "<section><h2>04 / Opportunity radar · research leads</h2>"
+            + (_entries(scan.candidates) or "<p>No candidate results recorded.</p>")
+            + "".join(f"<p>{escape(line)}</p>" for line in scan.limitations)
+            + "</section>"
             "<details><summary>Known limitations &amp; safety boundaries</summary><ul>"
             + "".join(f"<li>{escape(line)}</li>" for line in b.limitations)
             + "</ul></details>"

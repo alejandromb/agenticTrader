@@ -1,6 +1,13 @@
 # Project State
 
-Last updated: 2026-09-09
+Last updated: 2026-09-10
+
+Latest slice: on-request [opportunity radar](docs/opportunity-radar.md) now
+separates portfolio coverage from candidate screening in the briefing. Four-name
+private pilot retained evidence and deferrals; no complete valuation or new trade.
+190 tests pass; scan coverage/escaping regressions included. This is a manual
+workflow, not a background scanner or proven source of excess returns. Next:
+finish the two shortlisted valuation reviews and preregister paper evaluation.
 
 Daily home page: `/briefing` on the local dashboard. See
 [daily briefing workflow](docs/daily-briefing.md). Reads private local JSON on

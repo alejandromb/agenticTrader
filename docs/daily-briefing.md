@@ -1,5 +1,9 @@
 # Daily briefing workflow
 
+Include the [on-request opportunity radar](opportunity-radar.md) independently
+of the portfolio review. Declare its universe, reviewed names, scan time and
+limitations in `opportunity_scan`; never infer a completed scan from no trades.
+
 When the user asks for a daily briefing, collect authorized read-only account
 data, reconcile available fills/funding, review relevant primary-source news and
 events, then update the private local file `data/briefings/latest.json` (relative
