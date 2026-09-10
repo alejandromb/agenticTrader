@@ -2,13 +2,21 @@
 
 Last updated: 2026-09-10
 
+Security checkpoint: protected GitHub main (one approval including admins, stale
+approval dismissal, no force pushes/deletion); Actions disabled and dependency
+alerts enabled. Security changes are on codex/security-hardening for review.
+Secret/history checks, owner-only local data permissions, Docker exclusions and
+runtime hardening, dashboard Host/Origin defense, and patched dev tools recorded
+in SECURITY.md and the security session. Current regression baseline: 241 passing.
+Hosted secret scanning is unavailable; this is not a comprehensive security audit.
+
 Latest research: ISRG TTM cash-flow bridge and first conditional sensitivity
 completed, with raw broker context and source-linked report retained privately.
 Candidate deferred pending normalization; no order or allocation. Paper cohort
 unchanged. New Decimal valuation helpers have bridge/reverse/invalid-rate tests.
 This is not a fully normalized fair value or completed competitive underwriting.
 
-Current tested baseline: 232 tests pass. Latest work integrates the opportunity
+Current tested baseline: 241 tests pass. Latest research work integrates the opportunity
 ledger directly into the briefing and verifies SHA-256 artifact integrity without
 following arbitrary paths. Hash verification is not claim or valuation verification.
 

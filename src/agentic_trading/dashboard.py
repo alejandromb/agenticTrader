@@ -219,7 +219,26 @@ def create_dashboard_server(
     class DashboardHandler(BaseHTTPRequestHandler):
         server_version = "AgenticTradingDashboard/1.0"
 
+        def _local_request(self) -> bool:
+            # Loopback binding alone does not prevent DNS rebinding. Never serve
+            # private data or the CSRF token to an arbitrary Host header.
+            port = self.server.server_address[1]
+            allowed = {f"127.0.0.1:{port}", f"localhost:{port}", f"[::1]:{port}"}
+            hosts = self.headers.get_all("Host", [])
+            origins = self.headers.get_all("Origin", [])
+            if (
+                len(hosts) != 1
+                or hosts[0] not in allowed
+                or len(origins) > 1
+                or (origins and origins[0] != f"http://{hosts[0]}")
+            ):
+                self._error(HTTPStatus.FORBIDDEN, "Local same-origin request required")
+                return False
+            return True
+
         def do_GET(self) -> None:  # noqa: N802
+            if not self._local_request():
+                return
             path = unquote(urlparse(self.path).path)
             if path == "/briefing":
                 try:
@@ -295,6 +314,8 @@ def create_dashboard_server(
             self._error(HTTPStatus.NOT_FOUND, "Not found")
 
         def do_POST(self) -> None:  # noqa: N802
+            if not self._local_request():
+                return
             if self.headers.get("X-Agentic-CSRF") != token:
                 self._error(HTTPStatus.FORBIDDEN, "Invalid request token")
                 return

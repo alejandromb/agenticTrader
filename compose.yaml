@@ -11,6 +11,11 @@ services:
       - workflow-data:/app/data
       - evidence-artifacts:/app/artifacts
     command: ["--help"]
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
 
   test:
     profiles: ["test"]

@@ -84,6 +84,36 @@ def get_json(url: str):
         return response.status, json.load(response), response.headers
 
 
+@pytest.mark.parametrize(
+    "headers",
+    [
+        {"Host": "attacker.example"},
+        {"Host": "127.0.0.1.attacker.example"},
+        {"Origin": "https://attacker.example"},
+        {"Origin": "null"},
+    ],
+)
+@pytest.mark.parametrize("method", ["GET", "POST"])
+def test_dashboard_rejects_foreign_host_and_origin(
+    tmp_path, monkeypatch, headers, method
+):
+    with running_dashboard(tmp_path, monkeypatch) as (url, _, _, calls):
+        request = Request(url + "/api/config", headers=headers, method=method)
+        with pytest.raises(HTTPError) as caught:
+            urlopen(request)
+        assert caught.value.code == 403
+        assert b"Local same-origin request required" in caught.value.read()
+        assert calls == []
+
+
+def test_dashboard_accepts_matching_origin(tmp_path, monkeypatch):
+    with (
+        running_dashboard(tmp_path, monkeypatch) as (url, _, _, _),
+        urlopen(Request(url + "/api/config", headers={"Origin": url})) as response,
+    ):
+        assert response.status == 200
+
+
 def test_briefing_reads_ledger_on_each_request(tmp_path, monkeypatch):
     from uuid import uuid4
 

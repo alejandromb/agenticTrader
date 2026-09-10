@@ -25,6 +25,11 @@ SCHEMA_VERSION = "2.0.0"
 DEFAULT_SCHEMA_PATH = (
     Path(__file__).parents[2] / "schemas/investment-memo-v1.schema.json"
 )
+_BUNDLED_SCHEMA = (
+    Path(__file__).parent / "_resources/schemas/investment-memo-v1.schema.json"
+)
+if _BUNDLED_SCHEMA.is_file():
+    DEFAULT_SCHEMA_PATH = _BUNDLED_SCHEMA
 
 
 @dataclass(frozen=True, slots=True)

@@ -4,6 +4,10 @@
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
+.ssh/
+.aws/
 
 # Editors and operating systems
 .DS_Store
