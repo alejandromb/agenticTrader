@@ -102,3 +102,32 @@ def test_stale_writer_cannot_overwrite(ledger):
             decision(candidate_id=first.candidate_id, sequence=1, stage="rejected")
         )
     assert ledger.latest()[0]["stage"] == "researching"
+
+
+def test_dashboard_evidence_integrity_and_no_path_reads(ledger, tmp_path):
+    from agentic_trading.artifacts import LocalArtifactStore
+    from agentic_trading.briefing import render_briefing
+
+    store = LocalArtifactStore(tmp_path / "artifacts")
+    artifact = store.put(b"source snapshot")
+    first = decision(
+        reason="<script>bad</script>",
+        evidence_refs=["sha256:" + artifact.sha256, "../../.env", "sha256:" + "a" * 64],
+    )
+    ledger.append(first)
+    records = ledger.dashboard_records(tmp_path / "artifacts")
+    checks = records[0]["history"][0]["evidence_checks"]
+    assert checks[0]["status"] == "content hash verified; claims not verified"
+    assert checks[1]["status"] == "unresolved reference"
+    assert checks[2]["status"] == "missing or corrupt artifact"
+    html = render_briefing(tmp_path / "absent.json", candidate_records=records).decode()
+    assert "&lt;script&gt;" in html
+    assert "<script>" not in html
+    assert "Candidate decision history" in html
+    artifact.path.write_bytes(b"changed")
+    assert (
+        ledger.dashboard_records(tmp_path / "artifacts")[0]["history"][0][
+            "evidence_checks"
+        ][0]["status"]
+        == "missing or corrupt artifact"
+    )

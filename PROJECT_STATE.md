@@ -2,45 +2,25 @@
 
 Last updated: 2026-09-10
 
-Candidate ledger: [append-only ORM workflow](docs/opportunity-ledger.md) added
-with migration 0021. Existing pilot imported without claiming new due diligence.
-Opposite scanner sorts yielded a 400-instrument multi-time union, but totals
-changed, so point-in-time completeness remains unproven. Next: integrate ledger
-history into the dashboard and finish candidate valuation with evidence checks.
+Current tested baseline: 226 tests pass. Latest work integrates the opportunity
+ledger directly into the briefing and verifies SHA-256 artifact integrity without
+following arbitrary paths. Hash verification is not claim or valuation verification.
 
-Research upgrade: [operating-system work packages](docs/research-upgrade.md).
-Created a separate Robinhood liquid-stock scanner (existing scanner untouched).
-Results are capped, not a fully reviewed universe. Calendar normalization now
-archives raw input plus output with duplicates and quarantines explicit. Full
-suite: 205 tests passed. Next: resolve scanner truncation and build the durable
-candidate transition/valuation workflow. No automated orders or proven edge.
+A prospective paper cohort is frozen before entry; price ingestion and performance
+results remain pending. ISRG has a sourced normalization checkpoint, not a completed
+fair-value estimate. A local database recovery copy passed integrity checks; no
+remote repository or full off-device data backup is configured.
 
-Latest slice: on-request [opportunity radar](docs/opportunity-radar.md) now
-separates portfolio coverage from candidate screening in the briefing. Four-name
-private pilot retained evidence and deferrals; no complete valuation or new trade.
-190 tests pass; scan coverage/escaping regressions included. This is a manual
-workflow, not a background scanner or proven source of excess returns. Next:
-finish the two shortlisted valuation reviews and preregister paper evaluation.
+Research discovery uses Robinhood scanners/calendar. The scanner's opposite sorts
+produced a multi-time union, not proven point-in-time completeness. No continuous
+broker collector, scheduler, automatic trading or verified investment edge exists.
 
-Daily home page: `/briefing` on the local dashboard. See
-[daily briefing workflow](docs/daily-briefing.md). Reads private local JSON on
-request; embedded-browser view opened successfully. 184 tests pass after this
-UI slice. No live feed, automatic trading or recurring monitoring added.
-
-Session status: Manual account loss-review foundation implemented; live transport and scheduled monitoring remain pending
-
-New slice: [account risk checks](docs/account-risk-checks.md) preserves a fixed
-baseline, adjusts for external funding, and refuses definitive results with
-stale or incomplete inputs. Private daily notes retain fills and managed-account
-comparison context. This is a manually invoked content-addressed artifact, not
-an active bot, broker order, dashboard integration or scheduled alert.
-
-Latest research-integrity slice: exact-filing coverage diagnostics now distinguish
-absent SEC observations from unsupported metrics. A reviewed ISRG filing-scoped
-cash-capex mapping preserves its original tag and YTD period. Fixed empty
-primary-tag history suppressing alias fallback. Regression/full suite: 159 tests
-pass with loopback access. This does not complete live portfolio integration or
-add execution authority. See [session record](docs/sessions/2026-09-07-006-filing-coverage.md).
+Next priorities: complete the ISRG full-year/TTM bridge and valuation assumptions;
+resolve evidence links to full research runs; reconcile funding and source freshness;
+implement paper price collection and benchmark evaluation; choose off-device backup.
+See [upgrade work packages](docs/research-upgrade.md), [ledger](docs/opportunity-ledger.md),
+[paper evaluation](docs/paper-evaluation.md), and [recovery](docs/recovery.md).
+Session logs preserve earlier slice-specific test counts and implementation history.
 
 ## Progress at a glance
 
@@ -65,10 +45,10 @@ read-only portfolio context remain separate follow-ups.
 
 ## Active objective
 
-Resolve P11-02: prove a supported authorized read transport for the local app.
-The snapshot contract and acceptance criteria are recorded in Milestone 11 and
-Experiment 0010. Persistence can be developed with synthetic fixtures while
-transport is investigated, but live acceptance requires a working connection.
+Complete the ISRG evidence-to-valuation case and prospective paper evaluation.
+P11-02 (supported live transport for the local app) remains open; tool access in
+chat does not satisfy it. Snapshot acceptance criteria remain in Milestone 11
+and Experiment 0010. Do not report manual refreshes as background integration.
 
 ## Completed
 

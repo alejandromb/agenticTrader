@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
+from agentic_trading.artifacts import LocalArtifactStore
 from agentic_trading.database import create_sqlite_engine
 from agentic_trading.models import OpportunityEventModel
 
@@ -112,6 +113,40 @@ class OpportunityLedger:
             return sorted(
                 latest.values(), key=lambda item: (item["symbol"], item["candidate_id"])
             )
+
+    def dashboard_records(self, artifact_root: Path):
+        """Read current state plus history; never fetch arbitrary paths or URLs."""
+        store = LocalArtifactStore(artifact_root)
+        records = []
+        with self.sessions() as session:
+            rows = session.scalars(
+                select(OpportunityEventModel).order_by(
+                    OpportunityEventModel.candidate_id, OpportunityEventModel.sequence
+                )
+            ).all()
+            grouped = {}
+            for row in rows:
+                grouped.setdefault(row.candidate_id, []).append(
+                    json.loads(row.record_json)
+                )
+        for history in grouped.values():
+            item = dict(history[-1])
+            for event in history:
+                checks = []
+                for ref in event["evidence_refs"]:
+                    status = "unresolved reference"
+                    if ref.startswith("sha256:"):
+                        try:
+                            store.get(ref.removeprefix("sha256:"))
+                            status = "content hash verified; claims not verified"
+                        except (ValueError, OSError):
+                            status = "missing or corrupt artifact"
+                    checks.append({"reference": ref, "status": status})
+                event["evidence_checks"] = checks
+            records.append({"latest": item, "history": history})
+        return sorted(
+            records, key=lambda r: (r["latest"]["symbol"], r["latest"]["candidate_id"])
+        )
 
 
 def main():

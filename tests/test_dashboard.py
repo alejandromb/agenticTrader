@@ -84,6 +84,44 @@ def get_json(url: str):
         return response.status, json.load(response), response.headers
 
 
+def test_briefing_reads_ledger_on_each_request(tmp_path, monkeypatch):
+    from uuid import uuid4
+
+    from agentic_trading.opportunities import OpportunityDecision, OpportunityLedger
+
+    with running_dashboard(tmp_path, monkeypatch) as (url, database, _, _):
+        ledger = OpportunityLedger(database)
+        candidate = uuid4()
+        event = OpportunityDecision(
+            event_id=uuid4(),
+            candidate_id=candidate,
+            sequence=0,
+            symbol="TEST",
+            stage="discovered",
+            recorded_at="2026-09-10T12:00:00Z",
+            reason="Initial lead",
+            evidence_refs=["unresolved"],
+            limitations=["Not verified"],
+        )
+        ledger.append(event)
+        with urlopen(url + "/briefing") as response:
+            assert "no-store" in response.headers["Cache-Control"]
+            assert b"Initial lead" in response.read()
+        ledger.append(
+            event.model_copy(
+                update={
+                    "event_id": uuid4(),
+                    "sequence": 1,
+                    "stage": "deferred",
+                    "reason": "New persisted reason",
+                }
+            )
+        )
+        with urlopen(url + "/briefing") as response:
+            html = response.read()
+            assert b"Initial lead" in html and b"New persisted reason" in html
+
+
 def post_json(url: str, payload: dict, token: str | None = None):
     headers = {"Content-Type": "application/json"}
     if token is not None:
@@ -374,9 +412,7 @@ def test_market_data_fetch_endpoint_preserves_explicit_request(
     captured = {}
 
     def fake_fetch(self, *, symbols, start, end, feed):
-        captured.update(
-            {"symbols": symbols, "start": start, "end": end, "feed": feed}
-        )
+        captured.update({"symbols": symbols, "start": start, "end": end, "feed": feed})
         return {"dataset_id": "prices-1", "row_count": 4}
 
     monkeypatch.setattr(DashboardWorkspaceService, "fetch_prices", fake_fetch)

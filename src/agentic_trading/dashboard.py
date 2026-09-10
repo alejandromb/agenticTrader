@@ -18,6 +18,8 @@ from socketserver import TCPServer
 from typing import Any
 from urllib.parse import unquote, urlparse
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from agentic_trading.analysis_repository import SqliteAnalysisRepository
 from agentic_trading.briefing import render_briefing
 from agentic_trading.dashboard_workspace import DashboardWorkspaceService
@@ -31,6 +33,7 @@ from agentic_trading.openai_adapter import (
     AnalysisGenerationError,
     OpenAIFinancialAnalysisAdapter,
 )
+from agentic_trading.opportunities import OpportunityLedger
 from agentic_trading.repository import RunNotFoundError, SqliteRunRepository
 from agentic_trading.research import CompanyResearchService
 from agentic_trading.revision_repository import SqliteRevisionAuditRepository
@@ -208,6 +211,7 @@ def create_dashboard_server(
     token = secrets.token_urlsafe(32)
     data = DashboardDataService(database_path)
     workspace = DashboardWorkspaceService(database_path, artifact_root)
+    opportunities = OpportunityLedger(database_path)
     run_research = research_runner or _default_research_runner(
         database_path, artifact_root
     )
@@ -220,9 +224,12 @@ def create_dashboard_server(
             if path == "/briefing":
                 try:
                     payload = render_briefing(
-                        database_path.parent / "briefings" / "latest.json"
+                        database_path.parent / "briefings" / "latest.json",
+                        candidate_records=opportunities.dashboard_records(
+                            artifact_root
+                        ),
                     )
-                except (ValueError, OSError):
+                except (ValueError, OSError, SQLAlchemyError):
                     self._error(
                         HTTPStatus.SERVICE_UNAVAILABLE,
                         "Briefing unavailable or invalid",

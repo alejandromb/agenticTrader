@@ -26,8 +26,12 @@ prior rejection remains visible. Symbol identity cannot change within a history.
 Multiple distinct theses may use separate candidate IDs for the same symbol.
 
 History is append-only through this service, not tamper-proof against direct
-database access. UI integration, evidence-reference resolution, links to full
-research-run IDs and independently validated valuation gates remain follow-ups.
+database access. The briefing now reads ledger history directly on each request.
+SHA-256 references are resolved only inside the configured artifact store and
+checked for byte integrity. Arbitrary paths/URLs are never fetched; legacy path
+and research-run references remain unresolved. Content integrity does not verify
+claim truth, source authenticity, or valuation completion. Research-run resolution
+and independently validated valuation gates remain follow-ups.
 Keep actual candidate records in the private database, outside Git.
 
 ## Scanner coverage check

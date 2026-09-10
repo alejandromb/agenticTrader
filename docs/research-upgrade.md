@@ -9,11 +9,11 @@ Long-term research, human authority, no new leverage or execution automation.
 | --- | --- | --- | --- |
 | Discovery integrity | Broker scans plus market-wide earnings events | Raw inputs retained; duplicates/conflicts/quarantine explicit | Calendar implemented; original scanner returned zero |
 | Universe expansion | Repeatable liquid-stock quality, value and catalyst lanes | Versioned filters, returned/total counts, explicit truncation and unknowns | Liquid-stock scanner created; 399 matches, 200 returned; other lanes pending |
-| Research funnel | Discovered → verified → valuation → human review, or deferred/rejected | Source-linked reason at every stage; no omitted losers | Pilot cards exist; durable transition ledger pending |
+| Research funnel | Discovered → verified → valuation → human review, or deferred/rejected | Source-linked reason at every stage; no omitted losers | Durable research-stage ledger and live history implemented; verification/approval gates pending |
 | Valuation discipline | Normalized cash flow, bear/base/bull assumptions and sensitivity | Reproducible arithmetic; filing revisions and valuation basis visible | Pending |
 | Portfolio fit | Incremental concentration and downside before allocation | Fresh verified account context, funding and proposed exposure | Existing snapshot foundation; integration pending |
-| Experiment ledger | Frozen paper picks and deferrals versus SPY | Same dates, adjusted data, cost assumptions, no look-ahead | Design only; no performance claim |
-| Operator workflow | Briefing shows health, coverage, shortlist and blocked gates | User can distinguish data outage from no opportunities | Coverage implemented; discovery details shown in briefing |
+| Experiment ledger | Frozen paper picks and deferrals versus SPY | Same dates, adjusted data, cost assumptions, no look-ahead | Prospective pilot frozen; arithmetic helper tested; price ingestion and results pending |
+| Operator workflow | Briefing shows health, coverage, shortlist and blocked gates | User can distinguish data outage from no opportunities | Database history, hash checks and coverage implemented; no live broker refresh |
 
 ## Discovery policy v1
 

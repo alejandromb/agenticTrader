@@ -97,7 +97,9 @@ def _entries(items):
     return "".join(output)
 
 
-def render_briefing(path: Path) -> bytes:
+def render_briefing(
+    path: Path, *, candidate_records: list[dict] | None = None
+) -> bytes:
     if not path.exists():
         body = "<h1>No briefing saved yet</h1><p>Ask for a daily briefing to begin.</p>"
     else:
@@ -144,6 +146,36 @@ def render_briefing(path: Path) -> bytes:
             + "".join(f"<li>{escape(line)}</li>" for line in b.limitations)
             + "</ul></details>"
         )
+    if candidate_records is not None:
+        body += "<section><h2>05 / Candidate decision history · database</h2>"
+        body += (
+            "<p>Loaded from SQLite on this request. "
+            "Not a broker refresh or trade approval.</p>"
+        )
+        for record in candidate_records:
+            latest = record["latest"]
+            body += (
+                f"<details><summary>{escape(latest['symbol'])} · "
+                f"{escape(latest['stage'])} · {escape(latest['recorded_at'])}</summary>"
+            )
+            for event in record["history"]:
+                body += (
+                    f"<article><h3>{event['sequence']}: {escape(event['stage'])}</h3>"
+                    f"<p>{escape(event['reason'])}</p>"
+                    f"<p>{escape(event['recorded_at'])}</p><ul>"
+                    + "".join(f"<li>{escape(s)}</li>" for s in event["limitations"])
+                    + "</ul>"
+                )
+                for check in event["evidence_checks"]:
+                    body += (
+                        f"<p>{escape(check['reference'])} — "
+                        f"{escape(check['status'])}</p>"
+                    )
+                body += "</article>"
+            body += "</details>"
+        if not candidate_records:
+            body += "<p>No candidate decisions recorded.</p>"
+        body += "</section>"
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
