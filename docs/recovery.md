@@ -1,7 +1,9 @@
 # Recovery and backup boundaries
 
-Code is committed locally; no remote repository is configured. Ask for the
-user's destination before uploading or creating an external repository.
+Code is committed and pushed to the private repository
+https://github.com/alejandromb/agenticTrader under the user's personal account.
+The local main branch tracks origin/main. GitHub code backup does not include
+private runtime data. User explicitly selected this owner and repository name.
 
 Private data is not protected by Git: database, artifacts and briefing/review
 files are ignored. A consistent SQLite backup was made using its backup API

@@ -8,8 +8,9 @@ following arbitrary paths. Hash verification is not claim or valuation verificat
 
 A prospective paper cohort is frozen before entry; price ingestion and performance
 results remain pending. ISRG has a sourced normalization checkpoint, not a completed
-fair-value estimate. A local database recovery copy passed integrity checks; no
-remote repository or full off-device data backup is configured.
+fair-value estimate. A local database recovery copy passed integrity checks.
+Code remote: private https://github.com/alejandromb/agenticTrader, main tracks
+origin/main. Full off-device private-data backup remains unconfigured.
 
 Research discovery uses Robinhood scanners/calendar. The scanner's opposite sorts
 produced a multi-time union, not proven point-in-time completeness. No continuous
@@ -31,7 +32,7 @@ Session logs preserve earlier slice-specific test counts and implementation hist
 | Milestone 10 operator acceptance | Pending | Experiment 0009 remains planned; live provider access is unverified |
 | Robinhood account scope | Recorded | ADR-0021; Agentic only for potential confirmed orders |
 | Portfolio-context integration in the app | Storage, refresh records and calculations implemented; live access/UI pending | [Milestone 11](docs/milestone-11.md); 155 tests pass |
-| Remote repository backup | Unconfigured | No Git remote; needs a destination |
+| Remote code repository | Configured and pushed | Private alejandromb/agenticTrader; private runtime data excluded |
 | Execution in the research app | Deferred | Requires separate ADR and product contract |
 
 This file is the single current progress tracker. Each active slice must name
