@@ -2,7 +2,13 @@
 
 Last updated: 2026-09-10
 
-Current tested baseline: 226 tests pass. Latest work integrates the opportunity
+Latest research: ISRG TTM cash-flow bridge and first conditional sensitivity
+completed, with raw broker context and source-linked report retained privately.
+Candidate deferred pending normalization; no order or allocation. Paper cohort
+unchanged. New Decimal valuation helpers have bridge/reverse/invalid-rate tests.
+This is not a fully normalized fair value or completed competitive underwriting.
+
+Current tested baseline: 232 tests pass. Latest work integrates the opportunity
 ledger directly into the briefing and verifies SHA-256 artifact integrity without
 following arbitrary paths. Hash verification is not claim or valuation verification.
 
@@ -16,7 +22,7 @@ Research discovery uses Robinhood scanners/calendar. The scanner's opposite sort
 produced a multi-time union, not proven point-in-time completeness. No continuous
 broker collector, scheduler, automatic trading or verified investment edge exists.
 
-Next priorities: complete the ISRG full-year/TTM bridge and valuation assumptions;
+Next priorities: normalize ISRG cash flows and underwrite growth assumptions;
 resolve evidence links to full research runs; reconcile funding and source freshness;
 implement paper price collection and benchmark evaluation; choose off-device backup.
 See [upgrade work packages](docs/research-upgrade.md), [ledger](docs/opportunity-ledger.md),

@@ -80,3 +80,60 @@ def _calculate_scenario(
             "(1 + discount_rate)^forecast_years"
         ),
     )
+
+
+def trailing_value(
+    annual: Decimal, prior_ytd: Decimal, current_ytd: Decimal
+) -> Decimal:
+    """Caller must verify identical metric, currency and comparable periods."""
+    if not all(x.is_finite() for x in (annual, prior_ytd, current_ytd)):
+        raise ValueError("Finite inputs required")
+    return annual - prior_ytd + current_ytd
+
+
+def cash_flow_sensitivity(
+    base: Decimal,
+    growth: Decimal,
+    discount: Decimal,
+    terminal: Decimal,
+    years: int = 10,
+) -> Decimal:
+    """Year-end cash flows plus Gordon terminal value; no net-cash adjustment."""
+    if not all(x.is_finite() for x in (base, growth, discount, terminal)):
+        raise ValueError("Finite inputs required")
+    if base <= 0 or growth <= -1 or terminal <= -1 or discount <= 0:
+        raise ValueError("Invalid cash flow or rates")
+    if discount <= terminal or type(years) is not int or not 1 <= years <= 100:
+        raise ValueError("Require discount > terminal growth and valid horizon")
+    cash, value = base, Decimal(0)
+    for year in range(1, years + 1):
+        cash *= 1 + growth
+        value += cash / (1 + discount) ** year
+    value += cash * (1 + terminal) / (discount - terminal) / (1 + discount) ** years
+    return value
+
+
+def implied_growth(
+    base: Decimal,
+    target: Decimal,
+    discount: Decimal,
+    terminal: Decimal,
+    years: int = 10,
+) -> Decimal:
+    """Bisection within -50% to +100%; conditional implied rate, not forecast."""
+    if not target.is_finite() or target <= 0:
+        raise ValueError("Positive finite target required")
+    low, high = Decimal("-0.5"), Decimal(1)
+    if (
+        not cash_flow_sensitivity(base, low, discount, terminal, years)
+        <= target
+        <= cash_flow_sensitivity(base, high, discount, terminal, years)
+    ):
+        raise ValueError("Target outside search bracket")
+    for _ in range(100):
+        mid = (low + high) / 2
+        if cash_flow_sensitivity(base, mid, discount, terminal, years) < target:
+            low = mid
+        else:
+            high = mid
+    return (low + high) / 2
