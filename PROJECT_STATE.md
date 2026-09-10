@@ -2,6 +2,13 @@
 
 Last updated: 2026-09-10
 
+Research upgrade: [operating-system work packages](docs/research-upgrade.md).
+Created a separate Robinhood liquid-stock scanner (existing scanner untouched).
+Results are capped, not a fully reviewed universe. Calendar normalization now
+archives raw input plus output with duplicates and quarantines explicit. Full
+suite: 205 tests passed. Next: resolve scanner truncation and build the durable
+candidate transition/valuation workflow. No automated orders or proven edge.
+
 Latest slice: on-request [opportunity radar](docs/opportunity-radar.md) now
 separates portfolio coverage from candidate screening in the briefing. Four-name
 private pilot retained evidence and deferrals; no complete valuation or new trade.
